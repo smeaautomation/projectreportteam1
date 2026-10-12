@@ -4,15 +4,125 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#f5f7f9" />
-  <title>Weekly Progress — Team 1</title>
-  <meta name="description" content="Dashboard weekly progress Team 1 untuk memantau workstream, target, dan tindak lanjut." />
+  <title>Team 1 — Project Progress Timeline</title>
+  <meta name="description" content="Pantau progres setiap workstream Team 1 dari rencana hingga final dalam satu dashboard yang jelas." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app-shell">
+  <section class="landing-page" id="beranda">
+    <nav class="landing-nav" aria-label="Navigasi landing page">
+      <a class="landing-brand" href="#beranda" aria-label="Team 1 beranda">
+        <span class="landing-brand-mark"><i></i><i></i><i></i></span>
+        <span>team<span>1.</span></span>
+      </a>
+      <div class="landing-links">
+        <a href="#manfaat">Manfaat</a>
+        <a href="#alur">Cara kerja</a>
+        <a class="nav-cta" href="#dashboard-app">Buka Dashboard <span>↗</span></a>
+      </div>
+    </nav>
+
+    <div class="hero-wrap">
+      <div class="hero-copy">
+        <div class="hero-kicker"><span></span> WEEKLY DELIVERY SYSTEM • TEAM 1</div>
+        <h1>Setiap pekerjaan punya arah menuju <em>final.</em></h1>
+        <p>Pantau progres workstream, lihat hambatan lebih cepat, dan ubah setiap checklist menjadi persentase yang mudah dipahami.</p>
+        <div class="hero-actions">
+          <a class="hero-primary" href="#dashboard-app">Lihat dashboard <span>→</span></a>
+          <a class="hero-secondary" href="#alur"><span class="play-icon">▶</span> Lihat cara kerja</a>
+        </div>
+        <div class="hero-meta">
+          <div><strong>4</strong><span>workstream aktif</span></div>
+          <div><strong>16</strong><span>item pekerjaan</span></div>
+          <div><strong>29 Sep</strong><span>snapshot laporan</span></div>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-label="Preview dashboard progres Team 1">
+        <div class="visual-glow"></div>
+        <div class="preview-window">
+          <div class="preview-top">
+            <div class="preview-dots"><i></i><i></i><i></i></div>
+            <span>Progress overview</span>
+            <div class="preview-avatar">T1</div>
+          </div>
+          <div class="preview-body">
+            <div class="preview-heading">
+              <div><span>TEAM 1 • MINGGU INI</span><strong>Project timeline</strong></div>
+              <span class="live-pill"><i></i> Live</span>
+            </div>
+            <div class="preview-score">
+              <div class="score-ring"><div><strong>39%</strong><span>rata-rata</span></div></div>
+              <div class="score-copy"><span>PROGRES KESELURUHAN</span><strong>Terukur, bukan<br>sekadar perkiraan.</strong><p>7 dari 16 item selesai</p></div>
+            </div>
+            <div class="preview-projects">
+              <div class="preview-row"><span class="preview-icon coral">KT</span><div><strong>Kalkulator Premi</strong><i><b style="width:60%"></b></i></div><em>60%</em></div>
+              <div class="preview-row"><span class="preview-icon teal">BR</span><div><strong>Buku Otomatisasi</strong><i><b style="width:50%"></b></i></div><em>50%</em></div>
+              <div class="preview-row"><span class="preview-icon blue">WR</span><div><strong>Web Asuransi Ritel</strong><i><b style="width:44%"></b></i></div><em>44%</em></div>
+              <div class="preview-row"><span class="preview-icon sand">MO</span><div><strong>Monitoring Operasional</strong><i><b style="width:0%"></b></i></div><em>0%</em></div>
+            </div>
+          </div>
+        </div>
+        <div class="floating-card float-target"><span>✓</span><div><strong>7 item selesai</strong><small>Target bergerak maju</small></div></div>
+        <div class="floating-card float-alert"><span>!</span><div><strong>2 perlu perhatian</strong><small>Terlihat lebih awal</small></div></div>
+      </div>
+    </div>
+
+    <div class="landing-strip" aria-label="Ringkasan nilai dashboard">
+      <span>PROGRES TRANSPARAN</span><i></i><span>TARGET 7 HARI</span><i></i><span>STATUS REAL-TIME</span><i></i><span>MENUJU FINAL</span>
+    </div>
+
+    <section class="benefit-section" id="manfaat">
+      <div class="section-intro">
+        <span>FOKUS PADA YANG PENTING</span>
+        <h2>Satu ruang kerja untuk melihat gambar besarnya.</h2>
+        <p>Informasi mingguan diringkas menjadi keputusan yang jelas—apa yang selesai, sedang berjalan, dan perlu ditindaklanjuti.</p>
+      </div>
+      <div class="benefit-grid">
+        <article class="benefit-card benefit-featured">
+          <span class="benefit-number">01</span>
+          <div class="benefit-icon">%</div>
+          <h3>Progres otomatis</h3>
+          <p>Setiap perubahan status item langsung memperbarui persentase workstream.</p>
+          <div class="mini-progress-demo"><span><i></i></span><strong>60%</strong></div>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-number">02</span>
+          <div class="benefit-icon">7</div>
+          <h3>Prioritas tujuh hari</h3>
+          <p>Fokus tim tetap terjaga lewat daftar target terdekat dan tenggat yang terlihat.</p>
+          <div class="mini-calendar"><i>S</i><i>S</i><i>R</i><i>K</i><i>J</i><i class="active">S</i><i>M</i></div>
+        </article>
+        <article class="benefit-card">
+          <span class="benefit-number">03</span>
+          <div class="benefit-icon">!</div>
+          <h3>Hambatan lebih dini</h3>
+          <p>Item yang terhambat tampil menonjol agar tindak lanjut tidak tertunda.</p>
+          <div class="mini-alert"><span></span><div><strong>Perlu perhatian</strong><small>2 item terhambat</small></div></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="workflow-section" id="alur">
+      <div class="workflow-heading"><span>ALUR SEDERHANA</span><h2>Dari input sampai final,<br>semuanya terbaca.</h2></div>
+      <div class="workflow-track">
+        <article><span>01</span><div class="workflow-dot"></div><h3>Tambah workstream</h3><p>Masukkan nama proyek, PIC, kategori, dan target selesai.</p></article>
+        <article><span>02</span><div class="workflow-dot"></div><h3>Perbarui status</h3><p>Tandai item sebagai belum mulai, dikerjakan, terhambat, atau selesai.</p></article>
+        <article><span>03</span><div class="workflow-dot"></div><h3>Pantau progres</h3><p>Persentase, distribusi status, dan target mingguan dihitung otomatis.</p></article>
+        <article><span>04</span><div class="workflow-dot"></div><h3>Capai final</h3><p>Pastikan seluruh item tuntas hingga indikator mencapai 100%.</p></article>
+      </div>
+    </section>
+
+    <section class="landing-cta">
+      <div><span>SIAP MELIHAT PROGRESNYA?</span><h2>Buka dashboard dan lanjutkan pekerjaan minggu ini.</h2></div>
+      <a href="#dashboard-app">Masuk ke dashboard <span>→</span></a>
+    </section>
+  </section>
+
+  <div class="app-shell" id="dashboard-app">
     <aside class="sidebar">
       <a class="brand" href="#" aria-label="Alur dashboard">
         <span class="brand-mark"><span></span><span></span><span></span></span>
