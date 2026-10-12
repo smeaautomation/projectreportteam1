@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f5f7f9" />
+  <title>Alur — Project Progress Timeline</title>
+  <meta name="description" content="Dashboard timeline proyek untuk memantau progres setiap tahap hingga final." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="Alur dashboard">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span>alur.</span>
+      </a>
+
+      <nav aria-label="Navigasi utama">
+        <p class="nav-label">WORKSPACE</p>
+        <a class="nav-item active" href="#dashboard" data-view="dashboard">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-item" href="#projects" data-view="projects">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6l2 2h8v12H4V5Z"/></svg>
+          <span>Semua Proyek</span><span class="count" id="navProjectCount">0</span>
+        </a>
+        <a class="nav-item" href="#timeline" data-view="timeline">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v3m12-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>
+          <span>Timeline</span>
+        </a>
+
+        <p class="nav-label">PANTAU</p>
+        <button class="nav-item filter-nav" data-filter="Berjalan">
+          <span class="nav-dot blue"></span><span>Sedang Berjalan</span>
+        </button>
+        <button class="nav-item filter-nav" data-filter="Berisiko">
+          <span class="nav-dot amber"></span><span>Perlu Perhatian</span>
+        </button>
+        <button class="nav-item filter-nav" data-filter="Selesai">
+          <span class="nav-dot green"></span><span>Selesai</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="nav-item" id="helpBtn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.1 2.17c-.9.38-.9 1.03-.9 1.83m0 3h.01"/></svg>
+          <span>Bantuan</span>
+        </button>
+        <div class="user-card">
+          <div class="avatar">AR</div>
+          <div><strong>Admin Proyek</strong><span>Project Manager</span></div>
+          <button class="icon-btn" aria-label="Menu akun">•••</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu icon-btn" id="menuBtn" aria-label="Buka menu">
+          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+        <div class="page-heading">
+          <p>PROJECT OVERVIEW</p>
+          <h1>Selamat datang kembali.</h1>
+        </div>
+        <div class="top-actions">
+          <label class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+            <input id="searchInput" type="search" placeholder="Cari proyek..." aria-label="Cari proyek" />
+            <kbd>⌘ K</kbd>
+          </label>
+          <button class="primary-btn" id="addProjectBtn"><span>＋</span> Proyek Baru</button>
+        </div>
+      </header>
+
+      <section class="content-wrap">
+        <div class="date-row">
+          <p id="currentDate"></p>
+          <button class="text-btn" id="resetDemoBtn" title="Mengembalikan data contoh">Reset data contoh</button>
+        </div>
+
+        <section class="stats-grid" aria-label="Ringkasan proyek">
+          <article class="stat-card coral-card">
+            <div class="stat-icon coral"><svg viewBox="0 0 24 24"><path d="M4 5h6l2 2h8v12H4V5Z"/></svg></div>
+            <div><p>Total Proyek</p><h2 id="totalProjects">0</h2><span id="activeSummary">0 proyek aktif</span></div>
+            <div class="mini-orbit coral-orbit"><i></i><i></i><i></i></div>
+          </article>
+          <article class="stat-card blue-card">
+            <div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M5 12h3l2-6 4 12 2-6h3"/></svg></div>
+            <div><p>Rata-rata Progres</p><h2 id="avgProgress">0%</h2><span>Seluruh portofolio</span></div>
+            <div class="sparkline"><svg viewBox="0 0 100 45" preserveAspectRatio="none"><path d="M2 36C14 34 18 20 30 25S46 36 58 17s20 4 40-13"/><path class="fill" d="M2 36C14 34 18 20 30 25S46 36 58 17s20 4 40-13V45H2Z"/></svg></div>
+          </article>
+          <article class="stat-card green-card">
+            <div class="stat-icon green"><svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-9"/></svg></div>
+            <div><p>Selesai</p><h2 id="completedProjects">0</h2><span id="completedSummary">Belum ada proyek final</span></div>
+            <div class="ring-mini" id="completionRing"><span id="completionRate">0%</span></div>
+          </article>
+        </section>
+
+        <section class="section-card portfolio-card">
+          <div class="section-header">
+            <div><h2>Progress proyek</h2><p>Pantau setiap milestone hingga tahap final</p></div>
+            <div class="filter-group" role="group" aria-label="Filter proyek">
+              <button class="filter-chip active" data-filter="Semua">Semua</button>
+              <button class="filter-chip" data-filter="Berjalan">Berjalan</button>
+              <button class="filter-chip" data-filter="Berisiko">Berisiko</button>
+              <button class="filter-chip" data-filter="Selesai">Selesai</button>
+            </div>
+          </div>
+          <div class="table-head">
+            <span>PROYEK</span><span>PROGRESS</span><span>TIMELINE TAHAPAN</span><span>DEADLINE</span><span></span>
+          </div>
+          <div id="projectList" class="project-list"></div>
+          <div id="emptyState" class="empty-state" hidden>
+            <div>⌕</div><h3>Tidak ada proyek ditemukan</h3><p>Coba ubah kata pencarian atau filter Anda.</p>
+          </div>
+        </section>
+
+        <section class="bottom-grid">
+          <article class="section-card deadline-card">
+            <div class="section-header compact"><div><h2>Deadline terdekat</h2><p>Fokus untuk 30 hari ke depan</p></div><button class="icon-btn">→</button></div>
+            <div id="deadlineList" class="deadline-list"></div>
+          </article>
+          <article class="section-card distribution-card">
+            <div class="section-header compact"><div><h2>Distribusi progres</h2><p>Posisi proyek saat ini</p></div></div>
+            <div class="distribution-content">
+              <div class="donut" id="distributionDonut"><div><strong id="donutTotal">0</strong><span>proyek</span></div></div>
+              <div class="legend" id="distributionLegend"></div>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="projectModal" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <div><span class="eyebrow">PROYEK BARU</span><h2 id="modalTitle">Mulai perjalanan baru</h2><p>Isi informasi dasar. Timeline tahap dibuat otomatis.</p></div>
+        <button class="close-btn" data-close-modal aria-label="Tutup">×</button>
+      </div>
+      <form id="projectForm">
+        <input type="hidden" id="projectId" />
+        <div class="form-grid">
+          <label class="full"><span>Nama proyek</span><input id="projectName" required maxlength="60" placeholder="Contoh: Redesign Website 2026" /></label>
+          <label><span>Penanggung jawab</span><input id="projectOwner" required maxlength="30" placeholder="Nama PIC" /></label>
+          <label><span>Kategori</span><select id="projectCategory"><option>Website</option><option>Mobile App</option><option>Marketing</option><option>Internal</option><option>Lainnya</option></select></label>
+          <label><span>Tanggal mulai</span><input id="projectStart" type="date" required /></label>
+          <label><span>Target selesai</span><input id="projectEnd" type="date" required /></label>
+          <label class="full"><span>Prioritas</span><div class="segmented"><input type="radio" name="priority" value="Normal" id="pNormal" checked><label for="pNormal">Normal</label><input type="radio" name="priority" value="Tinggi" id="pHigh"><label for="pHigh">Tinggi</label></div></label>
+        </div>
+        <div class="auto-timeline">
+          <div><strong>Timeline otomatis</strong><span>5 tahap • total bobot 100%</span></div>
+          <div class="auto-steps"><i>10%</i><i>20%</i><i>35%</i><i>20%</i><i>15%</i></div>
+        </div>
+        <div class="modal-actions"><button type="button" class="secondary-btn" data-close-modal>Batal</button><button type="submit" class="primary-btn">Buat Proyek <span>→</span></button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="drawer-backdrop" id="detailDrawer" hidden>
+    <aside class="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="drawer-head"><div><span class="eyebrow">DETAIL PROYEK</span><h2 id="drawerTitle"></h2></div><button class="close-btn" id="closeDrawer" aria-label="Tutup">×</button></div>
+      <div id="drawerContent"></div>
+    </aside>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"><span>✓</span><p></p></div>
+  <script src="app.js"></script>
+</body>
+</html>
