@@ -204,7 +204,7 @@ function syncView(){
   window.scrollTo(0,0);
 }
 
-document.getElementById("currentDate").textContent="Laporan 29 September 2026  •  Team 1  •  Dita & Restu";
+document.getElementById("currentDate").textContent="Laporan 13 Oktober 2026  •  Team 1  •  Dita & Restu";
 document.getElementById("targetSubtitle").textContent=`Semua pekerjaan yang belum selesai per ${new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"long",year:"numeric"}).format(new Date())}`;
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.querySelectorAll("[data-close-modal]").forEach(button=>button.addEventListener("click",closeModal));
