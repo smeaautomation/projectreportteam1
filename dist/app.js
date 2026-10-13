@@ -1,7 +1,8 @@
 const REPORT_DATE = "2026-09-29";
 const REPORT_TARGET_DATE = "2026-10-06";
 const STATUS_VALUE = { todo: 0, active: .5, done: 1 };
-const STORAGE_KEY = "team1-weekly-progress-v2";
+const STORAGE_KEY = "team1-weekly-progress-v3";
+const LEGACY_STORAGE_KEY = "team1-weekly-progress-v2";
 let currentFilter = "Semua";
 let searchQuery = "";
 
@@ -9,48 +10,130 @@ const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate(
 const task = (key, name, short, status, context) => ({ key, name, short, status, context });
 const weeklyProjects = [
   {
-    id: "team1-calculator", name: "Kalkulator Premi Jasindo Travel", owner: "Dita & Restu", category: "Digital Product",
-    start: "2026-09-22", end: REPORT_TARGET_DATE, priority: "Tinggi", source: "Weekly Report Team 1",
+    id: "project-1791880366318", name: "Dokumentasi TC", owner: "Dita", category: "Web Platform",
+    start: "2026-10-13", end: "2026-10-18", priority: "Tinggi", source: "Input dashboard",
+    tasks: [
+      task("planning", "Travel Safe", "794", "active", "Project baru"),
+      task("design", "Life Guard", "705", "todo", "Project baru"),
+      task("development", "Edu Protect", "705 AS", "todo", "Project baru"),
+      task("testing", "Trip Guard", "728", "todo", "Project baru"),
+      task("final", "Kebakaran", "201", "todo", "Project baru"),
+      task("activity-1791880695045", "Property All Risks", "297", "todo", "Project baru"),
+      task("activity-1791880727995", "Motor TLO", "605", "todo", "Project baru"),
+      task("activity-1791880738585", "Mobil TLO", "601", "todo", "Project baru")
+    ]
+  },
+  {
+    id: "workstream-1791872633362", name: "Panduan Pembelian Polis melalui Jalur Internal", owner: "Dita", category: "Web Platform",
+    start: "2026-10-02", end: "2026-11-06", priority: "Normal", source: "Input dashboard",
+    tasks: [
+      task("planning", "Perencanaan", "Plan", "done", "Workstream baru"),
+      task("design", "Draft #1", "Draft", "done", "Workstream baru"),
+      task("development", "Review #1", "Review", "done", "Workstream baru"),
+      task("testing", "Draft #2", "Draft", "done", "Workstream baru"),
+      task("final", "Review #2", "Review", "todo", "Workstream baru"),
+      task("activity-1791872724637", "Finalisasi", "Finalisasi", "todo", "Target 7 hari"),
+      task("activity-1791872787848", "Submit ke MRK", "Submit", "todo", "Target 7 hari"),
+      task("activity-1791872814823", "Review oleh MRK", "Review", "todo", "Target 7 hari")
+    ]
+  },
+  {
+    id: "workstream-1791872133823", name: "UAT #6 Web Asuransi Ritel", owner: "Restu", category: "Web Platform",
+    start: "2026-10-05", end: "2026-10-12", priority: "Tinggi", source: "Input dashboard",
+    tasks: [
+      task("planning", "Internal", "Internal", "done", "Workstream baru"),
+      task("design", "Eksternal", "Eksternal", "done", "Workstream baru"),
+      task("development", "Submit ke TIN", "Submit", "done", "Workstream baru")
+    ]
+  },
+  {
+    id: "workstream-1791872049323", name: "UAT #5 Web Asuransi Ritel", owner: "Restu", category: "Web Platform",
+    start: "2026-09-27", end: "2026-10-05", priority: "Normal", source: "Input dashboard",
+    tasks: [
+      task("planning", "Internal", "Internal", "done", "Workstream baru"),
+      task("design", "Eksternal", "Eksternal", "done", "Workstream baru"),
+      task("activity-1791872229703", "Submit ke TIN", "Submit", "done", "Target 7 hari")
+    ]
+  },
+  {
+    id: "workstream-1791867721702", name: "Perubahan Tarif Premi Travel Safe ESPPA", owner: "Dita", category: "Web Platform",
+    start: "2026-09-08", end: "2026-10-23", priority: "Normal", source: "Input dashboard",
+    tasks: [
+      task("planning", "Draft #1", "Draft", "done", "Workstream baru"),
+      task("design", "Diskusi dengan Underwriter #1", "Diskusi", "done", "Workstream baru"),
+      task("development", "Draft #2", "Draft", "done", "Workstream baru"),
+      task("testing", "Diskusi dengan Underwriter #2", "Diskusi", "done", "Workstream baru"),
+      task("final", "Perbaikan", "Revisi", "done", "Workstream baru"),
+      task("activity-1791871281289", "Testing", "Testing", "done", "Target 7 hari"),
+      task("activity-1791871298009", "Submit ke TIN", "Submit", "done", "Target 7 hari"),
+      task("activity-1791871332423", "Pengerjaan oleh TIN", "Build", "active", "Target 7 hari"),
+      task("activity-1791871350050", "Live di Web", "Live", "todo", "Target 7 hari")
+    ]
+  },
+  {
+    id: "team1-calculator", name: "Kalkulator Premi Jasindo Travel Insurance", owner: "Restu", category: "Digital Product",
+    start: "2026-09-22", end: "2026-11-03", priority: "Tinggi", source: "Weekly Report Team 1",
     tasks: [
       task("url", "Rekomendasi URL untuk web app kalkulator premi", "URL", "done", "Target minggu lalu"),
       task("uiux", "Referensi UI/UX lain yang lebih modern", "UI/UX", "done", "Target minggu lalu"),
-      task("excel", "Excel kalkulator premi untuk penyesuaian tarif Travel Safe", "Excel", "done", "Tambahan di luar target"),
-      task("landing", "Usulan landing page kalkulator premi", "Landing", "todo", "Target 7 hari"),
-      task("deploy", "Deployment ke domain asuransijasindo.co.id", "Deploy", "active", "Tidak tercapai • Target 7 hari")
+      task("excel", "Excel kalkulator premi untuk penyesuaian tarif Travel Safe", "Testing", "done", "Tambahan di luar target"),
+      task("landing", "Usulan landing page kalkulator premi", "Revisi", "done", "Target 7 hari"),
+      task("deploy", "Finalisasi dan Diskusi dengan Underwriter", "Final", "active", "Tidak tercapai • Target 7 hari")
     ]
   },
   {
-    id: "team1-book", name: "Buku Otomatisasi Underwriting", owner: "Dita", category: "Dokumentasi",
-    start: "2026-09-22", end: REPORT_TARGET_DATE, priority: "Normal", source: "Weekly Report Team 1",
+    id: "team1-book", name: "Buku Otomatisasi Underwriting Fase 3", owner: "Dita", category: "Operasional",
+    start: "2026-09-22", end: "2026-11-06", priority: "Normal", source: "Weekly Report Team 1",
     tasks: [
       task("discussion", "Diskusi dengan GH", "Diskusi", "done", "Target minggu lalu • GH mereviu mandiri"),
-      task("revision", "Perbaikan sebagai hasil diskusi dengan GH", "Perbaikan", "todo", "Target 7 hari")
+      task("revision", "Perbaikan sebagai hasil diskusi dengan GH", "Perbaikan", "done", "Target 7 hari"),
+      task("activity-1791870819122", "Review Sekper", "Review", "done", "Target 7 hari"),
+      task("activity-1791870866921", "Diskusi Perbaikan dengan GH", "Diskusi", "todo", "Target 7 hari"),
+      task("activity-1791871648689", "Perbaikan", "Revisi", "todo", "Target 7 hari")
     ]
   },
   {
-    id: "team1-retail-web", name: "Web Asuransi Ritel", owner: "Restu", category: "Web Platform",
-    start: "2026-09-22", end: REPORT_TARGET_DATE, priority: "Tinggi", source: "Weekly Report Team 1",
+    id: "team1-retail-web", name: "Web Flow Rekanan", owner: "Dita", category: "Web Platform",
+    start: "2026-09-22", end: "2026-10-23", priority: "Tinggi", source: "Weekly Report Team 1",
     tasks: [
-      task("socialization", "Sosialisasi Web #1", "Sosial", "done", "Target minggu lalu"),
-      task("uat", "UAT terakhir semua produk - flow Internal dan Eksternal", "UAT", "done", "Target minggu lalu"),
-      task("brd", "Draft #2 BRD Flow Internal, Eksternal, dan Rekanan", "BRD", "done", "Target minggu lalu"),
-      task("tripguard", "Mapping field untuk flow Rekanan produk Trip Guard", "Mapping", "active", "Sedang dikerjakan"),
-      task("travelsafe", "Pembaruan perhitungan Travel Safe", "Travel", "todo", "Target 7 hari"),
-      task("feedback", "Perbaikan web berdasarkan feedback saat sosialisasi", "Feedback", "active", "Tidak tercapai • Target 7 hari"),
-      task("testcase", "Dokumentasi test case semua produk", "TC", "todo", "Target 7 hari"),
-      task("cob728", "Finalisasi dokumentasi mapping dummy web rekanan COB 728", "COB 728", "todo", "Target 7 hari")
+      task("tripguard", "Planning", "Plan", "done", "Sedang dikerjakan"),
+      task("travelsafe", "Inisiasi Pengembangan", "Build", "done", "Target 7 hari"),
+      task("feedback", "Diskusi TC dengan TIN", "Diskusi", "done", "Target 7 hari"),
+      task("testcase", "Pengembangan Lanjutan", "Build", "active", "Target 7 hari"),
+      task("cob728", "Mapping Dummy Web Rekanan COB 728", "Mapping", "todo", "Target 7 hari")
     ]
   },
   {
     id: "team1-operations", name: "Monitoring Operasional", owner: "Dita & Restu", category: "Operasional",
-    start: REPORT_DATE, end: REPORT_TARGET_DATE, priority: "Normal", source: "Weekly Report Team 1",
-    tasks: [task("asana", "Merapikan tasklist di Asana", "Asana", "todo", "Target 7 hari")]
+    start: "2026-09-29", end: "2026-10-18", priority: "Normal", source: "Weekly Report Team 1",
+    tasks: [
+      task("asana", "Merapikan tasklist di Asana - September Week 1", "Recape Sep 1", "done", "Target 7 hari"),
+      task("activity-1791870429038", "Merapikan tasklist di Asana - September Week 2", "Recape Sep 2", "done", "Target 7 hari"),
+      task("activity-1791870446709", "Merapikan tasklist di Asana - September Week 3", "Recape Sep 3", "active", "Target 7 hari"),
+      task("activity-1791870455124", "Merapikan tasklist di Asana - September Week 4", "Recape Sep 4", "todo", "Target 7 hari"),
+      task("activity-1791870477320", "Merapikan tasklist di Asana - Oktober Week 1", "Recape Okt 1", "todo", "Target 7 hari"),
+      task("activity-1791870490636", "Merapikan tasklist di Asana - Oktober Week 2", "Recape Okt 2", "todo", "Target 7 hari"),
+      task("activity-1791870731159", "Export Token Asana", "Migrasi", "todo", "Target 7 hari")
+    ]
   }
 ];
 
 let projects = loadProjects();
 function normalizeProjects(items){ return items.map(project=>({...project,tasks:(project.tasks||[]).map(item=>({...item,status:item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo"}))})); }
-function loadProjects(){ try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); return normalizeProjects(Array.isArray(saved) ? saved : structuredClone(weeklyProjects)); } catch { return normalizeProjects(structuredClone(weeklyProjects)); } }
+function isResetSnapshot(items){ const resetIds=new Set(["team1-calculator","team1-book","team1-retail-web","team1-operations"]); return items.length===resetIds.size&&items.every(item=>resetIds.has(item.id)); }
+function loadProjects(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if(Array.isArray(saved)) return normalizeProjects(saved);
+    const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
+    if(Array.isArray(legacy) && !isResetSnapshot(legacy)){
+      const migrated=normalizeProjects(legacy); localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated)); return migrated;
+    }
+    const restored=normalizeProjects(structuredClone(weeklyProjects)); localStorage.setItem(STORAGE_KEY,JSON.stringify(restored)); return restored;
+  } catch {
+    const restored=normalizeProjects(structuredClone(weeklyProjects)); localStorage.setItem(STORAGE_KEY,JSON.stringify(restored)); return restored;
+  }
+}
 function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); }
 function allTasks(){ return projects.flatMap(project => project.tasks || []); }
 function progressOf(project){ const tasks = project.tasks || []; return tasks.length ? Math.round(tasks.reduce((total, item) => total + (STATUS_VALUE[item.status] || 0), 0) / tasks.length * 100) : 0; }
