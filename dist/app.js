@@ -73,7 +73,7 @@ function render(){
   const completionRate = tasks.length ? Math.round(done/tasks.length*100) : 0;
 
   document.getElementById("totalProjects").textContent = projects.length;
-  document.getElementById("activeSummary").textContent = `${active} workstream aktif`;
+  document.getElementById("activeSummary").textContent = `${active} project aktif`;
   document.getElementById("avgProgress").textContent = `${avg}%`;
   document.getElementById("completedProjects").textContent = done;
   document.getElementById("completedSummary").textContent = `${done} dari ${tasks.length} item pekerjaan`;
@@ -125,19 +125,19 @@ function renderDistribution(){
 
 function createDefaultTasks(){
   return [
-    task("planning","Perencanaan dan ruang lingkup","Plan","todo","Workstream baru"),
-    task("design","Desain solusi","Desain","todo","Workstream baru"),
-    task("development","Implementasi","Build","todo","Workstream baru"),
-    task("testing","Pengujian","Test","todo","Workstream baru"),
-    task("final","Finalisasi","Final","todo","Workstream baru")
+    task("planning","Perencanaan dan ruang lingkup","Plan","todo","Project baru"),
+    task("design","Desain solusi","Desain","todo","Project baru"),
+    task("development","Implementasi","Build","todo","Project baru"),
+    task("testing","Pengujian","Test","todo","Project baru"),
+    task("final","Finalisasi","Final","todo","Project baru")
   ];
 }
 
 function openModal(project=null){
   const form=document.getElementById("projectForm"); form.reset();
   document.getElementById("projectId").value=project?.id || "";
-  document.getElementById("modalTitle").textContent=project ? "Edit informasi workstream" : "Tambahkan pekerjaan";
-  document.querySelector('.modal-actions .primary-btn').innerHTML=project ? 'Simpan Perubahan <span>→</span>' : 'Buat Workstream <span>→</span>';
+  document.getElementById("modalTitle").textContent=project ? "Edit informasi project" : "Tambahkan pekerjaan";
+  document.querySelector('.modal-actions .primary-btn').innerHTML=project ? 'Simpan Perubahan <span>→</span>' : 'Buat Project <span>→</span>';
   document.getElementById("projectStart").value=project?.start || new Date().toISOString().slice(0,10);
   document.getElementById("projectEnd").value=project?.end || addDays(new Date(),7);
   if(project){
@@ -177,23 +177,23 @@ function openDrawer(id){
     <div class="stage-heading"><div><h3>Aktivitas</h3><span>Edit status atau detail setiap aktivitas</span></div><button class="task-add-btn" data-add-task="${project.id}">＋ Tambah Aktivitas</button></div>
     <div class="stage-list">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}"><div class="stage-number">${item.status==='done'?'✓':index+1}</div><div><h4>${escapeHTML(item.name)}</h4><p><span class="status-context">${escapeHTML(item.context)}</span> • Kontribusi ${Math.round(100/project.tasks.length)}%</p></div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="done" ${item.status==='done'?'selected':''}>Done</option><option value="active" ${item.status==='active'?'selected':''}>On going</option><option value="todo" ${item.status==='todo'?'selected':''}>Not Started</option></select><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
     ${(project.tasks||[]).length?"":'<div class="empty-task-state">Belum ada aktivitas. Klik “Tambah Aktivitas” untuk memulai.</div>'}
-    <div class="danger-zone"><button class="secondary-btn" data-edit-project="${project.id}">Edit informasi</button><button class="danger-btn" data-delete-project="${project.id}">Hapus workstream</button></div>`;
+    <div class="danger-zone"><button class="secondary-btn" data-edit-project="${project.id}">Edit informasi</button><button class="danger-btn" data-delete-project="${project.id}">Hapus project</button></div>`;
   document.getElementById("detailDrawer").hidden=false;
 }
 function closeDrawer(){document.getElementById("detailDrawer").hidden=true;}
 
 function syncView(){
-  const isWorkstream=location.hash==="#workstream";
+  const isWorkstream=location.hash==="#project";
   document.body.classList.toggle("workstream-view",isWorkstream);
   document.body.classList.toggle("dashboard-view",!isWorkstream);
   document.getElementById("pageEyebrow").textContent="TEAM 1";
   document.getElementById("pageTitle").textContent="SME UNDERWRITING & ADMINISTRATION";
   document.getElementById("pageSubtitle").textContent="WEEKLY REPORT";
-  document.getElementById("workstreamSectionTitle").textContent=isWorkstream?"Draft Workstream":"Progress Workstream";
-  document.getElementById("workstreamSectionDescription").textContent=isWorkstream?"Daftar rancangan workstream yang dapat ditinjau dan diperbarui":"Ringkasan progres seluruh pekerjaan";
+  document.getElementById("workstreamSectionTitle").textContent=isWorkstream?"Draft Project":"Progress Project";
+  document.getElementById("workstreamSectionDescription").textContent=isWorkstream?"Daftar rancangan project yang dapat ditinjau dan diperbarui":"Ringkasan progres seluruh pekerjaan";
   const fab=document.getElementById("workstreamFab");
-  const label=isWorkstream?"Kembali ke dashboard":"Buka draft workstream";
-  fab.href=isWorkstream?"#dashboard-app":"#workstream";
+  const label=isWorkstream?"Kembali ke dashboard":"Buka draft project";
+  fab.href=isWorkstream?"#dashboard-app":"#project";
   fab.setAttribute("aria-label",label);
   fab.title=label;
   document.getElementById("workstreamFabLabel").textContent=label;
@@ -224,9 +224,9 @@ document.getElementById("projectForm").addEventListener("submit",event=>{
   if(new Date(end)<new Date(start)){showToast("Target selesai harus setelah tanggal mulai.");return;}
   const editId=document.getElementById("projectId").value;
   const old=projects.find(project=>project.id===editId);
-  const project={id:editId || `workstream-${Date.now()}`,name:document.getElementById("projectName").value.trim(),owner:document.getElementById("projectOwner").value.trim(),category:document.getElementById("projectCategory").value,start,end,priority:document.querySelector('input[name="priority"]:checked').value,source:old?.source || "Input dashboard",tasks:old?.tasks || createDefaultTasks()};
+  const project={id:editId || `project-${Date.now()}`,name:document.getElementById("projectName").value.trim(),owner:document.getElementById("projectOwner").value.trim(),category:document.getElementById("projectCategory").value,start,end,priority:document.querySelector('input[name="priority"]:checked').value,source:old?.source || "Input dashboard",tasks:old?.tasks || createDefaultTasks()};
   if(old) projects=projects.map(item=>item.id===editId?project:item); else projects.unshift(project);
-  saveProjects();closeModal();render();showToast(old ? "Informasi workstream diperbarui." : `Workstream “${project.name}” berhasil dibuat.`);setTimeout(()=>openDrawer(project.id),350);
+  saveProjects();closeModal();render();showToast(old ? "Informasi project diperbarui." : `Project “${project.name}” berhasil dibuat.`);setTimeout(()=>openDrawer(project.id),350);
 });
 
 document.getElementById("taskForm").addEventListener("submit",event=>{
@@ -249,11 +249,11 @@ document.getElementById("deleteTaskBtn").addEventListener("click",()=>{
 });
 
 document.getElementById("projectList").addEventListener("click",event=>{const button=event.target.closest("[data-open-project]");if(button)openDrawer(button.dataset.openProject);});
-document.getElementById("drawerContent").addEventListener("change",event=>{if(!event.target.matches(".stage-select"))return;const project=projects.find(item=>item.id===event.target.dataset.project);project.tasks[Number(event.target.dataset.taskIndex)].status=event.target.value;saveProjects();render();openDrawer(project.id);showToast("Progress workstream diperbarui.");});
+document.getElementById("drawerContent").addEventListener("change",event=>{if(!event.target.matches(".stage-select"))return;const project=projects.find(item=>item.id===event.target.dataset.project);project.tasks[Number(event.target.dataset.taskIndex)].status=event.target.value;saveProjects();render();openDrawer(project.id);showToast("Progress project diperbarui.");});
 document.getElementById("drawerContent").addEventListener("click",event=>{
   const addTask=event.target.closest("[data-add-task]"); if(addTask){openTaskModal(addTask.dataset.addTask);return;}
   const editTask=event.target.closest("[data-edit-task]"); if(editTask){openTaskModal(editTask.dataset.project,Number(editTask.dataset.editTask));return;}
-  const remove=event.target.closest("[data-delete-project]"); if(remove){const project=projects.find(item=>item.id===remove.dataset.deleteProject);if(confirm(`Hapus workstream “${project.name}”?`)){projects=projects.filter(item=>item.id!==project.id);saveProjects();closeDrawer();render();showToast("Workstream dihapus.");}}
+  const remove=event.target.closest("[data-delete-project]"); if(remove){const project=projects.find(item=>item.id===remove.dataset.deleteProject);if(confirm(`Hapus project “${project.name}”?`)){projects=projects.filter(item=>item.id!==project.id);saveProjects();closeDrawer();render();showToast("Project dihapus.");}}
   const edit=event.target.closest("[data-edit-project]"); if(edit){const project=projects.find(item=>item.id===edit.dataset.editProject);closeDrawer();openModal(project);}
 });
 document.getElementById("resetDemoBtn").addEventListener("click",()=>{projects=structuredClone(weeklyProjects);saveProjects();currentFilter="Semua";searchQuery="";document.getElementById("searchInput").value="";document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter==="Semua"));render();showToast("Data Weekly Report Team 1 dimuat ulang.");});

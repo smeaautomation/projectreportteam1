@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#002e5b" />
   <title>Team 1 — Project Progress Timeline</title>
-  <meta name="description" content="Pantau progres setiap workstream Team 1 dari rencana hingga final dalam satu dashboard yang jelas." />
+  <meta name="description" content="Pantau progres setiap project Team 1 dari rencana hingga final dalam satu dashboard yang jelas." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -29,13 +29,13 @@
       <div class="hero-copy">
         <div class="hero-kicker"><span></span> WEEKLY DELIVERY SYSTEM • TEAM 1</div>
         <h1>Setiap pekerjaan punya arah menuju <em>final.</em></h1>
-        <p>Pantau progres workstream, lihat hambatan lebih cepat, dan ubah setiap checklist menjadi persentase yang mudah dipahami.</p>
+        <p>Pantau progres project, lihat hambatan lebih cepat, dan ubah setiap checklist menjadi persentase yang mudah dipahami.</p>
         <div class="hero-actions">
           <a class="hero-primary" href="#dashboard-app">Lihat dashboard <span>→</span></a>
           <a class="hero-secondary" href="#alur"><span class="play-icon">▶</span> Lihat cara kerja</a>
         </div>
         <div class="hero-meta">
-          <div><strong>4</strong><span>workstream aktif</span></div>
+          <div><strong>4</strong><span>project aktif</span></div>
           <div><strong>16</strong><span>item pekerjaan</span></div>
           <div><strong>29 Sep</strong><span>snapshot laporan</span></div>
         </div>
@@ -86,7 +86,7 @@
           <span class="benefit-number">01</span>
           <div class="benefit-icon">%</div>
           <h3>Progres otomatis</h3>
-          <p>Setiap perubahan status item langsung memperbarui persentase workstream.</p>
+          <p>Setiap perubahan status item langsung memperbarui persentase project.</p>
           <div class="mini-progress-demo"><span><i></i></span><strong>60%</strong></div>
         </article>
         <article class="benefit-card">
@@ -109,7 +109,7 @@
     <section class="workflow-section" id="alur">
       <div class="workflow-heading"><span>ALUR SEDERHANA</span><h2>Dari input sampai final,<br>semuanya terbaca.</h2></div>
       <div class="workflow-track">
-        <article><span>01</span><div class="workflow-dot"></div><h3>Tambah workstream</h3><p>Masukkan nama proyek, PIC, kategori, dan target selesai.</p></article>
+        <article><span>01</span><div class="workflow-dot"></div><h3>Tambah project</h3><p>Masukkan nama project, PIC, kategori, dan target selesai.</p></article>
         <article><span>02</span><div class="workflow-dot"></div><h3>Perbarui status</h3><p>Tandai item sebagai Not Started, On going, atau Done.</p></article>
         <article><span>03</span><div class="workflow-dot"></div><h3>Pantau progres</h3><p>Persentase, distribusi status, dan target mingguan dihitung otomatis.</p></article>
         <article><span>04</span><div class="workflow-dot"></div><h3>Capai final</h3><p>Pastikan seluruh item tuntas hingga indikator mencapai 100%.</p></article>
@@ -133,10 +133,10 @@
         <div class="top-actions">
           <label class="search-box">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
-            <input id="searchInput" type="search" placeholder="Cari workstream..." aria-label="Cari workstream" />
+            <input id="searchInput" type="search" placeholder="Cari project..." aria-label="Cari project" />
             <kbd>⌘ K</kbd>
           </label>
-          <button class="primary-btn" id="addProjectBtn"><span>＋</span> Workstream Baru</button>
+          <button class="primary-btn" id="addProjectBtn"><span>＋</span> Project Baru</button>
         </div>
       </header>
 
@@ -149,12 +149,12 @@
         <section class="stats-grid" aria-label="Ringkasan proyek">
           <article class="stat-card coral-card">
             <div class="stat-icon coral"><svg viewBox="0 0 24 24"><path d="M4 5h6l2 2h8v12H4V5Z"/></svg></div>
-            <div><p>Total Workstream</p><h2 id="totalProjects">0</h2><span id="activeSummary">Team 1</span></div>
+            <div><p>Total Project</p><h2 id="totalProjects">0</h2><span id="activeSummary">Team 1</span></div>
             <div class="mini-orbit coral-orbit"><i></i><i></i><i></i></div>
           </article>
           <article class="stat-card blue-card">
             <div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M5 12h3l2-6 4 12 2-6h3"/></svg></div>
-            <div><p>Rata-rata Progres</p><h2 id="avgProgress">0%</h2><span>Seluruh workstream</span></div>
+            <div><p>Rata-rata Progres</p><h2 id="avgProgress">0%</h2><span>Seluruh project</span></div>
             <div class="sparkline"><svg viewBox="0 0 100 45" preserveAspectRatio="none"><path d="M2 36C14 34 18 20 30 25S46 36 58 17s20 4 40-13"/><path class="fill" d="M2 36C14 34 18 20 30 25S46 36 58 17s20 4 40-13V45H2Z"/></svg></div>
           </article>
           <article class="stat-card green-card">
@@ -164,9 +164,9 @@
           </article>
         </section>
 
-        <section class="section-card portfolio-card" id="workstream">
+        <section class="section-card portfolio-card" id="project">
           <div class="section-header">
-            <div><h2 id="workstreamSectionTitle">Progress Workstream</h2><p id="workstreamSectionDescription">Ringkasan progres seluruh pekerjaan</p></div>
+            <div><h2 id="workstreamSectionTitle">Progress Project</h2><p id="workstreamSectionDescription">Ringkasan progres seluruh pekerjaan</p></div>
             <div class="filter-group" role="group" aria-label="Filter proyek">
               <button class="filter-chip active" data-filter="Semua">Semua</button>
               <button class="filter-chip" data-filter="Done">Done</button>
@@ -175,11 +175,11 @@
             </div>
           </div>
           <div class="table-head">
-            <span>WORKSTREAM</span><span>PROGRESS</span><span>AKTIVITAS</span><span>TARGET</span><span></span>
+            <span>PROJECT</span><span>PROGRESS</span><span>AKTIVITAS</span><span>TARGET</span><span></span>
           </div>
           <div id="projectList" class="project-list"></div>
           <div id="emptyState" class="empty-state" hidden>
-            <div>⌕</div><h3>Tidak ada workstream ditemukan</h3><p>Coba ubah kata pencarian atau filter Anda.</p>
+            <div>⌕</div><h3>Tidak ada project ditemukan</h3><p>Coba ubah kata pencarian atau filter Anda.</p>
           </div>
         </section>
 
@@ -199,23 +199,23 @@
       </section>
     </main>
 
-    <a class="workstream-fab" id="workstreamFab" href="#workstream" aria-label="Buka draft workstream" title="Draft Workstream">
+    <a class="workstream-fab" id="workstreamFab" href="#project" aria-label="Buka draft project" title="Draft Project">
       <svg class="fab-folder" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l2 2h9v10h-17v-12Z"/></svg>
       <svg class="fab-back" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
-      <span class="sr-only" id="workstreamFabLabel">Buka draft workstream</span>
+      <span class="sr-only" id="workstreamFabLabel">Buka draft project</span>
     </a>
   </div>
 
   <div class="modal-backdrop" id="projectModal" hidden>
     <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
       <div class="modal-head">
-        <div><span class="eyebrow">WORKSTREAM BARU</span><h2 id="modalTitle">Tambahkan pekerjaan</h2><p>Isi informasi dasar. Checklist progres dibuat otomatis.</p></div>
+        <div><span class="eyebrow">PROJECT BARU</span><h2 id="modalTitle">Tambahkan pekerjaan</h2><p>Isi informasi dasar. Checklist progres dibuat otomatis.</p></div>
         <button class="close-btn" data-close-modal aria-label="Tutup">×</button>
       </div>
       <form id="projectForm">
         <input type="hidden" id="projectId" />
         <div class="form-grid">
-          <label class="full"><span>Nama workstream</span><input id="projectName" required maxlength="80" placeholder="Contoh: Produk Asuransi Baru" /></label>
+          <label class="full"><span>Nama project</span><input id="projectName" required maxlength="80" placeholder="Contoh: Produk Asuransi Baru" /></label>
           <label><span>Penanggung jawab</span><input id="projectOwner" required maxlength="30" placeholder="Nama PIC" /></label>
           <label><span>Kategori</span><select id="projectCategory"><option>Digital Product</option><option>Web Platform</option><option>Dokumentasi</option><option>Operasional</option><option>Internal</option><option>Lainnya</option></select></label>
           <label><span>Tanggal mulai</span><input id="projectStart" type="date" required /></label>
@@ -226,7 +226,7 @@
           <div><strong>Checklist otomatis</strong><span>5 tahap • progres total 100%</span></div>
           <div class="auto-steps"><i>10%</i><i>20%</i><i>35%</i><i>20%</i><i>15%</i></div>
         </div>
-        <div class="modal-actions"><button type="button" class="secondary-btn" data-close-modal>Batal</button><button type="submit" class="primary-btn">Buat Workstream <span>→</span></button></div>
+        <div class="modal-actions"><button type="button" class="secondary-btn" data-close-modal>Batal</button><button type="submit" class="primary-btn">Buat Project <span>→</span></button></div>
       </form>
     </section>
   </div>
@@ -234,7 +234,7 @@
   <div class="modal-backdrop task-modal-backdrop" id="taskModal" hidden>
     <section class="modal task-editor-modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
       <div class="modal-head">
-        <div><span class="eyebrow">AKTIVITAS WORKSTREAM</span><h2 id="taskModalTitle">Edit aktivitas</h2><p>Perbarui detail yang tampil pada timeline workstream.</p></div>
+        <div><span class="eyebrow">AKTIVITAS PROJECT</span><h2 id="taskModalTitle">Edit aktivitas</h2><p>Perbarui detail yang tampil pada timeline project.</p></div>
         <button class="close-btn" type="button" data-close-task aria-label="Tutup">×</button>
       </div>
       <form id="taskForm">
@@ -256,7 +256,7 @@
 
   <div class="drawer-backdrop" id="detailDrawer" hidden>
     <aside class="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
-      <div class="drawer-head"><div><span class="eyebrow">DETAIL WORKSTREAM</span><h2 id="drawerTitle"></h2></div><button class="close-btn" id="closeDrawer" aria-label="Tutup">×</button></div>
+      <div class="drawer-head"><div><span class="eyebrow">DETAIL PROJECT</span><h2 id="drawerTitle"></h2></div><button class="close-btn" id="closeDrawer" aria-label="Tutup">×</button></div>
       <div id="drawerContent"></div>
     </aside>
   </div>
