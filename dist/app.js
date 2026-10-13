@@ -204,7 +204,7 @@ function renderDistribution(){
   const p1=counts.Done/total*360, p2=p1+counts["On going"]/total*360;
   const donut=document.getElementById("distributionDonut"); donut.style.setProperty("--p1",`${p1}deg`);donut.style.setProperty("--p2",`${p2}deg`);
   document.getElementById("donutTotal").textContent=tasks.length;
-  const colors={Done:"var(--green)","On going":"var(--blue)","Not Started":"#dfe6e4"};
+  const colors={Done:"var(--green)","On going":"var(--coral)","Not Started":"#dfe6e4"};
   document.getElementById("distributionLegend").innerHTML=Object.entries(counts).map(([label,value])=>`<div class="legend-item"><i style="background:${colors[label]}"></i><span>${label}</span><strong>${value}</strong></div>`).join("");
 }
 

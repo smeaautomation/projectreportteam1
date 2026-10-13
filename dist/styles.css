@@ -76,7 +76,7 @@ body,.app-shell{background:#f3f8fb;color:#002e5b}.sidebar{background:#002e5b}.br
 .deadline-item{grid-template-columns:39px minmax(0,1fr);align-items:start}.deadline-date{margin-top:1px}.deadline-task-list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}.deadline-task-list li{position:relative;padding-left:13px;color:var(--muted);font-size:9px;line-height:1.45}.deadline-task-list li:before{content:"";position:absolute;left:0;top:.5em;width:5px;height:5px;border-radius:50%;background:#43c3f7}
 
 /* Three-status distribution */
-.donut{background:conic-gradient(var(--green) 0 var(--p1),var(--blue) var(--p1) var(--p2),#dfe6e4 var(--p2) 360deg)}
+.donut{background:conic-gradient(var(--green) 0 var(--p1),var(--coral) var(--p1) var(--p2),#dfe6e4 var(--p2) 360deg)}
 
 /* Progress stays visible on the dashboard; editing stays in Workstream */
 .dashboard-view .portfolio-card{display:block;margin-bottom:18px}.dashboard-view .portfolio-card .filter-group,.dashboard-view .project-row .more-btn,.dashboard-view .table-head span:last-child{display:none}.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:minmax(190px,1.25fr) minmax(120px,.65fr) minmax(240px,1.45fr) minmax(110px,.65fr)}.project-main>div{min-width:0}
