@@ -106,7 +106,7 @@ function renderTargets(){
     const titles = tasks.slice(0,2).map(t=>t.name).join(" • ");
     const extra = tasks.length > 2 ? ` +${tasks.length-2} lainnya` : "";
     const needsAttention = tasks.some(t=>t.status==="blocked");
-    return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong><span>TARGET</span></div><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(titles)}${extra}</p></div><span class="${needsAttention?'attention':'in-progress'}">${tasks.length} item</span></div>`;
+    return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong></div><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(titles)}${extra}</p></div><span class="${needsAttention?'attention':'in-progress'}">${tasks.length} item</span></div>`;
   }).join("") : `<div class="empty-state"><p>Semua target tujuh hari sudah selesai.</p></div>`;
 }
 
