@@ -245,6 +245,29 @@
     </section>
   </div>
 
+  <div class="modal-backdrop task-modal-backdrop" id="taskModal" hidden>
+    <section class="modal task-editor-modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+      <div class="modal-head">
+        <div><span class="eyebrow">AKTIVITAS WORKSTREAM</span><h2 id="taskModalTitle">Edit aktivitas</h2><p>Perbarui detail yang tampil pada timeline workstream.</p></div>
+        <button class="close-btn" type="button" data-close-task aria-label="Tutup">×</button>
+      </div>
+      <form id="taskForm">
+        <input type="hidden" id="taskProjectId" />
+        <input type="hidden" id="taskIndex" />
+        <div class="form-grid">
+          <label class="full"><span>Nama aktivitas</span><input id="taskName" required maxlength="100" placeholder="Contoh: Finalisasi desain halaman" /></label>
+          <label><span>Label timeline</span><input id="taskShort" required maxlength="12" placeholder="Contoh: Desain" /></label>
+          <label><span>Status</span><select id="taskStatus"><option value="todo">Belum mulai</option><option value="active">Dikerjakan</option><option value="blocked">Terhambat</option><option value="done">Selesai</option></select></label>
+          <label class="full"><span>Keterangan</span><input id="taskContext" required maxlength="120" placeholder="Contoh: Target minggu ini" /></label>
+        </div>
+        <div class="modal-actions task-modal-actions">
+          <button type="button" class="danger-btn" id="deleteTaskBtn">Hapus aktivitas</button>
+          <div><button type="button" class="secondary-btn" data-close-task>Batal</button><button type="submit" class="primary-btn">Simpan Aktivitas <span>→</span></button></div>
+        </div>
+      </form>
+    </section>
+  </div>
+
   <div class="drawer-backdrop" id="detailDrawer" hidden>
     <aside class="detail-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
       <div class="drawer-head"><div><span class="eyebrow">DETAIL WORKSTREAM</span><h2 id="drawerTitle"></h2></div><button class="close-btn" id="closeDrawer" aria-label="Tutup">×</button></div>

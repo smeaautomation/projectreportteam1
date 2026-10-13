@@ -153,15 +153,33 @@ function openModal(project=null){
 function closeModal(){document.getElementById("projectModal").hidden=true;}
 function showToast(message){const toast=document.getElementById("toast");toast.querySelector("p").textContent=message;toast.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove("show"),2600);}
 
+function openTaskModal(projectId,index=null){
+  const project=projects.find(item=>item.id===projectId); if(!project)return;
+  const item=index===null?null:project.tasks?.[index];
+  const form=document.getElementById("taskForm"); form.reset();
+  document.getElementById("taskProjectId").value=projectId;
+  document.getElementById("taskIndex").value=index===null?"":String(index);
+  document.getElementById("taskModalTitle").textContent=item?"Edit aktivitas":"Tambah aktivitas";
+  document.getElementById("deleteTaskBtn").hidden=!item;
+  document.getElementById("taskName").value=item?.name||"";
+  document.getElementById("taskShort").value=item?.short||"";
+  document.getElementById("taskStatus").value=item?.status||"todo";
+  document.getElementById("taskContext").value=item?.context||"";
+  document.getElementById("taskModal").hidden=false;
+  setTimeout(()=>document.getElementById("taskName").focus(),50);
+}
+function closeTaskModal(){document.getElementById("taskModal").hidden=true;}
+
 function openDrawer(id){
   const project=projects.find(x=>x.id===id); if(!project)return; const progress=progressOf(project);
   document.getElementById("drawerTitle").textContent=project.name;
   document.getElementById("drawerContent").innerHTML=`
     <div class="drawer-progress"><div class="big-progress"><div><span>PROGRES KESELURUHAN</span><strong>${progress}%</strong></div><span>${progress===100?"Semua item selesai":`${100-progress}% menuju final`}</span></div><div class="progress-track"><i style="width:${progress}%"></i></div></div>
     <div class="drawer-meta"><div><span>PIC</span><strong>${escapeHTML(project.owner)}</strong></div><div><span>Target</span><strong>${formatDate(project.end)}</strong></div><div><span>Status</span><strong>${stateOf(project)==='Berisiko'?'Perlu Perhatian':stateOf(project)}</strong></div></div>
-    <p class="drawer-source-note"><strong>Sumber:</strong> ${escapeHTML(project.source || "Input dashboard")} • Snapshot 29 September 2026. Status dapat diperbarui langsung dari daftar di bawah.</p>
-    <div class="stage-heading"><h3>Item pekerjaan</h3><span>Ubah status untuk update progres</span></div>
-    <div class="stage-list">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}"><div class="stage-number">${item.status==='done'?'✓':index+1}</div><div><h4>${escapeHTML(item.name)}</h4><p><span class="status-context">${escapeHTML(item.context)}</span> • Kontribusi ${Math.round(100/project.tasks.length)}%</p></div><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="todo" ${item.status==='todo'?'selected':''}>Belum mulai</option><option value="active" ${item.status==='active'?'selected':''}>Dikerjakan</option><option value="blocked" ${item.status==='blocked'?'selected':''}>Terhambat</option><option value="done" ${item.status==='done'?'selected':''}>Selesai</option></select></div>`).join("")}</div>
+    <p class="drawer-source-note"><strong>Sumber:</strong> ${escapeHTML(project.source || "Input dashboard")} • Snapshot 29 September 2026. Status dan detail aktivitas dapat diperbarui langsung dari daftar di bawah.</p>
+    <div class="stage-heading"><div><h3>Aktivitas</h3><span>Edit status atau detail setiap aktivitas</span></div><button class="task-add-btn" data-add-task="${project.id}">＋ Tambah Aktivitas</button></div>
+    <div class="stage-list">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}"><div class="stage-number">${item.status==='done'?'✓':index+1}</div><div><h4>${escapeHTML(item.name)}</h4><p><span class="status-context">${escapeHTML(item.context)}</span> • Kontribusi ${Math.round(100/project.tasks.length)}%</p></div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="todo" ${item.status==='todo'?'selected':''}>Belum mulai</option><option value="active" ${item.status==='active'?'selected':''}>Dikerjakan</option><option value="blocked" ${item.status==='blocked'?'selected':''}>Terhambat</option><option value="done" ${item.status==='done'?'selected':''}>Selesai</option></select><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
+    ${(project.tasks||[]).length?"":'<div class="empty-task-state">Belum ada aktivitas. Klik “Tambah Aktivitas” untuk memulai.</div>'}
     <div class="danger-zone"><button class="secondary-btn" data-edit-project="${project.id}">Edit informasi</button><button class="danger-btn" data-delete-project="${project.id}">Hapus workstream</button></div>`;
   document.getElementById("detailDrawer").hidden=false;
 }
@@ -185,11 +203,13 @@ function syncView(){
 document.getElementById("currentDate").textContent="Laporan 29 September 2026  •  Team 1  •  Dita & Restu";
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.querySelectorAll("[data-close-modal]").forEach(button=>button.addEventListener("click",closeModal));
+document.querySelectorAll("[data-close-task]").forEach(button=>button.addEventListener("click",closeTaskModal));
 document.getElementById("closeDrawer").addEventListener("click",closeDrawer);
 document.getElementById("projectModal").addEventListener("click",event=>{if(event.target.id==="projectModal")closeModal()});
+document.getElementById("taskModal").addEventListener("click",event=>{if(event.target.id==="taskModal")closeTaskModal()});
 document.getElementById("detailDrawer").addEventListener("click",event=>{if(event.target.id==="detailDrawer")closeDrawer()});
 window.addEventListener("hashchange",syncView);
-document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeModal();closeDrawer();}});
+document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeTaskModal();closeModal();closeDrawer();}});
 document.getElementById("searchInput").addEventListener("input",event=>{searchQuery=event.target.value.trim().toLowerCase();render()});
 document.querySelectorAll(".filter-chip,.filter-nav").forEach(button=>button.addEventListener("click",()=>{currentFilter=button.dataset.filter;document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter===currentFilter));render();if(button.classList.contains("filter-nav"))document.querySelector(".sidebar").classList.remove("open");}));
 
@@ -203,9 +223,30 @@ document.getElementById("projectForm").addEventListener("submit",event=>{
   saveProjects();closeModal();render();showToast(old ? "Informasi workstream diperbarui." : `Workstream “${project.name}” berhasil dibuat.`);setTimeout(()=>openDrawer(project.id),350);
 });
 
+document.getElementById("taskForm").addEventListener("submit",event=>{
+  event.preventDefault();
+  const projectId=document.getElementById("taskProjectId").value;
+  const project=projects.find(item=>item.id===projectId); if(!project)return;
+  const indexValue=document.getElementById("taskIndex").value;
+  const index=indexValue===""?null:Number(indexValue);
+  const previous=index===null?null:project.tasks[index];
+  const activity={key:previous?.key||`activity-${Date.now()}`,name:document.getElementById("taskName").value.trim(),short:document.getElementById("taskShort").value.trim(),status:document.getElementById("taskStatus").value,context:document.getElementById("taskContext").value.trim()};
+  if(index===null)project.tasks.push(activity);else project.tasks[index]=activity;
+  saveProjects();closeTaskModal();render();openDrawer(projectId);showToast(index===null?"Aktivitas berhasil ditambahkan.":"Aktivitas berhasil diperbarui.");
+});
+
+document.getElementById("deleteTaskBtn").addEventListener("click",()=>{
+  const projectId=document.getElementById("taskProjectId").value;
+  const index=Number(document.getElementById("taskIndex").value);
+  const project=projects.find(item=>item.id===projectId); const item=project?.tasks?.[index]; if(!item)return;
+  if(confirm(`Hapus aktivitas “${item.name}”?`)){project.tasks.splice(index,1);saveProjects();closeTaskModal();render();openDrawer(projectId);showToast("Aktivitas dihapus.");}
+});
+
 document.getElementById("projectList").addEventListener("click",event=>{const button=event.target.closest("[data-open-project]");if(button)openDrawer(button.dataset.openProject);});
 document.getElementById("drawerContent").addEventListener("change",event=>{if(!event.target.matches(".stage-select"))return;const project=projects.find(item=>item.id===event.target.dataset.project);project.tasks[Number(event.target.dataset.taskIndex)].status=event.target.value;saveProjects();render();openDrawer(project.id);showToast("Progress workstream diperbarui.");});
 document.getElementById("drawerContent").addEventListener("click",event=>{
+  const addTask=event.target.closest("[data-add-task]"); if(addTask){openTaskModal(addTask.dataset.addTask);return;}
+  const editTask=event.target.closest("[data-edit-task]"); if(editTask){openTaskModal(editTask.dataset.project,Number(editTask.dataset.editTask));return;}
   const remove=event.target.closest("[data-delete-project]"); if(remove){const project=projects.find(item=>item.id===remove.dataset.deleteProject);if(confirm(`Hapus workstream “${project.name}”?`)){projects=projects.filter(item=>item.id!==project.id);saveProjects();closeDrawer();render();showToast("Workstream dihapus.");}}
   const edit=event.target.closest("[data-edit-project]"); if(edit){const project=projects.find(item=>item.id===edit.dataset.editProject);closeDrawer();openModal(project);}
 });
