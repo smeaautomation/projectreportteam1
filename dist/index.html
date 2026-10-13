@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
+<body class="dashboard-view">
   <section class="landing-page" id="beranda" hidden>
     <nav class="landing-nav" aria-label="Navigasi landing page">
       <a class="landing-brand" href="#beranda" aria-label="Team 1 beranda">
@@ -123,29 +123,11 @@
   </section>
 
   <div class="app-shell" id="dashboard-app">
-    <aside class="sidebar">
-      <a class="brand" href="#projects" aria-label="Buka daftar workstream">
-        <span class="brand-mark"><span></span><span></span><span></span></span>
-        <span>team<span class="brand-accent">1.</span></span>
-      </a>
-
-      <nav aria-label="Navigasi utama">
-        <p class="nav-label">WORKSPACE</p>
-        <a class="nav-item active" href="#projects" data-view="projects">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6l2 2h8v12H4V5Z"/></svg>
-          <span>Workstream</span><span class="count" id="navProjectCount">0</span>
-        </a>
-      </nav>
-    </aside>
-
     <main class="main-content">
       <header class="topbar">
-        <button class="mobile-menu icon-btn" id="menuBtn" aria-label="Buka menu">
-          <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-        </button>
         <div class="page-heading">
-          <p>WEEKLY REPORT • TEAM 1</p>
-          <h1>Progress Mingguan</h1>
+          <p id="pageEyebrow">WEEKLY REPORT • TEAM 1</p>
+          <h1 id="pageTitle">Progress Mingguan</h1>
         </div>
         <div class="top-actions">
           <label class="search-box">
@@ -181,9 +163,9 @@
           </article>
         </section>
 
-        <section class="section-card portfolio-card" id="projects">
+        <section class="section-card portfolio-card" id="workstream">
           <div class="section-header">
-            <div><h2>Workstream Team 1</h2><p>Progres dihitung dari status setiap item pekerjaan</p></div>
+            <div><h2>Draft Workstream</h2><p>Daftar rancangan workstream yang dapat ditinjau dan diperbarui</p></div>
             <div class="filter-group" role="group" aria-label="Filter proyek">
               <button class="filter-chip active" data-filter="Semua">Semua</button>
               <button class="filter-chip" data-filter="Berjalan">Berjalan</button>
@@ -230,6 +212,12 @@
         </section>
       </section>
     </main>
+
+    <a class="workstream-fab" id="workstreamFab" href="#workstream" aria-label="Buka draft workstream" title="Draft Workstream">
+      <svg class="fab-folder" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l2 2h9v10h-17v-12Z"/></svg>
+      <svg class="fab-back" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
+      <span class="sr-only" id="workstreamFabLabel">Buka draft workstream</span>
+    </a>
   </div>
 
   <div class="modal-backdrop" id="projectModal" hidden>

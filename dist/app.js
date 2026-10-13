@@ -71,7 +71,6 @@ function render(){
   const avg = projects.length ? Math.round(projects.reduce((sum,p)=>sum+progressOf(p),0)/projects.length) : 0;
   const completionRate = tasks.length ? Math.round(done/tasks.length*100) : 0;
 
-  document.getElementById("navProjectCount").textContent = projects.length;
   document.getElementById("totalProjects").textContent = projects.length;
   document.getElementById("activeSummary").textContent = `${active} workstream aktif`;
   document.getElementById("avgProgress").textContent = `${avg}%`;
@@ -168,14 +167,28 @@ function openDrawer(id){
 }
 function closeDrawer(){document.getElementById("detailDrawer").hidden=true;}
 
+function syncView(){
+  const isWorkstream=location.hash==="#workstream";
+  document.body.classList.toggle("workstream-view",isWorkstream);
+  document.body.classList.toggle("dashboard-view",!isWorkstream);
+  document.getElementById("pageEyebrow").textContent=isWorkstream?"WORKSPACE • TEAM 1":"WEEKLY REPORT • TEAM 1";
+  document.getElementById("pageTitle").textContent=isWorkstream?"Draft Workstream":"Progress Mingguan";
+  const fab=document.getElementById("workstreamFab");
+  const label=isWorkstream?"Kembali ke dashboard":"Buka draft workstream";
+  fab.href=isWorkstream?"#dashboard-app":"#workstream";
+  fab.setAttribute("aria-label",label);
+  fab.title=label;
+  document.getElementById("workstreamFabLabel").textContent=label;
+  window.scrollTo(0,0);
+}
+
 document.getElementById("currentDate").textContent="Laporan 29 September 2026  •  Team 1  •  Dita & Restu";
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.querySelectorAll("[data-close-modal]").forEach(button=>button.addEventListener("click",closeModal));
 document.getElementById("closeDrawer").addEventListener("click",closeDrawer);
 document.getElementById("projectModal").addEventListener("click",event=>{if(event.target.id==="projectModal")closeModal()});
 document.getElementById("detailDrawer").addEventListener("click",event=>{if(event.target.id==="detailDrawer")closeDrawer()});
-document.getElementById("menuBtn").addEventListener("click",()=>document.querySelector(".sidebar").classList.toggle("open"));
-document.querySelectorAll('.sidebar a[href="#projects"]').forEach(link=>link.addEventListener("click",()=>document.querySelector(".sidebar").classList.remove("open")));
+window.addEventListener("hashchange",syncView);
 document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeModal();closeDrawer();}});
 document.getElementById("searchInput").addEventListener("input",event=>{searchQuery=event.target.value.trim().toLowerCase();render()});
 document.querySelectorAll(".filter-chip,.filter-nav").forEach(button=>button.addEventListener("click",()=>{currentFilter=button.dataset.filter;document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter===currentFilter));render();if(button.classList.contains("filter-nav"))document.querySelector(".sidebar").classList.remove("open");}));
@@ -197,4 +210,5 @@ document.getElementById("drawerContent").addEventListener("click",event=>{
   const edit=event.target.closest("[data-edit-project]"); if(edit){const project=projects.find(item=>item.id===edit.dataset.editProject);closeDrawer();openModal(project);}
 });
 document.getElementById("resetDemoBtn").addEventListener("click",()=>{projects=structuredClone(weeklyProjects);saveProjects();currentFilter="Semua";searchQuery="";document.getElementById("searchInput").value="";document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter==="Semua"));render();showToast("Data Weekly Report Team 1 dimuat ulang.");});
+syncView();
 render();
