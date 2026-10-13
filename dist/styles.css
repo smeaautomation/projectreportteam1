@@ -74,3 +74,6 @@ body,.app-shell{background:#f3f8fb;color:#002e5b}.sidebar{background:#002e5b}.br
 
 /* Vertical target details */
 .deadline-item{grid-template-columns:39px minmax(0,1fr);align-items:start}.deadline-date{margin-top:1px}.deadline-task-list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}.deadline-task-list li{position:relative;padding-left:13px;color:var(--muted);font-size:9px;line-height:1.45}.deadline-task-list li:before{content:"";position:absolute;left:0;top:.5em;width:5px;height:5px;border-radius:50%;background:#43c3f7}
+
+/* Three-status distribution */
+.donut{background:conic-gradient(var(--green) 0 var(--p1),var(--blue) var(--p1) var(--p2),#dfe6e4 var(--p2) 360deg)}

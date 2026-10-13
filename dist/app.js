@@ -1,6 +1,6 @@
 const REPORT_DATE = "2026-09-29";
 const REPORT_TARGET_DATE = "2026-10-06";
-const STATUS_VALUE = { todo: 0, blocked: 0, active: .5, done: 1 };
+const STATUS_VALUE = { todo: 0, active: .5, done: 1 };
 const STORAGE_KEY = "team1-weekly-progress-v2";
 let currentFilter = "Semua";
 let searchQuery = "";
@@ -16,7 +16,7 @@ const weeklyProjects = [
       task("uiux", "Referensi UI/UX lain yang lebih modern", "UI/UX", "done", "Target minggu lalu"),
       task("excel", "Excel kalkulator premi untuk penyesuaian tarif Travel Safe", "Excel", "done", "Tambahan di luar target"),
       task("landing", "Usulan landing page kalkulator premi", "Landing", "todo", "Target 7 hari"),
-      task("deploy", "Deployment ke domain asuransijasindo.co.id", "Deploy", "blocked", "Tidak tercapai • Target 7 hari")
+      task("deploy", "Deployment ke domain asuransijasindo.co.id", "Deploy", "active", "Tidak tercapai • Target 7 hari")
     ]
   },
   {
@@ -36,7 +36,7 @@ const weeklyProjects = [
       task("brd", "Draft #2 BRD Flow Internal, Eksternal, dan Rekanan", "BRD", "done", "Target minggu lalu"),
       task("tripguard", "Mapping field untuk flow Rekanan produk Trip Guard", "Mapping", "active", "Sedang dikerjakan"),
       task("travelsafe", "Pembaruan perhitungan Travel Safe", "Travel", "todo", "Target 7 hari"),
-      task("feedback", "Perbaikan web berdasarkan feedback saat sosialisasi", "Feedback", "blocked", "Tidak tercapai • Target 7 hari"),
+      task("feedback", "Perbaikan web berdasarkan feedback saat sosialisasi", "Feedback", "active", "Tidak tercapai • Target 7 hari"),
       task("testcase", "Dokumentasi test case semua produk", "TC", "todo", "Target 7 hari"),
       task("cob728", "Finalisasi dokumentasi mapping dummy web rekanan COB 728", "COB 728", "todo", "Target 7 hari")
     ]
@@ -49,11 +49,12 @@ const weeklyProjects = [
 ];
 
 let projects = loadProjects();
-function loadProjects(){ try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); return Array.isArray(saved) ? saved : structuredClone(weeklyProjects); } catch { return structuredClone(weeklyProjects); } }
+function normalizeProjects(items){ return items.map(project=>({...project,tasks:(project.tasks||[]).map(item=>({...item,status:item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo"}))})); }
+function loadProjects(){ try { const saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); return normalizeProjects(Array.isArray(saved) ? saved : structuredClone(weeklyProjects)); } catch { return normalizeProjects(structuredClone(weeklyProjects)); } }
 function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); }
 function allTasks(){ return projects.flatMap(project => project.tasks || []); }
 function progressOf(project){ const tasks = project.tasks || []; return tasks.length ? Math.round(tasks.reduce((total, item) => total + (STATUS_VALUE[item.status] || 0), 0) / tasks.length * 100) : 0; }
-function stateOf(project){ if(progressOf(project) === 100) return "Selesai"; if((project.tasks || []).some(item => item.status === "blocked")) return "Berisiko"; return "Berjalan"; }
+function stateOf(project){ const tasks=project.tasks||[]; if(tasks.length&&tasks.every(item=>item.status==="done"))return "Done"; if(tasks.some(item=>item.status!=="todo"))return "On going"; return "Not Started"; }
 function daysUntil(date){ const a = new Date(); a.setHours(0,0,0,0); return Math.ceil((new Date(date+"T00:00:00") - a)/86400000); }
 function formatDate(date, long=false){ return new Intl.DateTimeFormat("id-ID", long ? {day:"numeric",month:"long",year:"numeric"}:{day:"numeric",month:"short",year:"numeric"}).format(new Date(date+"T00:00:00")); }
 function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
@@ -95,7 +96,7 @@ function projectRow(project, idx){
     <div class="project-main"><div class="project-badge ${badgeClass}">${initials(project.name)}</div><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(project.category)} • ${escapeHTML(project.owner)}</p></div></div>
     <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
     <div class="timeline-steps" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
-    <div class="deadline-cell ${state==='Berisiko'?'urgent':''}"><strong>${formatDate(project.end)}</strong><span class="snapshot-label">Target 7 hari</span></div>
+    <div class="deadline-cell"><strong>${formatDate(project.end)}</strong><span class="snapshot-label">Target 7 hari</span></div>
     <button class="more-btn" data-open-project="${project.id}" aria-label="Buka detail ${escapeHTML(project.name)}">›</button>
   </article>`;
 }
@@ -111,16 +112,15 @@ function renderTargets(){
 function renderDistribution(){
   const tasks = allTasks();
   const counts = {
-    Selesai: tasks.filter(t=>t.status==="done").length,
-    Dikerjakan: tasks.filter(t=>t.status==="active").length,
-    Terhambat: tasks.filter(t=>t.status==="blocked").length,
-    "Belum mulai": tasks.filter(t=>t.status==="todo").length
+    Done: tasks.filter(t=>t.status==="done").length,
+    "On going": tasks.filter(t=>t.status==="active").length,
+    "Not Started": tasks.filter(t=>t.status==="todo").length
   };
   const total = tasks.length || 1;
-  const p1=counts.Selesai/total*360, p2=p1+counts.Dikerjakan/total*360, p3=p2+counts.Terhambat/total*360;
-  const donut=document.getElementById("distributionDonut"); donut.style.setProperty("--p1",`${p1}deg`);donut.style.setProperty("--p2",`${p2}deg`);donut.style.setProperty("--p3",`${p3}deg`);
+  const p1=counts.Done/total*360, p2=p1+counts["On going"]/total*360;
+  const donut=document.getElementById("distributionDonut"); donut.style.setProperty("--p1",`${p1}deg`);donut.style.setProperty("--p2",`${p2}deg`);
   document.getElementById("donutTotal").textContent=tasks.length;
-  const colors={Selesai:"var(--green)",Dikerjakan:"var(--blue)",Terhambat:"var(--coral)","Belum mulai":"#dfe6e4"};
+  const colors={Done:"var(--green)","On going":"var(--blue)","Not Started":"#dfe6e4"};
   document.getElementById("distributionLegend").innerHTML=Object.entries(counts).map(([label,value])=>`<div class="legend-item"><i style="background:${colors[label]}"></i><span>${label}</span><strong>${value}</strong></div>`).join("");
 }
 
@@ -173,10 +173,10 @@ function openDrawer(id){
   document.getElementById("drawerTitle").textContent=project.name;
   document.getElementById("drawerContent").innerHTML=`
     <div class="drawer-progress"><div class="big-progress"><div><span>PROGRES KESELURUHAN</span><strong>${progress}%</strong></div><span>${progress===100?"Semua item selesai":`${100-progress}% menuju final`}</span></div><div class="progress-track"><i style="width:${progress}%"></i></div></div>
-    <div class="drawer-meta"><div><span>PIC</span><strong>${escapeHTML(project.owner)}</strong></div><div><span>Target</span><strong>${formatDate(project.end)}</strong></div><div><span>Status</span><strong>${stateOf(project)==='Berisiko'?'Perlu Perhatian':stateOf(project)}</strong></div></div>
+    <div class="drawer-meta"><div><span>PIC</span><strong>${escapeHTML(project.owner)}</strong></div><div><span>Target</span><strong>${formatDate(project.end)}</strong></div><div><span>Status</span><strong>${stateOf(project)}</strong></div></div>
     <p class="drawer-source-note"><strong>Sumber:</strong> ${escapeHTML(project.source || "Input dashboard")} • Snapshot 29 September 2026. Status dan detail aktivitas dapat diperbarui langsung dari daftar di bawah.</p>
     <div class="stage-heading"><div><h3>Aktivitas</h3><span>Edit status atau detail setiap aktivitas</span></div><button class="task-add-btn" data-add-task="${project.id}">＋ Tambah Aktivitas</button></div>
-    <div class="stage-list">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}"><div class="stage-number">${item.status==='done'?'✓':index+1}</div><div><h4>${escapeHTML(item.name)}</h4><p><span class="status-context">${escapeHTML(item.context)}</span> • Kontribusi ${Math.round(100/project.tasks.length)}%</p></div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="todo" ${item.status==='todo'?'selected':''}>Belum mulai</option><option value="active" ${item.status==='active'?'selected':''}>Dikerjakan</option><option value="blocked" ${item.status==='blocked'?'selected':''}>Terhambat</option><option value="done" ${item.status==='done'?'selected':''}>Selesai</option></select><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
+    <div class="stage-list">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}"><div class="stage-number">${item.status==='done'?'✓':index+1}</div><div><h4>${escapeHTML(item.name)}</h4><p><span class="status-context">${escapeHTML(item.context)}</span> • Kontribusi ${Math.round(100/project.tasks.length)}%</p></div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="done" ${item.status==='done'?'selected':''}>Done</option><option value="active" ${item.status==='active'?'selected':''}>On going</option><option value="todo" ${item.status==='todo'?'selected':''}>Not Started</option></select><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
     ${(project.tasks||[]).length?"":'<div class="empty-task-state">Belum ada aktivitas. Klik “Tambah Aktivitas” untuk memulai.</div>'}
     <div class="danger-zone"><button class="secondary-btn" data-edit-project="${project.id}">Edit informasi</button><button class="danger-btn" data-delete-project="${project.id}">Hapus workstream</button></div>`;
   document.getElementById("detailDrawer").hidden=false;

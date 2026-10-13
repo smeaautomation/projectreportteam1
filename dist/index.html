@@ -110,7 +110,7 @@
       <div class="workflow-heading"><span>ALUR SEDERHANA</span><h2>Dari input sampai final,<br>semuanya terbaca.</h2></div>
       <div class="workflow-track">
         <article><span>01</span><div class="workflow-dot"></div><h3>Tambah workstream</h3><p>Masukkan nama proyek, PIC, kategori, dan target selesai.</p></article>
-        <article><span>02</span><div class="workflow-dot"></div><h3>Perbarui status</h3><p>Tandai item sebagai belum mulai, dikerjakan, terhambat, atau selesai.</p></article>
+        <article><span>02</span><div class="workflow-dot"></div><h3>Perbarui status</h3><p>Tandai item sebagai Not Started, On going, atau Done.</p></article>
         <article><span>03</span><div class="workflow-dot"></div><h3>Pantau progres</h3><p>Persentase, distribusi status, dan target mingguan dihitung otomatis.</p></article>
         <article><span>04</span><div class="workflow-dot"></div><h3>Capai final</h3><p>Pastikan seluruh item tuntas hingga indikator mencapai 100%.</p></article>
       </div>
@@ -168,9 +168,9 @@
             <div><h2>Draft Workstream</h2><p>Daftar rancangan workstream yang dapat ditinjau dan diperbarui</p></div>
             <div class="filter-group" role="group" aria-label="Filter proyek">
               <button class="filter-chip active" data-filter="Semua">Semua</button>
-              <button class="filter-chip" data-filter="Berjalan">Berjalan</button>
-              <button class="filter-chip" data-filter="Berisiko">Perhatian</button>
-              <button class="filter-chip" data-filter="Selesai">Selesai</button>
+              <button class="filter-chip" data-filter="Done">Done</button>
+              <button class="filter-chip" data-filter="On going">On going</button>
+              <button class="filter-chip" data-filter="Not Started">Not Started</button>
             </div>
           </div>
           <div class="table-head">
@@ -257,7 +257,7 @@
         <div class="form-grid">
           <label class="full"><span>Nama aktivitas</span><input id="taskName" required maxlength="100" placeholder="Contoh: Finalisasi desain halaman" /></label>
           <label><span>Label timeline</span><input id="taskShort" required maxlength="12" placeholder="Contoh: Desain" /></label>
-          <label><span>Status</span><select id="taskStatus"><option value="todo">Belum mulai</option><option value="active">Dikerjakan</option><option value="blocked">Terhambat</option><option value="done">Selesai</option></select></label>
+          <label><span>Status</span><select id="taskStatus"><option value="done">Done</option><option value="active">On going</option><option value="todo">Not Started</option></select></label>
           <label class="full"><span>Keterangan</span><input id="taskContext" required maxlength="120" placeholder="Contoh: Target minggu ini" /></label>
         </div>
         <div class="modal-actions task-modal-actions">
