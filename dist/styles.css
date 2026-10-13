@@ -77,3 +77,8 @@ body,.app-shell{background:#f3f8fb;color:#002e5b}.sidebar{background:#002e5b}.br
 
 /* Three-status distribution */
 .donut{background:conic-gradient(var(--green) 0 var(--p1),var(--blue) var(--p1) var(--p2),#dfe6e4 var(--p2) 360deg)}
+
+/* Progress stays visible on the dashboard; editing stays in Workstream */
+.dashboard-view .portfolio-card{display:block;margin-bottom:18px}.dashboard-view .portfolio-card .filter-group,.dashboard-view .project-row .more-btn,.dashboard-view .table-head span:last-child{display:none}.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:minmax(190px,1.25fr) minmax(120px,.65fr) minmax(240px,1.45fr) minmax(110px,.65fr)}.project-main>div{min-width:0}
+@media(max-width:850px){.dashboard-view .project-row{grid-template-columns:minmax(160px,1fr) 100px;gap:14px}.dashboard-view .project-row .timeline-steps{grid-column:1/-1;grid-row:2}.dashboard-view .project-row .deadline-cell{display:none}}
+@media(max-width:540px){.dashboard-view .project-row{grid-template-columns:1fr 85px;padding:15px}}

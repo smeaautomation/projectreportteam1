@@ -84,16 +84,15 @@ function render(){
   renderTargets(); renderDistribution();
 }
 
-function projectRow(project, idx){
-  const progress = progressOf(project), state = stateOf(project);
-  const badgeClass = ["","coral","blue"][idx%3];
+function projectRow(project){
+  const progress = progressOf(project);
   const tasks = project.tasks || [];
   const displayTasks = tasks.length > 5
     ? [...tasks.slice(0,4), {short:`+${tasks.length-4}`,status:progress===100?"done":"active"}]
     : tasks;
   const timeline = displayTasks.map(item=>`<div class="timeline-node ${item.status}"><i></i><span>${escapeHTML(item.short)}</span></div>`).join("");
   return `<article class="project-row" data-id="${project.id}">
-    <div class="project-main"><div class="project-badge ${badgeClass}">${initials(project.name)}</div><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(project.category)} • ${escapeHTML(project.owner)}</p></div></div>
+    <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(project.category)} • ${escapeHTML(project.owner)}</p></div></div>
     <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
     <div class="timeline-steps" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
     <div class="deadline-cell"><strong>${formatDate(project.end)}</strong><span class="snapshot-label">Target 7 hari</span></div>
@@ -189,12 +188,19 @@ function syncView(){
   document.body.classList.toggle("dashboard-view",!isWorkstream);
   document.getElementById("pageEyebrow").textContent=isWorkstream?"WORKSPACE • TEAM 1":"WEEKLY REPORT • TEAM 1";
   document.getElementById("pageTitle").textContent=isWorkstream?"Draft Workstream":"Progress Mingguan";
+  document.getElementById("workstreamSectionTitle").textContent=isWorkstream?"Draft Workstream":"Progress Workstream";
+  document.getElementById("workstreamSectionDescription").textContent=isWorkstream?"Daftar rancangan workstream yang dapat ditinjau dan diperbarui":"Ringkasan progres seluruh pekerjaan";
   const fab=document.getElementById("workstreamFab");
   const label=isWorkstream?"Kembali ke dashboard":"Buka draft workstream";
   fab.href=isWorkstream?"#dashboard-app":"#workstream";
   fab.setAttribute("aria-label",label);
   fab.title=label;
   document.getElementById("workstreamFabLabel").textContent=label;
+  if(!isWorkstream&&(currentFilter!=="Semua"||searchQuery)){
+    currentFilter="Semua";searchQuery="";document.getElementById("searchInput").value="";
+    document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter==="Semua"));
+    render();
+  }
   window.scrollTo(0,0);
 }
 
