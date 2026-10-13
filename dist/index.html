@@ -124,49 +124,18 @@
 
   <div class="app-shell" id="dashboard-app">
     <aside class="sidebar">
-      <a class="brand" href="#" aria-label="Alur dashboard">
+      <a class="brand" href="#projects" aria-label="Buka daftar workstream">
         <span class="brand-mark"><span></span><span></span><span></span></span>
         <span>team<span class="brand-accent">1.</span></span>
       </a>
 
       <nav aria-label="Navigasi utama">
         <p class="nav-label">WORKSPACE</p>
-        <a class="nav-item active" href="#dashboard" data-view="dashboard">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-4H4v4Zm10 0h6v-9h-6v9Zm0-16v4h6V4h-6Z"/></svg>
-          <span>Ringkasan</span>
-        </a>
-        <a class="nav-item" href="#projects" data-view="projects">
+        <a class="nav-item active" href="#projects" data-view="projects">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h6l2 2h8v12H4V5Z"/></svg>
           <span>Workstream</span><span class="count" id="navProjectCount">0</span>
         </a>
-        <a class="nav-item" href="#timeline" data-view="timeline">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v3m12-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/></svg>
-          <span>Target 7 Hari</span>
-        </a>
-
-        <p class="nav-label">PANTAU</p>
-        <button class="nav-item filter-nav" data-filter="Berjalan">
-          <span class="nav-dot blue"></span><span>Sedang Berjalan</span>
-        </button>
-        <button class="nav-item filter-nav" data-filter="Berisiko">
-          <span class="nav-dot amber"></span><span>Perlu Perhatian</span>
-        </button>
-        <button class="nav-item filter-nav" data-filter="Selesai">
-          <span class="nav-dot green"></span><span>Selesai</span>
-        </button>
       </nav>
-
-      <div class="sidebar-bottom">
-        <button class="nav-item" id="helpBtn">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.3 2.3 0 1 1 3.1 2.17c-.9.38-.9 1.03-.9 1.83m0 3h.01"/></svg>
-          <span>Bantuan</span>
-        </button>
-        <div class="user-card">
-          <div class="avatar">T1</div>
-          <div><strong>Dita &amp; Restu</strong><span>Team 1</span></div>
-          <button class="icon-btn" aria-label="Menu akun">•••</button>
-        </div>
-      </div>
     </aside>
 
     <main class="main-content">
@@ -212,7 +181,7 @@
           </article>
         </section>
 
-        <section class="section-card portfolio-card">
+        <section class="section-card portfolio-card" id="projects">
           <div class="section-header">
             <div><h2>Workstream Team 1</h2><p>Progres dihitung dari status setiap item pekerjaan</p></div>
             <div class="filter-group" role="group" aria-label="Filter proyek">

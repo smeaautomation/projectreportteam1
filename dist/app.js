@@ -175,6 +175,7 @@ document.getElementById("closeDrawer").addEventListener("click",closeDrawer);
 document.getElementById("projectModal").addEventListener("click",event=>{if(event.target.id==="projectModal")closeModal()});
 document.getElementById("detailDrawer").addEventListener("click",event=>{if(event.target.id==="detailDrawer")closeDrawer()});
 document.getElementById("menuBtn").addEventListener("click",()=>document.querySelector(".sidebar").classList.toggle("open"));
+document.querySelectorAll('.sidebar a[href="#projects"]').forEach(link=>link.addEventListener("click",()=>document.querySelector(".sidebar").classList.remove("open")));
 document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeModal();closeDrawer();}});
 document.getElementById("searchInput").addEventListener("input",event=>{searchQuery=event.target.value.trim().toLowerCase();render()});
 document.querySelectorAll(".filter-chip,.filter-nav").forEach(button=>button.addEventListener("click",()=>{currentFilter=button.dataset.filter;document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter===currentFilter));render();if(button.classList.contains("filter-nav"))document.querySelector(".sidebar").classList.remove("open");}));
@@ -196,5 +197,4 @@ document.getElementById("drawerContent").addEventListener("click",event=>{
   const edit=event.target.closest("[data-edit-project]"); if(edit){const project=projects.find(item=>item.id===edit.dataset.editProject);closeDrawer();openModal(project);}
 });
 document.getElementById("resetDemoBtn").addEventListener("click",()=>{projects=structuredClone(weeklyProjects);saveProjects();currentFilter="Semua";searchQuery="";document.getElementById("searchInput").value="";document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter==="Semua"));render();showToast("Data Weekly Report Team 1 dimuat ulang.");});
-document.getElementById("helpBtn").addEventListener("click",()=>showToast("Klik workstream untuk memperbarui status tiap item pekerjaan."));
 render();
