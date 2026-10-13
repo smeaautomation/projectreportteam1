@@ -90,7 +90,11 @@ function projectRow(project){
   const displayTasks = tasks.length > 5
     ? [...tasks.slice(0,4), {short:`+${tasks.length-4}`,status:progress===100?"done":"active"}]
     : tasks;
-  const timeline = displayTasks.map(item=>`<div class="timeline-node ${item.status}"><i></i><span>${escapeHTML(item.short)}</span></div>`).join("");
+  const timeline = displayTasks.map((item,index)=>{
+    const stepPosition=displayTasks.length===1 ? 50 : index/(displayTasks.length-1)*100;
+    const nextPosition=displayTasks.length===1 ? 50 : Math.min(100,(index+1)/(displayTasks.length-1)*100);
+    return `<div class="timeline-node ${item.status}" style="--step-position:${stepPosition}%;--next-position:${nextPosition}%"><i></i><span>${escapeHTML(item.short)}</span></div>`;
+  }).join("");
   return `<article class="project-row" data-id="${project.id}">
     <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(project.category)} • ${escapeHTML(project.owner)}</p></div></div>
     <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
