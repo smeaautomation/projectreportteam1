@@ -59,7 +59,7 @@ function daysUntil(date){ const a = new Date(); a.setHours(0,0,0,0); return Math
 function formatDate(date, long=false){ return new Intl.DateTimeFormat("id-ID", long ? {day:"numeric",month:"long",year:"numeric"}:{day:"numeric",month:"short",year:"numeric"}).format(new Date(date+"T00:00:00")); }
 function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
 function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
-function upcomingTasks(project){ return (project.tasks || []).filter(item => item.context.includes("Target 7 hari")); }
+function upcomingTasks(project){ return (project.tasks || []).filter(item => item.status !== "done"); }
 
 function render(){
   const filtered = projects.filter(p => {
@@ -105,7 +105,7 @@ function renderTargets(){
   document.getElementById("deadlineList").innerHTML = items.length ? items.map(({project,tasks},i)=>{
     const taskList = tasks.map(task=>`<li>${escapeHTML(task.name)}</li>`).join("");
     return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong></div><div><h3>${escapeHTML(project.name)}</h3><ul class="deadline-task-list">${taskList}</ul></div></div>`;
-  }).join("") : `<div class="empty-state"><p>Semua target tujuh hari sudah selesai.</p></div>`;
+  }).join("") : `<div class="empty-state"><p>Semua pekerjaan sudah selesai.</p></div>`;
 }
 
 function renderDistribution(){
@@ -205,6 +205,7 @@ function syncView(){
 }
 
 document.getElementById("currentDate").textContent="Laporan 29 September 2026  •  Team 1  •  Dita & Restu";
+document.getElementById("targetSubtitle").textContent=`Semua pekerjaan yang belum selesai per ${new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"long",year:"numeric"}).format(new Date())}`;
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.querySelectorAll("[data-close-modal]").forEach(button=>button.addEventListener("click",closeModal));
 document.querySelectorAll("[data-close-task]").forEach(button=>button.addEventListener("click",closeTaskModal));
