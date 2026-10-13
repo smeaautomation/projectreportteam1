@@ -87,18 +87,16 @@ function render(){
 function projectRow(project){
   const progress = progressOf(project);
   const tasks = project.tasks || [];
-  const displayTasks = tasks.length > 5
-    ? [...tasks.slice(0,4), {short:`+${tasks.length-4}`,status:progress===100?"done":"active"}]
-    : tasks;
+  const displayTasks = tasks;
   const timeline = displayTasks.map((item,index)=>{
     const stepPosition=displayTasks.length===1 ? 50 : index/(displayTasks.length-1)*100;
     const nextPosition=displayTasks.length===1 ? 50 : Math.min(100,(index+1)/(displayTasks.length-1)*100);
-    return `<div class="timeline-node ${item.status}" style="--step-position:${stepPosition}%;--next-position:${nextPosition}%"><i></i><span>${escapeHTML(item.short)}</span></div>`;
+    return `<div class="timeline-node ${item.status}" style="--step-position:${stepPosition}%;--next-position:${nextPosition}%" title="${escapeHTML(item.short)}"><i></i><span>${escapeHTML(item.short)}</span></div>`;
   }).join("");
   return `<article class="project-row" data-id="${project.id}">
     <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(project.category)} • ${escapeHTML(project.owner)}</p></div></div>
     <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
-    <div class="timeline-steps" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
+    <div class="timeline-steps ${displayTasks.length>6?'timeline-dense':''}" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
     <div class="deadline-cell"><strong>${formatDate(project.end)}</strong><span class="snapshot-label">Target 7 hari</span></div>
     <button class="more-btn" data-open-project="${project.id}" aria-label="Buka detail ${escapeHTML(project.name)}">›</button>
   </article>`;
