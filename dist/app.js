@@ -258,6 +258,5 @@ document.getElementById("drawerContent").addEventListener("click",event=>{
   const remove=event.target.closest("[data-delete-project]"); if(remove){const project=projects.find(item=>item.id===remove.dataset.deleteProject);if(confirm(`Hapus project “${project.name}”?`)){projects=projects.filter(item=>item.id!==project.id);saveProjects();closeDrawer();render();showToast("Project dihapus.");}}
   const edit=event.target.closest("[data-edit-project]"); if(edit){const project=projects.find(item=>item.id===edit.dataset.editProject);closeDrawer();openModal(project);}
 });
-document.getElementById("resetDemoBtn").addEventListener("click",()=>{projects=structuredClone(weeklyProjects);saveProjects();currentFilter="Semua";searchQuery="";document.getElementById("searchInput").value="";document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter==="Semua"));render();showToast("Data Weekly Report Team 1 dimuat ulang.");});
 syncView();
 render();
