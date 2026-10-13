@@ -180,7 +180,7 @@ function projectRow(project){
     <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(project.category)} • ${escapeHTML(project.owner)}</p></div></div>
     <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
     <div class="timeline-steps ${displayTasks.length>6?'timeline-dense':''}" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
-    <div class="deadline-cell"><strong>${formatDate(project.end)}</strong><span class="snapshot-label">Target 7 hari</span></div>
+    <div class="deadline-cell"><strong>${formatDate(project.end)}</strong></div>
     <button class="more-btn" data-open-project="${project.id}" aria-label="Buka detail ${escapeHTML(project.name)}">›</button>
   </article>`;
 }
