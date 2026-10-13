@@ -186,8 +186,9 @@ function syncView(){
   const isWorkstream=location.hash==="#workstream";
   document.body.classList.toggle("workstream-view",isWorkstream);
   document.body.classList.toggle("dashboard-view",!isWorkstream);
-  document.getElementById("pageEyebrow").textContent=isWorkstream?"WORKSPACE • TEAM 1":"WEEKLY REPORT • TEAM 1";
-  document.getElementById("pageTitle").textContent=isWorkstream?"Draft Workstream":"Progress Mingguan";
+  document.getElementById("pageEyebrow").textContent="TEAM 1";
+  document.getElementById("pageTitle").textContent="SME UNDERWRITING & ADMINISTRATION";
+  document.getElementById("pageSubtitle").textContent="WEEKLY REPORT";
   document.getElementById("workstreamSectionTitle").textContent=isWorkstream?"Draft Workstream":"Progress Workstream";
   document.getElementById("workstreamSectionDescription").textContent=isWorkstream?"Daftar rancangan workstream yang dapat ditinjau dan diperbarui":"Ringkasan progres seluruh pekerjaan";
   const fab=document.getElementById("workstreamFab");

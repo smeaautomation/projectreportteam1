@@ -82,3 +82,8 @@ body,.app-shell{background:#f3f8fb;color:#002e5b}.sidebar{background:#002e5b}.br
 .dashboard-view .portfolio-card{display:block;margin-bottom:18px}.dashboard-view .portfolio-card .filter-group,.dashboard-view .project-row .more-btn,.dashboard-view .table-head span:last-child{display:none}.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:minmax(190px,1.25fr) minmax(120px,.65fr) minmax(240px,1.45fr) minmax(110px,.65fr)}.project-main>div{min-width:0}
 @media(max-width:850px){.dashboard-view .project-row{grid-template-columns:minmax(160px,1fr) 100px;gap:14px}.dashboard-view .project-row .timeline-steps{grid-column:1/-1;grid-row:2}.dashboard-view .project-row .deadline-cell{display:none}}
 @media(max-width:540px){.dashboard-view .project-row{grid-template-columns:1fr 85px;padding:15px}}
+
+/* Team report identity */
+.page-heading{display:grid;gap:3px}.page-heading p{margin:0;color:#d88300;font-size:10px;font-weight:800;letter-spacing:2px;line-height:1.2}.page-heading h1{margin:0;font-family:"Open Sans",sans-serif;font-size:24px;font-weight:800;line-height:1.18;letter-spacing:-.45px}.page-subtitle{display:block;color:#0584cb;font-size:10px;font-weight:800;letter-spacing:2px;line-height:1.25}
+@media(max-width:850px){.page-heading p{display:block}.page-heading h1{font-size:18px}.page-subtitle{font-size:9px}.topbar{height:96px}}
+@media(max-width:540px){.page-heading h1{font-size:15px;letter-spacing:-.2px}.page-heading p,.page-subtitle{font-size:8px;letter-spacing:1.5px}}
