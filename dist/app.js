@@ -103,10 +103,8 @@ function projectRow(project, idx){
 function renderTargets(){
   const items = projects.map(p=>({project:p,tasks:upcomingTasks(p)})).filter(x=>x.tasks.length);
   document.getElementById("deadlineList").innerHTML = items.length ? items.map(({project,tasks},i)=>{
-    const titles = tasks.slice(0,2).map(t=>t.name).join(" • ");
-    const extra = tasks.length > 2 ? ` +${tasks.length-2} lainnya` : "";
-    const needsAttention = tasks.some(t=>t.status==="blocked");
-    return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong></div><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(titles)}${extra}</p></div><span class="${needsAttention?'attention':'in-progress'}">${tasks.length} item</span></div>`;
+    const taskList = tasks.map(task=>`<li>${escapeHTML(task.name)}</li>`).join("");
+    return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong></div><div><h3>${escapeHTML(project.name)}</h3><ul class="deadline-task-list">${taskList}</ul></div></div>`;
   }).join("") : `<div class="empty-state"><p>Semua target tujuh hari sudah selesai.</p></div>`;
 }
 
