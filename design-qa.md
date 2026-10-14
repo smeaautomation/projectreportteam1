@@ -4,6 +4,7 @@
 - Latest annotation source: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-5d611fcc-b2ec-43e4-a8ac-8f8e308a0be0.png`
 - Layout annotation source: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-a25a72fe-5534-4fd3-b2c8-910c7dc5f102.png`
 - Compact-summary annotation source: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-25ac2851-571b-4405-b419-ffd9fa6d21bd.png`
+- Target-spacing annotation source: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-85885f1b-cb15-4121-9fbf-499c7b193992.png`
 - Implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-dashboard-final.png`
 - Latest implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-box-spacing-final.png`
 - Bottom-layout implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-bottom-layout-final.png`
@@ -12,24 +13,29 @@
 - Compact-summary implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-compact-summary-desktop-final.png`
 - Responsive implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-compact-summary-800-fixed.png`
 - Compact-summary production capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\production-compact-summary-final.png`
+- Target-spacing implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-target-spacing-final.png`
+- Target-spacing production capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\production-target-spacing-final.png`
 - Side-by-side comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-comparison.png`
 - Focused spacing comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-box-spacing.png`
 - Bottom-layout comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-bottom-layout.png`
 - Compact-summary comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-compact-summary.png`
+- Target-spacing comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-target-spacing.png`
 - Source dimensions: 1485 × 1059 px
 - Latest annotation dimensions: 1916 × 81 px
 - Layout annotation dimensions: 1272 × 926 px
 - Compact-summary annotation dimensions: 1891 × 383 px
+- Target-spacing annotation dimensions: 260 × 116 px
 - Test viewport: 1440 × 1024 px
 - Captured browser content: 1425 × 968 px
 - Focused implementation crop: 1425 × 210 px
 - Bottom-layout implementation capture: 1424 × 1478 px
 - Compact-summary implementation capture: 1424 × 1610 px
 - Responsive verification viewport: 800 × 900 px; captured content: 785 × 883 px
+- Target-spacing implementation viewport: 1265 × 712 px; responsive measurement repeated at 800 × 900 px
 - Density normalization: CSS viewport and captures use device scale factor 1; the latest annotation was width-normalized only for the focused comparison.
 - State: dashboard route, default project order, page at top
 - Browser interactions: reload, visual inspection at projector viewport, production login, keyboard reorder, dashboard sync, reload persistence, order restoration, logout, production spacing verification, production bottom-layout verification
-- Latest browser checks: 1440 px desktop full-page inspection, 1024 px inspection, 800 px responsive inspection, horizontal-overflow test, timeline-grid collision repair, production login, editor deadline/drag-handle verification, logout, and production console inspection
+- Latest browser checks: 1440 px desktop full-page inspection, 1024 px inspection, 800 px responsive inspection, horizontal-overflow test, timeline-grid collision repair, production login, editor deadline/drag-handle verification, logout, target-summary clearance measurement, and production console inspection
 - Console errors or warnings: none
 
 ## Findings history
@@ -44,6 +50,7 @@
 8. P2 — The unfinished-work target list was unnecessarily long in a single column. Fixed with a two-column desktop grid and a one-column responsive fallback.
 9. P2 — The project summary lacked a direct date signal. Fixed by adding a dedicated Deadline column with calendar icon and urgent/overdue color treatment while preserving the full timeline.
 10. P1 — At 800 px an older, more-specific timeline selector forced the timeline into the project metadata row. Fixed with a scoped responsive override; the final 800 px capture shows timeline, project type, progress, and deadline on separate rows with no horizontal overflow.
+11. P2 — The “29 dari 53 item pekerjaan” summary collided with the lower edge of the completion ring. Fixed by anchoring the summary 14 px from the card bottom; measured clearance is 19 px at the default viewport and 13 px at 800 px, with no horizontal overflow.
 
 ## Fidelity surfaces
 
@@ -59,6 +66,7 @@
 - Focused comparison in `design-qa-box-spacing.png` directly compares the reported clipped state with the corrected top edge; no additional focused regions were needed because the edit was limited to the overview/header boundary.
 - Layout comparison in `design-qa-bottom-layout.png` confirms the clipped right edge is resolved and both requested summary components are below the project table.
 - Combined comparison in `design-qa-compact-summary.png` places the latest user reference, complete desktop implementation, and 800 px responsive proof in one review surface. It confirms the donut position, compact cards, Deadline column, two-column target list, and non-overlapping responsive timeline.
+- Focused comparison in `design-qa-target-spacing.png` shows the reported overlap and the corrected card at readable scale; a full-view comparison was unnecessary because this iteration changes only the summary label inside one KPI card.
 
 ## Final comparison
 

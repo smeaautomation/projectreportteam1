@@ -200,6 +200,7 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .stat-card p{font-size:10px;color:inherit;opacity:.88;margin-bottom:4px}
 .stat-card h2{font-size:25px;line-height:1;color:inherit;margin-bottom:7px}
 .stat-card>div>span{font-size:9px;color:inherit;opacity:.88}
+#completedSummary{position:absolute;left:62px;right:12px;bottom:14px;display:block;line-height:1.25}
 .stat-watermark{position:absolute;right:13px;bottom:12px;font-size:38px;opacity:.20}
 .ring-mini{top:25px;right:14px;width:52px;height:52px;background:conic-gradient(#ffbf1f var(--ring),rgba(255,255,255,.25) 0)}
 .ring-mini:after{inset:7px;background:#7b27ea}
