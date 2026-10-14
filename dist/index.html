@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="dashboard-view">
@@ -128,11 +129,15 @@
         <div class="page-heading">
           <p id="pageEyebrow">TEAM 1</p>
           <h1 id="pageTitle">SME UNDERWRITING &amp; ADMINISTRATION</h1>
-          <span class="page-subtitle" id="pageSubtitle">WEEKLY REPORT</span>
+          <span class="page-subtitle" id="pageSubtitle">PROJECT REPORT</span>
+        </div>
+        <div class="report-date" aria-label="Tanggal pembukaan laporan">
+          <span class="material-symbols-rounded" aria-hidden="true">calendar_month</span>
+          <strong id="reportDateText">14 Oktober 2026</strong>
         </div>
         <div class="top-actions">
           <label class="search-box">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg>
+            <span class="material-symbols-rounded" aria-hidden="true">search</span>
             <input id="searchInput" type="search" placeholder="Cari project..." aria-label="Cari project" />
             <kbd>⌘ K</kbd>
           </label>
@@ -141,87 +146,88 @@
       </header>
 
       <section class="content-wrap">
-        <div class="date-row">
-          <p id="currentDate"></p>
-        </div>
+        <section class="overview-grid" aria-label="Ringkasan dashboard">
+          <section class="daily-routine" aria-labelledby="dailyRoutineTitle">
+            <div class="daily-routine-heading">
+              <span class="material-symbols-rounded" aria-hidden="true">groups</span>
+              <h2 id="dailyRoutineTitle">Daily Routine</h2>
+            </div>
+            <article class="daily-routine-item">
+              <span class="routine-avatar">D</span>
+              <div><strong>Dita</strong><p>Monitoring Pengembangan Web Asuransi Ritel</p></div>
+            </article>
+            <article class="daily-routine-item">
+              <span class="routine-avatar restu">R</span>
+              <div><strong>Restu</strong><p>Administrasi Polis</p></div>
+            </article>
+          </section>
 
-        <section class="daily-routine" aria-labelledby="dailyRoutineTitle">
-          <div class="daily-routine-heading">
-            <h2 id="dailyRoutineTitle">Daily Routine</h2>
-          </div>
-          <article class="daily-routine-item">
-            <span class="routine-avatar">D</span>
-            <div><strong>Dita</strong><p>Monitoring Pengembangan Web Asuransi Ritel</p></div>
-          </article>
-          <article class="daily-routine-item">
-            <span class="routine-avatar restu">R</span>
-            <div><strong>Restu</strong><p>Administrasi Polis</p></div>
-          </article>
+          <section class="stats-grid" aria-label="Ringkasan proyek">
+            <article class="stat-card coral-card">
+              <div class="stat-icon coral"><span class="material-symbols-rounded" aria-hidden="true">folder_open</span></div>
+              <div><p>Total Project</p><h2 id="totalProjects">0</h2><span id="activeSummary">Team 1</span></div>
+              <span class="material-symbols-rounded stat-watermark" aria-hidden="true">folder</span>
+            </article>
+            <article class="stat-card blue-card">
+              <div class="stat-icon blue"><span class="material-symbols-rounded" aria-hidden="true">monitor_heart</span></div>
+              <div><p>Rata-rata Progres</p><h2 id="avgProgress">0%</h2><span>Seluruh project</span></div>
+              <span class="material-symbols-rounded stat-watermark" aria-hidden="true">bar_chart</span>
+            </article>
+            <article class="stat-card green-card">
+              <div class="stat-icon green"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span></div>
+              <div><p>Target Tercapai</p><h2 id="completedProjects">0</h2><span id="completedSummary">Item pekerjaan selesai</span></div>
+              <div class="ring-mini" id="completionRing"><span id="completionRate">0%</span></div>
+            </article>
+          </section>
         </section>
 
-        <section class="stats-grid" aria-label="Ringkasan proyek">
-          <article class="stat-card coral-card">
-            <div class="stat-icon coral"><svg viewBox="0 0 24 24"><path d="M4 5h6l2 2h8v12H4V5Z"/></svg></div>
-            <div><p>Total Project</p><h2 id="totalProjects">0</h2><span id="activeSummary">Team 1</span></div>
-            <div class="mini-orbit coral-orbit"><i></i><i></i><i></i></div>
-          </article>
-          <article class="stat-card blue-card">
-            <div class="stat-icon blue"><svg viewBox="0 0 24 24"><path d="M5 12h3l2-6 4 12 2-6h3"/></svg></div>
-            <div><p>Rata-rata Progres</p><h2 id="avgProgress">0%</h2><span>Seluruh project</span></div>
-            <div class="sparkline"><svg viewBox="0 0 100 45" preserveAspectRatio="none"><path d="M2 36C14 34 18 20 30 25S46 36 58 17s20 4 40-13"/><path class="fill" d="M2 36C14 34 18 20 30 25S46 36 58 17s20 4 40-13V45H2Z"/></svg></div>
-          </article>
-          <article class="stat-card green-card">
-            <div class="stat-icon green"><svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-9"/></svg></div>
-            <div><p>Target Tercapai</p><h2 id="completedProjects">0</h2><span id="completedSummary">Item pekerjaan selesai</span></div>
-            <div class="ring-mini" id="completionRing"><span id="completionRate">0%</span></div>
-          </article>
-        </section>
-
-        <section class="section-card portfolio-card" id="project">
-          <div class="section-header">
-            <div><h2 id="workstreamSectionTitle">Progress Project</h2><p id="workstreamSectionDescription">Ringkasan progres seluruh pekerjaan</p></div>
-            <div class="section-tools">
-              <div class="editor-session" id="editorSession" hidden>
-                <span class="editor-avatar" id="editorAvatar">DO</span>
-                <div><span>LOGIN SEBAGAI</span><strong id="editorName"></strong></div>
-                <button class="logout-btn" id="logoutBtn" type="button">Keluar</button>
-              </div>
-              <div class="filter-group" role="group" aria-label="Filter proyek">
-                <button class="filter-chip active" data-filter="Semua">Semua</button>
-                <button class="filter-chip" data-filter="Done">Done</button>
-                <button class="filter-chip" data-filter="On going">On going</button>
-                <button class="filter-chip" data-filter="Not Started">Not Started</button>
+        <section class="dashboard-layout">
+          <section class="section-card portfolio-card" id="project">
+            <div class="section-header">
+              <div><h2 id="workstreamSectionTitle">Progress Project</h2><p id="workstreamSectionDescription">Ringkasan progres seluruh pekerjaan</p><p class="reorder-hint" id="reorderHint" hidden>Tarik ikon di kiri untuk mengubah urutan. Urutan tersimpan otomatis.</p></div>
+              <div class="section-tools">
+                <div class="editor-session" id="editorSession" hidden>
+                  <span class="editor-avatar" id="editorAvatar">DO</span>
+                  <div><span>LOGIN SEBAGAI</span><strong id="editorName"></strong></div>
+                  <button class="logout-btn" id="logoutBtn" type="button">Keluar</button>
+                </div>
+                <div class="filter-group" role="group" aria-label="Filter proyek">
+                  <button class="filter-chip active" data-filter="Semua">Semua</button>
+                  <button class="filter-chip" data-filter="Done">Done</button>
+                  <button class="filter-chip" data-filter="On going">On going</button>
+                  <button class="filter-chip" data-filter="Not Started">Not Started</button>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="table-head">
-            <span>PROJECT</span><span>PROGRESS</span><span>AKTIVITAS</span><span>TARGET</span><span></span>
-          </div>
-          <div id="projectList" class="project-list"></div>
-          <div id="emptyState" class="empty-state" hidden>
-            <div>⌕</div><h3>Tidak ada project ditemukan</h3><p>Coba ubah kata pencarian atau filter Anda.</p>
-          </div>
-        </section>
-
-        <section class="bottom-grid">
-          <article class="section-card deadline-card">
-            <div class="section-header compact"><div><h2>Target 7 Hari Ke Depan</h2><p id="targetSubtitle">Semua pekerjaan yang belum selesai per hari ini</p></div><button class="icon-btn">→</button></div>
-            <div id="deadlineList" class="deadline-list"></div>
-          </article>
-          <article class="section-card distribution-card">
-            <div class="section-header compact"><div><h2>Distribusi status</h2><p>Posisi item pekerjaan</p></div></div>
-            <div class="distribution-content">
-              <div class="donut" id="distributionDonut"><div><strong id="donutTotal">0</strong><span>item</span></div></div>
-              <div class="legend" id="distributionLegend"></div>
+            <div class="table-head">
+              <span>#</span><span>NAMA PROJECT</span><span>JENIS PROJECT</span><span>PROGRESS</span><span>TIMELINE</span><span></span>
             </div>
-          </article>
+            <div id="projectList" class="project-list"></div>
+            <div id="emptyState" class="empty-state" hidden>
+              <span class="material-symbols-rounded" aria-hidden="true">search_off</span><h3>Tidak ada project ditemukan</h3><p>Coba ubah kata pencarian atau filter Anda.</p>
+            </div>
+          </section>
+
+          <section class="bottom-grid">
+            <article class="section-card deadline-card">
+              <div class="section-header compact"><div><h2>Target 7 Hari Ke Depan</h2><p id="targetSubtitle">Semua pekerjaan yang belum selesai per hari ini</p></div><span class="material-symbols-rounded section-icon" aria-hidden="true">event_upcoming</span></div>
+              <div id="deadlineList" class="deadline-list"></div>
+            </article>
+            <article class="section-card distribution-card">
+              <div class="section-header compact"><div><h2>Distribusi status</h2><p>Posisi item pekerjaan</p></div><span class="material-symbols-rounded section-icon" aria-hidden="true">donut_large</span></div>
+              <div class="distribution-content">
+                <div class="donut" id="distributionDonut"><div><strong id="donutTotal">0</strong><span>item</span></div></div>
+                <div class="legend" id="distributionLegend"></div>
+              </div>
+            </article>
+          </section>
         </section>
       </section>
     </main>
 
     <a class="workstream-fab" id="workstreamFab" href="#project" aria-label="Buka draft project" title="Draft Project">
-      <svg class="fab-folder" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 6.5h6l2 2h9v10h-17v-12Z"/></svg>
-      <svg class="fab-back" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
+      <span class="material-symbols-rounded fab-folder" aria-hidden="true">folder_open</span>
+      <span class="material-symbols-rounded fab-back" aria-hidden="true">arrow_back</span>
       <span class="sr-only" id="workstreamFabLabel">Buka draft project</span>
     </a>
   </div>
@@ -231,7 +237,7 @@
       <div class="modal-head login-head">
         <div class="login-heading">
           <span class="login-lock" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <span class="material-symbols-rounded">lock</span>
           </span>
           <div><span class="eyebrow">AKSES EDITOR</span><h2 id="loginTitle">Login untuk edit project</h2><p>Pilih user lalu masukkan password untuk membuka halaman editing.</p></div>
         </div>

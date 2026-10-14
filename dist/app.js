@@ -9,6 +9,7 @@ let searchQuery = "";
 let authUser = null;
 let authChecked = false;
 let pendingProtectedHash = "#project";
+let draggedProjectId = null;
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const task = (key, name, short, status, context) => ({ key, name, short, status, context });
@@ -166,27 +167,42 @@ function render(){
   document.getElementById("completedSummary").textContent = `${done} dari ${tasks.length} item pekerjaan`;
   document.getElementById("completionRate").textContent = `${completionRate}%`;
   document.getElementById("completionRing").style.setProperty("--ring", `${completionRate}%`);
-  document.getElementById("projectList").innerHTML = filtered.map(projectRow).join("");
+  document.getElementById("projectList").innerHTML = filtered.map((project,index)=>projectRow(project,index)).join("");
   document.getElementById("emptyState").hidden = filtered.length > 0;
   renderTargets(); renderDistribution();
 }
 
-function projectRow(project){
+function projectRow(project,index){
   const progress = progressOf(project);
   const tasks = project.tasks || [];
   const displayTasks = tasks;
+  const editorMode=location.hash==="#project"&&Boolean(authUser);
   const timeline = displayTasks.map((item,index)=>{
     const stepPosition=displayTasks.length===1 ? 50 : index/(displayTasks.length-1)*100;
     const nextPosition=displayTasks.length===1 ? 50 : Math.min(100,(index+1)/(displayTasks.length-1)*100);
     return `<div class="timeline-node ${item.status}" style="--step-position:${stepPosition}%;--next-position:${nextPosition}%" title="${escapeHTML(item.short)}"><i></i><span>${escapeHTML(item.short)}</span></div>`;
   }).join("");
   return `<article class="project-row" data-id="${project.id}">
-    <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3><p>${escapeHTML(project.category)} • ${escapeHTML(project.owner)}</p></div></div>
+    <div class="row-order"><span class="project-index">${index+1}</span><button class="drag-handle" type="button" draggable="${editorMode}" data-reorder-project="${project.id}" aria-label="Ubah urutan ${escapeHTML(project.name)}" title="Tarik untuk mengubah urutan"><span class="material-symbols-rounded" aria-hidden="true">drag_indicator</span></button></div>
+    <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3></div></div>
+    <div class="project-kind"><strong>${escapeHTML(project.category)}</strong><span>PIC: ${escapeHTML(project.owner)}</span></div>
     <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
     <div class="timeline-steps ${displayTasks.length>6?'timeline-dense':''}" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
-    <div class="deadline-cell"><strong>${formatDate(project.end)}</strong></div>
-    <button class="more-btn" data-open-project="${project.id}" aria-label="Buka detail ${escapeHTML(project.name)}">›</button>
+    <button class="more-btn" data-open-project="${project.id}" aria-label="Buka detail ${escapeHTML(project.name)}"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
   </article>`;
+}
+
+function moveProject(sourceId,targetId,placeAfter=false){
+  if(!authUser||sourceId===targetId)return false;
+  const sourceIndex=projects.findIndex(project=>project.id===sourceId);
+  if(sourceIndex<0)return false;
+  const [moved]=projects.splice(sourceIndex,1);
+  let targetIndex=projects.findIndex(project=>project.id===targetId);
+  if(targetIndex<0){projects.splice(sourceIndex,0,moved);return false;}
+  if(placeAfter)targetIndex+=1;
+  projects.splice(targetIndex,0,moved);
+  saveProjects();render();showToast("Urutan project diperbarui dan tersimpan.");
+  return true;
 }
 
 function renderTargets(){
@@ -208,7 +224,7 @@ function renderDistribution(){
   const p1=counts.Done/total*360, p2=p1+counts["On going"]/total*360;
   const donut=document.getElementById("distributionDonut"); donut.style.setProperty("--p1",`${p1}deg`);donut.style.setProperty("--p2",`${p2}deg`);
   document.getElementById("donutTotal").textContent=tasks.length;
-  const colors={Done:"var(--green)","On going":"var(--coral)","Not Started":"#dfe6e4"};
+  const colors={Done:"var(--green)","On going":"#ffad14","Not Started":"#dfe6e4"};
   document.getElementById("distributionLegend").innerHTML=Object.entries(counts).map(([label,value])=>`<div class="legend-item"><i style="background:${colors[label]}"></i><span>${label}</span><strong>${value}</strong></div>`).join("");
 }
 
@@ -312,9 +328,10 @@ function syncView(){
   document.body.classList.toggle("dashboard-view",!isWorkstream);
   document.getElementById("pageEyebrow").textContent="TEAM 1";
   document.getElementById("pageTitle").textContent="SME UNDERWRITING & ADMINISTRATION";
-  document.getElementById("pageSubtitle").textContent="WEEKLY REPORT";
+  document.getElementById("pageSubtitle").textContent="PROJECT REPORT";
   document.getElementById("workstreamSectionTitle").textContent=isWorkstream?"Draft Project":"Progress Project";
-  document.getElementById("workstreamSectionDescription").textContent=isWorkstream?"Daftar rancangan project yang dapat ditinjau dan diperbarui":"Ringkasan progres seluruh pekerjaan";
+  document.getElementById("workstreamSectionDescription").textContent=isWorkstream?"Edit detail dan susun urutan project":"Ringkasan progres seluruh pekerjaan";
+  document.getElementById("reorderHint").hidden=!isWorkstream;
   const fab=document.getElementById("workstreamFab");
   const label=isWorkstream?"Kembali ke dashboard":"Buka draft project";
   fab.href=isWorkstream?"#dashboard-app":"#project";
@@ -325,13 +342,13 @@ function syncView(){
   if(!isWorkstream&&(currentFilter!=="Semua"||searchQuery)){
     currentFilter="Semua";searchQuery="";document.getElementById("searchInput").value="";
     document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter==="Semua"));
-    render();
   }
+  render();
   window.scrollTo(0,0);
 }
 
-document.getElementById("currentDate").textContent="Laporan 13 Oktober 2026  •  Team 1  •  Dita & Restu";
-document.getElementById("targetSubtitle").textContent=`Semua pekerjaan yang belum selesai per ${new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"long",year:"numeric"}).format(new Date())}`;
+document.getElementById("reportDateText").textContent="14 Oktober 2026";
+document.getElementById("targetSubtitle").textContent="Semua pekerjaan yang belum selesai per 14 Oktober 2026";
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.getElementById("workstreamFab").addEventListener("click",event=>{if(location.hash!=="#project"&&!authUser){event.preventDefault();openLoginModal("#project");}});
 document.querySelectorAll("[data-close-login]").forEach(button=>button.addEventListener("click",closeLoginModal));
@@ -403,6 +420,48 @@ document.getElementById("deleteTaskBtn").addEventListener("click",()=>{
 });
 
 document.getElementById("projectList").addEventListener("click",event=>{const button=event.target.closest("[data-open-project]");if(button)openDrawer(button.dataset.openProject);});
+document.getElementById("projectList").addEventListener("dragstart",event=>{
+  const handle=event.target.closest(".drag-handle");
+  if(!handle||!authUser||location.hash!=="#project"){event.preventDefault();return;}
+  draggedProjectId=handle.dataset.reorderProject;
+  const row=handle.closest(".project-row");
+  row.classList.add("dragging");
+  event.dataTransfer.effectAllowed="move";
+  event.dataTransfer.setData("text/plain",draggedProjectId);
+});
+document.getElementById("projectList").addEventListener("dragover",event=>{
+  if(!draggedProjectId)return;
+  const row=event.target.closest(".project-row");
+  if(!row||row.dataset.id===draggedProjectId)return;
+  event.preventDefault();
+  document.querySelectorAll(".project-row.drag-over-before,.project-row.drag-over-after").forEach(item=>item.classList.remove("drag-over-before","drag-over-after"));
+  const rect=row.getBoundingClientRect();
+  row.classList.add(event.clientY>rect.top+rect.height/2?"drag-over-after":"drag-over-before");
+  event.dataTransfer.dropEffect="move";
+});
+document.getElementById("projectList").addEventListener("drop",event=>{
+  const row=event.target.closest(".project-row");
+  if(!draggedProjectId||!row)return;
+  event.preventDefault();
+  const rect=row.getBoundingClientRect();
+  moveProject(draggedProjectId,row.dataset.id,event.clientY>rect.top+rect.height/2);
+});
+document.getElementById("projectList").addEventListener("dragend",()=>{
+  draggedProjectId=null;
+  document.querySelectorAll(".project-row.dragging,.project-row.drag-over-before,.project-row.drag-over-after").forEach(item=>item.classList.remove("dragging","drag-over-before","drag-over-after"));
+});
+document.getElementById("projectList").addEventListener("keydown",event=>{
+  const handle=event.target.closest(".drag-handle");
+  if(!handle||!authUser||!['ArrowUp','ArrowDown'].includes(event.key))return;
+  event.preventDefault();
+  const index=projects.findIndex(project=>project.id===handle.dataset.reorderProject);
+  const targetIndex=event.key==='ArrowUp'?index-1:index+1;
+  if(index<0||targetIndex<0||targetIndex>=projects.length)return;
+  const targetId=projects[targetIndex].id;
+  if(moveProject(handle.dataset.reorderProject,targetId,event.key==='ArrowDown')){
+    requestAnimationFrame(()=>document.querySelector(`[data-reorder-project="${handle.dataset.reorderProject}"]`)?.focus());
+  }
+});
 document.getElementById("drawerContent").addEventListener("change",event=>{if(!event.target.matches(".stage-select"))return;const project=projects.find(item=>item.id===event.target.dataset.project);project.tasks[Number(event.target.dataset.taskIndex)].status=event.target.value;saveProjects();render();openDrawer(project.id);showToast("Progress project diperbarui.");});
 document.getElementById("drawerContent").addEventListener("click",event=>{
   const addTask=event.target.closest("[data-add-task]"); if(addTask){openTaskModal(addTask.dataset.addTask);return;}
