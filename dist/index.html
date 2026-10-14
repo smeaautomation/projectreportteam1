@@ -180,11 +180,18 @@
         <section class="section-card portfolio-card" id="project">
           <div class="section-header">
             <div><h2 id="workstreamSectionTitle">Progress Project</h2><p id="workstreamSectionDescription">Ringkasan progres seluruh pekerjaan</p></div>
-            <div class="filter-group" role="group" aria-label="Filter proyek">
-              <button class="filter-chip active" data-filter="Semua">Semua</button>
-              <button class="filter-chip" data-filter="Done">Done</button>
-              <button class="filter-chip" data-filter="On going">On going</button>
-              <button class="filter-chip" data-filter="Not Started">Not Started</button>
+            <div class="section-tools">
+              <div class="editor-session" id="editorSession" hidden>
+                <span class="editor-avatar" id="editorAvatar">DO</span>
+                <div><span>LOGIN SEBAGAI</span><strong id="editorName"></strong></div>
+                <button class="logout-btn" id="logoutBtn" type="button">Keluar</button>
+              </div>
+              <div class="filter-group" role="group" aria-label="Filter proyek">
+                <button class="filter-chip active" data-filter="Semua">Semua</button>
+                <button class="filter-chip" data-filter="Done">Done</button>
+                <button class="filter-chip" data-filter="On going">On going</button>
+                <button class="filter-chip" data-filter="Not Started">Not Started</button>
+              </div>
             </div>
           </div>
           <div class="table-head">
@@ -217,6 +224,29 @@
       <svg class="fab-back" viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 6-6 6 6 6"/></svg>
       <span class="sr-only" id="workstreamFabLabel">Buka draft project</span>
     </a>
+  </div>
+
+  <div class="modal-backdrop login-modal-backdrop" id="loginModal" hidden>
+    <section class="modal login-modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <div class="modal-head login-head">
+        <div class="login-heading">
+          <span class="login-lock" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          </span>
+          <div><span class="eyebrow">AKSES EDITOR</span><h2 id="loginTitle">Login untuk edit project</h2><p>Pilih user lalu masukkan password untuk membuka halaman editing.</p></div>
+        </div>
+        <button class="close-btn" type="button" data-close-login aria-label="Tutup">×</button>
+      </div>
+      <form id="loginForm">
+        <div class="form-grid login-form-grid">
+          <label class="full"><span>User</span><select id="loginUser" required><option value="">Pilih user</option><option value="dita">Dita Octaviana</option><option value="restu">Restu Aji Nugroho</option></select></label>
+          <label class="full"><span>Password</span><input id="loginPassword" type="password" required autocomplete="current-password" maxlength="64" placeholder="Masukkan password" /></label>
+          <p class="login-error" id="loginError" role="alert" hidden></p>
+          <p class="login-security-note"><span>✓</span> Password diperiksa melalui koneksi aman dan tidak disimpan di browser.</p>
+        </div>
+        <div class="modal-actions"><button type="button" class="secondary-btn" data-close-login>Batal</button><button type="submit" class="primary-btn" id="loginSubmit">Masuk ke Editor <span>→</span></button></div>
+      </form>
+    </section>
   </div>
 
   <div class="modal-backdrop" id="projectModal" hidden>

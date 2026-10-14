@@ -3,8 +3,12 @@ const REPORT_TARGET_DATE = "2026-10-06";
 const STATUS_VALUE = { todo: 0, active: .5, done: 1 };
 const STORAGE_KEY = "team1-weekly-progress-v3";
 const LEGACY_STORAGE_KEY = "team1-weekly-progress-v2";
+const AUTH_ENDPOINT = "/api/auth";
 let currentFilter = "Semua";
 let searchQuery = "";
+let authUser = null;
+let authChecked = false;
+let pendingProtectedHash = "#project";
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const task = (key, name, short, status, context) => ({ key, name, short, status, context });
@@ -219,6 +223,7 @@ function createDefaultTasks(){
 }
 
 function openModal(project=null){
+  if(!requireEditor())return;
   const form=document.getElementById("projectForm"); form.reset();
   document.getElementById("projectId").value=project?.id || "";
   document.getElementById("modalTitle").textContent=project ? "Edit informasi project" : "Tambahkan pekerjaan";
@@ -235,7 +240,35 @@ function openModal(project=null){
 function closeModal(){document.getElementById("projectModal").hidden=true;}
 function showToast(message){const toast=document.getElementById("toast");toast.querySelector("p").textContent=message;toast.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove("show"),2600);}
 
+function updateAuthUI(){
+  const session=document.getElementById("editorSession");
+  session.hidden=!authUser;
+  if(!authUser)return;
+  document.getElementById("editorName").textContent=authUser.name;
+  document.getElementById("editorAvatar").textContent=authUser.name.split(/\s+/).map(part=>part[0]).slice(0,2).join("").toUpperCase();
+}
+function openLoginModal(returnHash="#project"){
+  pendingProtectedHash=returnHash;
+  const form=document.getElementById("loginForm");
+  form.reset();
+  const error=document.getElementById("loginError");
+  error.hidden=true; error.textContent="";
+  document.getElementById("loginModal").hidden=false;
+  setTimeout(()=>document.getElementById("loginUser").focus(),50);
+}
+function closeLoginModal(){document.getElementById("loginModal").hidden=true;}
+function requireEditor(){if(authUser)return true;openLoginModal("#project");return false;}
+async function refreshAuth(){
+  try{
+    const response=await fetch(AUTH_ENDPOINT,{credentials:"same-origin",headers:{Accept:"application/json"}});
+    const data=response.ok?await response.json():{authenticated:false};
+    authUser=data.authenticated?data.user:null;
+  }catch{authUser=null;}
+  authChecked=true; updateAuthUI(); syncView();
+}
+
 function openTaskModal(projectId,index=null){
+  if(!requireEditor())return;
   const project=projects.find(item=>item.id===projectId); if(!project)return;
   const item=index===null?null:project.tasks?.[index];
   const form=document.getElementById("taskForm"); form.reset();
@@ -253,6 +286,7 @@ function openTaskModal(projectId,index=null){
 function closeTaskModal(){document.getElementById("taskModal").hidden=true;}
 
 function openDrawer(id){
+  if(!requireEditor())return;
   const project=projects.find(x=>x.id===id); if(!project)return; const progress=progressOf(project);
   document.getElementById("drawerTitle").textContent=project.name;
   document.getElementById("drawerContent").innerHTML=`
@@ -268,7 +302,12 @@ function openDrawer(id){
 function closeDrawer(){document.getElementById("detailDrawer").hidden=true;}
 
 function syncView(){
-  const isWorkstream=location.hash==="#project";
+  let isWorkstream=location.hash==="#project";
+  if(isWorkstream&&authChecked&&!authUser){
+    history.replaceState(null,"","#dashboard-app");
+    isWorkstream=false;
+    openLoginModal("#project");
+  }
   document.body.classList.toggle("workstream-view",isWorkstream);
   document.body.classList.toggle("dashboard-view",!isWorkstream);
   document.getElementById("pageEyebrow").textContent="TEAM 1";
@@ -282,6 +321,7 @@ function syncView(){
   fab.setAttribute("aria-label",label);
   fab.title=label;
   document.getElementById("workstreamFabLabel").textContent=label;
+  updateAuthUI();
   if(!isWorkstream&&(currentFilter!=="Semua"||searchQuery)){
     currentFilter="Semua";searchQuery="";document.getElementById("searchInput").value="";
     document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter==="Semua"));
@@ -293,19 +333,46 @@ function syncView(){
 document.getElementById("currentDate").textContent="Laporan 13 Oktober 2026  •  Team 1  •  Dita & Restu";
 document.getElementById("targetSubtitle").textContent=`Semua pekerjaan yang belum selesai per ${new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"long",year:"numeric"}).format(new Date())}`;
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
+document.getElementById("workstreamFab").addEventListener("click",event=>{if(location.hash!=="#project"&&!authUser){event.preventDefault();openLoginModal("#project");}});
+document.querySelectorAll("[data-close-login]").forEach(button=>button.addEventListener("click",closeLoginModal));
 document.querySelectorAll("[data-close-modal]").forEach(button=>button.addEventListener("click",closeModal));
 document.querySelectorAll("[data-close-task]").forEach(button=>button.addEventListener("click",closeTaskModal));
 document.getElementById("closeDrawer").addEventListener("click",closeDrawer);
 document.getElementById("projectModal").addEventListener("click",event=>{if(event.target.id==="projectModal")closeModal()});
 document.getElementById("taskModal").addEventListener("click",event=>{if(event.target.id==="taskModal")closeTaskModal()});
 document.getElementById("detailDrawer").addEventListener("click",event=>{if(event.target.id==="detailDrawer")closeDrawer()});
+document.getElementById("loginModal").addEventListener("click",event=>{if(event.target.id==="loginModal")closeLoginModal()});
 window.addEventListener("hashchange",syncView);
-document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeTaskModal();closeModal();closeDrawer();}});
+document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeLoginModal();closeTaskModal();closeModal();closeDrawer();}});
 document.getElementById("searchInput").addEventListener("input",event=>{searchQuery=event.target.value.trim().toLowerCase();render()});
 document.querySelectorAll(".filter-chip,.filter-nav").forEach(button=>button.addEventListener("click",()=>{currentFilter=button.dataset.filter;document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter===currentFilter));render();if(button.classList.contains("filter-nav"))document.querySelector(".sidebar").classList.remove("open");}));
 
+document.getElementById("loginForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  const submit=document.getElementById("loginSubmit");
+  const error=document.getElementById("loginError");
+  submit.disabled=true; submit.innerHTML='Memeriksa…'; error.hidden=true;
+  try{
+    const response=await fetch(AUTH_ENDPOINT,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({user:document.getElementById("loginUser").value,password:document.getElementById("loginPassword").value})});
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||!data.authenticated)throw new Error(data.error||"Login belum dapat diproses.");
+    authUser=data.user; authChecked=true; closeLoginModal(); updateAuthUI();
+    const destination=pendingProtectedHash||"#project"; pendingProtectedHash="#project";
+    if(location.hash===destination)syncView();else location.hash=destination;
+    showToast(`Login berhasil. Selamat datang, ${authUser.name}.`);
+  }catch(loginError){
+    error.textContent=loginError.message||"User atau password tidak sesuai."; error.hidden=false;
+    document.getElementById("loginPassword").select();
+  }finally{submit.disabled=false;submit.innerHTML='Masuk ke Editor <span>→</span>';}
+});
+
+document.getElementById("logoutBtn").addEventListener("click",async()=>{
+  try{await fetch(AUTH_ENDPOINT,{method:"DELETE",credentials:"same-origin",headers:{Accept:"application/json"}});}catch{}
+  authUser=null; closeTaskModal(); closeModal(); closeDrawer(); history.replaceState(null,"","#dashboard-app"); syncView(); showToast("Anda sudah keluar dari mode editor.");
+});
+
 document.getElementById("projectForm").addEventListener("submit",event=>{
-  event.preventDefault(); const start=document.getElementById("projectStart").value,end=document.getElementById("projectEnd").value;
+  event.preventDefault(); if(!requireEditor()){closeModal();return;} const start=document.getElementById("projectStart").value,end=document.getElementById("projectEnd").value;
   if(new Date(end)<new Date(start)){showToast("Target selesai harus setelah tanggal mulai.");return;}
   const editId=document.getElementById("projectId").value;
   const old=projects.find(project=>project.id===editId);
@@ -316,6 +383,7 @@ document.getElementById("projectForm").addEventListener("submit",event=>{
 
 document.getElementById("taskForm").addEventListener("submit",event=>{
   event.preventDefault();
+  if(!requireEditor()){closeTaskModal();return;}
   const projectId=document.getElementById("taskProjectId").value;
   const project=projects.find(item=>item.id===projectId); if(!project)return;
   const indexValue=document.getElementById("taskIndex").value;
@@ -327,6 +395,7 @@ document.getElementById("taskForm").addEventListener("submit",event=>{
 });
 
 document.getElementById("deleteTaskBtn").addEventListener("click",()=>{
+  if(!requireEditor()){closeTaskModal();return;}
   const projectId=document.getElementById("taskProjectId").value;
   const index=Number(document.getElementById("taskIndex").value);
   const project=projects.find(item=>item.id===projectId); const item=project?.tasks?.[index]; if(!item)return;
@@ -341,5 +410,5 @@ document.getElementById("drawerContent").addEventListener("click",event=>{
   const remove=event.target.closest("[data-delete-project]"); if(remove){const project=projects.find(item=>item.id===remove.dataset.deleteProject);if(confirm(`Hapus project “${project.name}”?`)){projects=projects.filter(item=>item.id!==project.id);saveProjects();closeDrawer();render();showToast("Project dihapus.");}}
   const edit=event.target.closest("[data-edit-project]"); if(edit){const project=projects.find(item=>item.id===edit.dataset.editProject);closeDrawer();openModal(project);}
 });
-syncView();
 render();
+refreshAuth();
