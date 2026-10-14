@@ -4,6 +4,7 @@
 - Latest annotation source: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-5d611fcc-b2ec-43e4-a8ac-8f8e308a0be0.png`
 - Implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-dashboard-final.png`
 - Latest implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-box-spacing-final.png`
+- Production verification capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\production-box-spacing-final.png`
 - Side-by-side comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-comparison.png`
 - Focused spacing comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-box-spacing.png`
 - Source dimensions: 1485 × 1059 px
@@ -13,7 +14,7 @@
 - Focused implementation crop: 1425 × 210 px
 - Density normalization: CSS viewport and captures use device scale factor 1; the latest annotation was width-normalized only for the focused comparison.
 - State: dashboard route, default project order, page at top
-- Browser interactions: reload, visual inspection at projector viewport, production login, keyboard reorder, dashboard sync, reload persistence, order restoration, logout
+- Browser interactions: reload, visual inspection at projector viewport, production login, keyboard reorder, dashboard sync, reload persistence, order restoration, logout, production spacing verification
 - Console errors or warnings: none
 
 ## Findings history
