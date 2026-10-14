@@ -79,7 +79,7 @@ body,.app-shell{background:#f3f8fb;color:#002e5b}.sidebar{background:#002e5b}.br
 .donut{background:conic-gradient(var(--green) 0 var(--p1),var(--coral) var(--p1) var(--p2),#dfe6e4 var(--p2) 360deg)}
 
 /* Progress stays visible on the dashboard; editing stays in Workstream */
-.dashboard-view .portfolio-card{display:block;margin-bottom:18px}.dashboard-view .portfolio-card .filter-group,.dashboard-view .project-row .more-btn,.dashboard-view .table-head span:last-child{display:none}.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:minmax(190px,1.25fr) minmax(120px,.65fr) minmax(240px,1.45fr) minmax(110px,.65fr)}.project-main>div{min-width:0}
+.dashboard-view .portfolio-card{display:block;margin-bottom:18px}.dashboard-view .portfolio-card .filter-group,.dashboard-view .project-row .more-btn,.dashboard-view .table-head>span:last-child{display:none}.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:minmax(190px,1.25fr) minmax(120px,.65fr) minmax(240px,1.45fr) minmax(110px,.65fr)}.project-main>div{min-width:0}
 @media(max-width:850px){.dashboard-view .project-row{grid-template-columns:minmax(160px,1fr) 100px;gap:14px}.dashboard-view .project-row .timeline-steps{grid-column:1/-1;grid-row:2}.dashboard-view .project-row .deadline-cell{display:none}}
 @media(max-width:540px){.dashboard-view .project-row{grid-template-columns:1fr 85px;padding:15px}}
 
@@ -216,9 +216,12 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .section-header.compact{padding:16px 20px 14px}
 .section-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#f0eaff;color:#7a25ed;font-size:21px}
 .reorder-hint{margin-top:7px!important;color:#8b5b00!important;font-weight:700}
-.table-head,.project-row{display:grid;grid-template-columns:40px minmax(180px,1.05fr) minmax(110px,.65fr) minmax(100px,.55fr) minmax(98px,.55fr) minmax(340px,1.75fr) 32px;gap:12px;align-items:center}
-.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:40px minmax(180px,1.05fr) minmax(110px,.65fr) minmax(100px,.55fr) minmax(98px,.55fr) minmax(340px,1.75fr)}
+.table-head,.project-row{display:grid;grid-template-columns:40px minmax(180px,1.05fr) minmax(110px,.65fr) minmax(100px,.55fr) minmax(480px,2.35fr) 32px;gap:12px;align-items:center}
+.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:40px minmax(180px,1.05fr) minmax(110px,.65fr) minmax(100px,.55fr) minmax(480px,2.35fr)}
 .table-head{padding:11px 18px;background:#f3f8fc;color:#8394aa;font-size:10px;letter-spacing:.75px}
+.timeline-head{display:grid;grid-template-columns:minmax(78px,.3fr) minmax(260px,1fr) minmax(78px,.3fr);gap:8px;align-items:center;text-align:center}
+.timeline-head span:first-child{text-align:left}
+.timeline-head span:last-child{text-align:right}
 .project-row{position:relative;min-height:58px;padding:7px 18px;border-top:1px solid #e8eef4;transition:background .15s ease,opacity .15s ease,transform .15s ease}
 .project-row:hover{background:#f9fcff}
 .row-order{display:grid;place-items:center}
@@ -242,13 +245,18 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .progress-track{height:7px;background:#e7eef2}
 .progress-track i{background:#1592d0}
 .progress-cell strong{font-size:12px;color:#051a66}
-.project-deadline{display:flex;align-items:center;gap:5px;color:#486786;white-space:nowrap}
-.project-deadline .material-symbols-rounded{font-size:15px;color:#8ea2b8}
-.project-deadline strong{font-size:10px;line-height:1.2}
+.project-timeline{display:grid;grid-template-columns:minmax(78px,.3fr) minmax(260px,1fr) minmax(78px,.3fr);gap:8px;align-items:center;min-width:0}
+.timeline-boundary{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.timeline-boundary .material-symbols-rounded{font-size:15px}
+.timeline-boundary strong{font-size:10px;line-height:1.2}
+.project-start{color:#246a9e}
+.project-start .material-symbols-rounded{color:#178fce}
+.project-deadline{justify-content:flex-end;color:#486786;text-align:right}
+.project-deadline .material-symbols-rounded{color:#8ea2b8}
 .project-deadline.urgent,.project-deadline.urgent .material-symbols-rounded{color:#d18400}
 .project-deadline.overdue,.project-deadline.overdue .material-symbols-rounded{color:#df4565}
 .project-deadline.complete{color:#6680a0}
-.timeline-steps{height:42px;margin:0 26px}
+.project-timeline .timeline-steps{height:42px;margin:0 22px}
 .timeline-node span{top:19px;width:64px;font-size:9.5px;color:#8a96a8}
 .timeline-dense .timeline-node span{width:40px;font-size:8.5px}
 .timeline-node i{width:12px;height:12px;border-color:#d6e1e5}
@@ -298,7 +306,7 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .workstream-view .dashboard-layout{display:block;max-width:1380px;margin:0 auto}
 .workstream-view .portfolio-card{margin:0}
 .workstream-view .content-wrap{padding-top:26px}
-.workstream-view .table-head,.workstream-view .project-row{grid-template-columns:40px minmax(190px,1.15fr) minmax(120px,.68fr) minmax(110px,.58fr) minmax(100px,.55fr) minmax(360px,1.8fr) 32px}
+.workstream-view .table-head,.workstream-view .project-row{grid-template-columns:40px minmax(190px,1.15fr) minmax(120px,.68fr) minmax(110px,.58fr) minmax(500px,2.4fr) 32px}
 .workstream-view .section-header{align-items:flex-start}
 .workstream-view .section-tools{align-items:flex-start}
 .workstream-view .project-row{cursor:default}
@@ -330,8 +338,10 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
   .project-main{grid-column:2;grid-row:1}
   .project-kind{grid-column:2;grid-row:2}
   .progress-cell{grid-column:3;grid-row:2}
-  .project-deadline{grid-column:2;grid-row:3}
-  .project-row .timeline-steps,.dashboard-view .project-row .timeline-steps,.workstream-view .project-row .timeline-steps{grid-column:2/-1;grid-row:4;margin:4px 24px 0}
+  .project-timeline{grid-column:2/-1;grid-row:4;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px}
+  .project-timeline .project-start{grid-column:1;grid-row:1}
+  .project-timeline .project-deadline{grid-column:2;grid-row:1;justify-self:end}
+  .project-row .project-timeline .timeline-steps,.dashboard-view .project-row .project-timeline .timeline-steps,.workstream-view .project-row .project-timeline .timeline-steps{grid-column:1/-1;grid-row:2;margin:4px 24px 0}
   .more-btn{grid-column:4;grid-row:1}
   .content-wrap{padding-inline:18px}
 }
@@ -353,7 +363,8 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
   .project-main h3{font-size:12px}
   .project-kind strong,.progress-cell strong{font-size:11px}
   .project-kind span{font-size:10px}
-  .project-row .timeline-steps,.dashboard-view .project-row .timeline-steps,.workstream-view .project-row .timeline-steps{grid-column:1/-1;grid-row:4;margin-inline:24px;height:52px}
+  .project-timeline{grid-column:1/-1;margin-top:6px}
+  .project-row .project-timeline .timeline-steps,.dashboard-view .project-row .project-timeline .timeline-steps,.workstream-view .project-row .project-timeline .timeline-steps{margin-inline:24px;height:52px}
   .distribution-content{grid-template-columns:1fr;justify-items:center}
   .deadline-list{grid-template-columns:1fr}
   .deadline-item:nth-child(2){border-top:1px solid #edf0ef}

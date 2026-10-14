@@ -189,8 +189,11 @@ function projectRow(project,index){
     <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3></div></div>
     <div class="project-kind"><strong>${escapeHTML(project.category)}</strong><span>PIC: ${escapeHTML(project.owner)}</span></div>
     <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
-    <div class="project-deadline ${deadlineTone}"><span class="material-symbols-rounded" aria-hidden="true">event</span><strong>${project.end?formatDate(project.end):"-"}</strong></div>
-    <div class="timeline-steps ${displayTasks.length>6?'timeline-dense':''}" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
+    <div class="project-timeline">
+      <div class="timeline-boundary project-start"><span class="material-symbols-rounded" aria-hidden="true">play_circle</span><strong>${project.start?formatDate(project.start):"-"}</strong></div>
+      <div class="timeline-steps ${displayTasks.length>6?'timeline-dense':''}" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
+      <div class="timeline-boundary project-deadline ${deadlineTone}"><span class="material-symbols-rounded" aria-hidden="true">event</span><strong>${project.end?formatDate(project.end):"-"}</strong></div>
+    </div>
     <button class="more-btn" data-open-project="${project.id}" aria-label="Buka detail ${escapeHTML(project.name)}"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
   </article>`;
 }
