@@ -249,7 +249,7 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .more-btn .material-symbols-rounded{font-size:20px}
 .dashboard-view .more-btn{display:none}
 .bottom-grid{display:grid;grid-template-columns:1fr;gap:16px}
-.deadline-card{max-height:420px;overflow:auto}
+.deadline-card{max-height:360px;overflow:auto}
 .deadline-list{padding:0 20px 10px}
 .deadline-item{grid-template-columns:36px minmax(0,1fr);gap:11px;padding:11px 0}
 .deadline-date{padding:7px 3px;border-color:#d8e6f0;background:#fbfdff}
