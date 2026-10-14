@@ -276,7 +276,7 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .legend{width:100%;display:grid;grid-template-columns:1fr;gap:7px}
 .legend-item{margin:0;padding:8px 10px;background:#f6f9fc;font-size:11px}
 .legend-item i{width:8px;height:8px}
-.compact-distribution-card{display:flex;align-items:center;background:#eef8ff;color:#071866;border:1px solid rgba(82,165,222,.22);padding:12px}
+.compact-distribution-card{display:flex;align-items:center;background:linear-gradient(135deg,#e0efff 0%,#e8e4ff 100%);color:#071866;border:1px solid rgba(74,106,205,.3);padding:12px;box-shadow:0 10px 24px rgba(58,88,170,.13)}
 .compact-distribution-card .donut{width:72px;height:72px;flex:0 0 auto}
 .compact-distribution-card .donut>div{width:46px;height:46px}
 .compact-distribution-card .donut strong{font-size:18px;color:#071866}
