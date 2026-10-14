@@ -120,9 +120,9 @@ body,.app-shell{background:#f3f8fb;color:#002e5b}.sidebar{background:#002e5b}.br
 @media(max-width:540px){.timeline-steps{height:62px;margin-inline:24px}.timeline-node span{width:64px}.timeline-dense .timeline-node span{width:36px}}
 
 /* Center a larger status donut and place its legend underneath. */
-.distribution-content{flex-direction:column;align-items:center;gap:22px;padding:30px 30px 34px}
-.donut{width:210px;height:210px}
-.donut>div{width:134px;height:134px}
-.legend{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.legend-item{min-width:0;margin:0;padding:8px 10px;border-radius:9px;background:#f7fafc}
-@media(max-width:540px){.donut{width:185px;height:185px}.donut>div{width:118px;height:118px}.legend{width:min(100%,270px);grid-template-columns:1fr;gap:6px}.legend-item{padding:7px 10px}}
+.distribution-content{flex-direction:column;align-items:center;gap:26px;padding:32px 30px 38px}
+.donut{width:270px;height:270px}
+.donut>div{width:172px;height:172px}
+.legend{width:min(100%,330px);display:grid;grid-template-columns:1fr;gap:8px}
+.legend-item{min-width:0;margin:0;padding:10px 14px;border-radius:9px;background:#f7fafc}
+@media(max-width:540px){.donut{width:220px;height:220px}.donut>div{width:140px;height:140px}.legend{width:min(100%,290px)}.legend-item{padding:8px 11px}}
