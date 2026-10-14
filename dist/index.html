@@ -173,6 +173,10 @@
               <div><p>Rata-rata Progres</p><h2 id="avgProgress">0%</h2><span>Seluruh project</span></div>
               <span class="material-symbols-rounded stat-watermark" aria-hidden="true">bar_chart</span>
             </article>
+            <article class="stat-card distribution-card compact-distribution-card">
+              <div class="donut" id="distributionDonut"><div><strong id="donutTotal">0</strong><span>item</span></div></div>
+              <div class="compact-distribution-copy"><p>Distribusi Status</p><div class="legend" id="distributionLegend"></div></div>
+            </article>
             <article class="stat-card green-card">
               <div class="stat-icon green"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span></div>
               <div><p>Target Tercapai</p><h2 id="completedProjects">0</h2><span id="completedSummary">Item pekerjaan selesai</span></div>
@@ -200,7 +204,7 @@
               </div>
             </div>
             <div class="table-head">
-              <span>#</span><span>NAMA PROJECT</span><span>JENIS PROJECT</span><span>PROGRESS</span><span>TIMELINE</span><span></span>
+              <span>#</span><span>NAMA PROJECT</span><span>JENIS PROJECT</span><span>PROGRESS</span><span>DEADLINE</span><span>TIMELINE</span><span></span>
             </div>
             <div id="projectList" class="project-list"></div>
             <div id="emptyState" class="empty-state" hidden>
@@ -212,13 +216,6 @@
             <article class="section-card deadline-card">
               <div class="section-header compact"><div><h2>Target 7 Hari Ke Depan</h2><p id="targetSubtitle">Semua pekerjaan yang belum selesai per hari ini</p></div><span class="material-symbols-rounded section-icon" aria-hidden="true">event_upcoming</span></div>
               <div id="deadlineList" class="deadline-list"></div>
-            </article>
-            <article class="section-card distribution-card">
-              <div class="section-header compact"><div><h2>Distribusi status</h2><p>Posisi item pekerjaan</p></div><span class="material-symbols-rounded section-icon" aria-hidden="true">donut_large</span></div>
-              <div class="distribution-content">
-                <div class="donut" id="distributionDonut"><div><strong id="donutTotal">0</strong><span>item</span></div></div>
-                <div class="legend" id="distributionLegend"></div>
-              </div>
             </article>
           </section>
         </section>

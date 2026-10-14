@@ -176,6 +176,8 @@ function projectRow(project,index){
   const progress = progressOf(project);
   const tasks = project.tasks || [];
   const displayTasks = tasks;
+  const deadlineDays=project.end?daysUntil(project.end):null;
+  const deadlineTone=progress>=100?"complete":deadlineDays!==null&&deadlineDays<0?"overdue":deadlineDays!==null&&deadlineDays<=7?"urgent":"";
   const editorMode=location.hash==="#project"&&Boolean(authUser);
   const timeline = displayTasks.map((item,index)=>{
     const stepPosition=displayTasks.length===1 ? 50 : index/(displayTasks.length-1)*100;
@@ -187,6 +189,7 @@ function projectRow(project,index){
     <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3></div></div>
     <div class="project-kind"><strong>${escapeHTML(project.category)}</strong><span>PIC: ${escapeHTML(project.owner)}</span></div>
     <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
+    <div class="project-deadline ${deadlineTone}"><span class="material-symbols-rounded" aria-hidden="true">event</span><strong>${project.end?formatDate(project.end):"-"}</strong></div>
     <div class="timeline-steps ${displayTasks.length>6?'timeline-dense':''}" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
     <button class="more-btn" data-open-project="${project.id}" aria-label="Buka detail ${escapeHTML(project.name)}"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
   </article>`;
