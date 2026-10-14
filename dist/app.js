@@ -251,7 +251,9 @@ function openModal(project=null){
   document.getElementById("projectEnd").value=project?.end || addDays(new Date(),7);
   if(project){
     document.getElementById("projectName").value=project.name; document.getElementById("projectOwner").value=project.owner;
-    document.getElementById("projectCategory").value=[...document.getElementById("projectCategory").options].some(o=>o.value===project.category)?project.category:"Lainnya";
+    const legacyCategoryMap={"Web Platform":"Web Automation","Digital Product":"Web Automation",Operasional:"Dukungan Operasional"};
+    const selectedCategory=legacyCategoryMap[project.category] || project.category;
+    document.getElementById("projectCategory").value=[...document.getElementById("projectCategory").options].some(o=>o.value===selectedCategory)?selectedCategory:"Lainnya";
     document.querySelector(`input[name="priority"][value="${project.priority}"]`).checked=true;
   }
   document.getElementById("projectModal").hidden=false; setTimeout(()=>document.getElementById("projectName").focus(),50);
