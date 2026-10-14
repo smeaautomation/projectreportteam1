@@ -7,6 +7,7 @@
 - Latest implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-box-spacing-final.png`
 - Bottom-layout implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-bottom-layout-final.png`
 - Production verification capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\production-box-spacing-final.png`
+- Production bottom-layout capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\production-bottom-layout-final.png`
 - Side-by-side comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-comparison.png`
 - Focused spacing comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-box-spacing.png`
 - Bottom-layout comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-bottom-layout.png`
@@ -19,7 +20,7 @@
 - Bottom-layout implementation capture: 1424 × 1478 px
 - Density normalization: CSS viewport and captures use device scale factor 1; the latest annotation was width-normalized only for the focused comparison.
 - State: dashboard route, default project order, page at top
-- Browser interactions: reload, visual inspection at projector viewport, production login, keyboard reorder, dashboard sync, reload persistence, order restoration, logout, production spacing verification
+- Browser interactions: reload, visual inspection at projector viewport, production login, keyboard reorder, dashboard sync, reload persistence, order restoration, logout, production spacing verification, production bottom-layout verification
 - Console errors or warnings: none
 
 ## Findings history
