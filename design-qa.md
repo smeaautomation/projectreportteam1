@@ -6,6 +6,7 @@
 - Compact-summary annotation source: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-25ac2851-571b-4405-b419-ffd9fa6d21bd.png`
 - Target-spacing annotation source: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-85885f1b-cb15-4121-9fbf-499c7b193992.png`
 - Icon-color annotation sources: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-33419f88-a8ad-4379-b423-4f4e40a23f82.png`, `C:\Users\2994\AppData\Local\Temp\codex-clipboard-9f9cd64e-8c35-4633-a0ce-199aa43d1315.png`, and `C:\Users\2994\AppData\Local\Temp\codex-clipboard-19d2a8c5-a67d-4084-9c5d-0a148455de51.png`
+- Card-order annotation source: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-ad7ec556-1de7-472f-a904-62f9a44dec6b.png`
 - Implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-dashboard-final.png`
 - Latest implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-box-spacing-final.png`
 - Bottom-layout implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-bottom-layout-final.png`
@@ -18,18 +19,22 @@
 - Target-spacing production capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\production-target-spacing-final.png`
 - Icon-color implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-icon-colors-final.png`
 - Icon-color production capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\production-icon-colors-final.png`
+- Card-order implementation capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\implementation-card-swap-final.png`
+- Card-order production capture: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\production-card-swap-final.png`
 - Side-by-side comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-comparison.png`
 - Focused spacing comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-box-spacing.png`
 - Bottom-layout comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-bottom-layout.png`
 - Compact-summary comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-compact-summary.png`
 - Target-spacing comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-target-spacing.png`
 - Icon-color comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-icon-colors.png`
+- Card-order comparison: `C:\Users\2994\Documents\Codex\2026-10-12\ba\work\site-checkout-3\design-qa-card-swap.png`
 - Source dimensions: 1485 × 1059 px
 - Latest annotation dimensions: 1916 × 81 px
 - Layout annotation dimensions: 1272 × 926 px
 - Compact-summary annotation dimensions: 1891 × 383 px
 - Target-spacing annotation dimensions: 260 × 116 px
 - Icon-color annotation dimensions: 71 × 74 px, 74 × 73 px, and 101 × 102 px
+- Card-order annotation dimensions: 642 × 273 px
 - Test viewport: 1440 × 1024 px
 - Captured browser content: 1425 × 968 px
 - Focused implementation crop: 1425 × 210 px
@@ -40,7 +45,7 @@
 - Density normalization: CSS viewport and captures use device scale factor 1; the latest annotation was width-normalized only for the focused comparison.
 - State: dashboard route, default project order, page at top
 - Browser interactions: reload, visual inspection at projector viewport, production login, keyboard reorder, dashboard sync, reload persistence, order restoration, logout, production spacing verification, production bottom-layout verification
-- Latest browser checks: 1440 px desktop full-page inspection, 1024 px inspection, 800 px responsive inspection, horizontal-overflow test, timeline-grid collision repair, production login, editor deadline/drag-handle verification, logout, target-summary clearance measurement, computed icon-color verification, and production console inspection
+- Latest browser checks: 1440 px desktop full-page inspection, 1024 px inspection, 800 px responsive inspection, horizontal-overflow test, timeline-grid collision repair, production login, editor deadline/drag-handle verification, logout, target-summary clearance measurement, computed icon-color verification, KPI DOM-order verification, and production console inspection
 - Console errors or warnings: none
 
 ## Findings history
@@ -57,6 +62,7 @@
 10. P1 — At 800 px an older, more-specific timeline selector forced the timeline into the project metadata row. Fixed with a scoped responsive override; the final 800 px capture shows timeline, project type, progress, and deadline on separate rows with no horizontal overflow.
 11. P2 — The “29 dari 53 item pekerjaan” summary collided with the lower edge of the completion ring. Fixed by anchoring the summary 14 px from the card bottom; measured clearance is 19 px at the default viewport and 13 px at 800 px, with no horizontal overflow.
 12. P2 — The pink and purple KPI icons used white strokes, unlike the yellow card’s coordinated dark stroke. Fixed with maroon `#8f1738` for the pink card and dark purple `#341366` for the purple card; the yellow card retains brown `#593600`. Estimated contrast against the translucent icon circles is 7.77:1, 12.09:1, and 10.02:1 respectively.
+13. P2 — Distribusi Status preceded Target Tercapai, contrary to the requested reading order. Fixed by exchanging the two card positions in the overview markup; sizes, colors, content, and responsive behavior remain unchanged.
 
 ## Fidelity surfaces
 
@@ -74,6 +80,7 @@
 - Combined comparison in `design-qa-compact-summary.png` places the latest user reference, complete desktop implementation, and 800 px responsive proof in one review surface. It confirms the donut position, compact cards, Deadline column, two-column target list, and non-overlapping responsive timeline.
 - Focused comparison in `design-qa-target-spacing.png` shows the reported overlap and the corrected card at readable scale; a full-view comparison was unnecessary because this iteration changes only the summary label inside one KPI card.
 - Focused comparison in `design-qa-icon-colors.png` shows all three supplied icon references beside the updated KPI cards. The implementation preserves the existing icon family, circle treatment, sizing, and card layout while coordinating each stroke with its card color.
+- Focused comparison in `design-qa-card-swap.png` confirms Target Tercapai now appears immediately before Distribusi Status. A new full-page comparison was unnecessary because this change only reorders two adjacent cards and does not alter their geometry.
 
 ## Final comparison
 
