@@ -7,7 +7,7 @@
 - Test viewport: 1440 × 1024 px
 - Captured browser content: 1425 × 968 px
 - State: dashboard route, default project order, page at top
-- Browser interactions: reload, visual inspection at projector viewport, login modal open/close inspection
+- Browser interactions: reload, visual inspection at projector viewport, production login, keyboard reorder, dashboard sync, reload persistence, order restoration, logout
 - Console errors or warnings: none
 
 ## Findings history
