@@ -12,7 +12,7 @@ let pendingProtectedHash = "#project";
 let draggedProjectId = null;
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
-const task = (key, name, short, status, context) => ({ key, name, short, status, context });
+const task = (key, name, short, status, context, completedAt="") => ({ key, name, short, status, context, completedAt:status==="done"?completedAt:"" });
 const weeklyProjects = [
   {
     id: "project-1791880366318", name: "Dokumentasi TC", owner: "Dita", category: "Web Platform",
@@ -124,7 +124,7 @@ const weeklyProjects = [
 ];
 
 let projects = loadProjects();
-function normalizeProjects(items){ return items.map(project=>({...project,tasks:(project.tasks||[]).map(item=>({...item,status:item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo"}))})); }
+function normalizeProjects(items){ return items.map(project=>({...project,tasks:(project.tasks||[]).map(item=>{const status=item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo";return {...item,status,completedAt:status==="done"&&typeof item.completedAt==="string"?item.completedAt:""};})})); }
 function isResetSnapshot(items){ const resetIds=new Set(["team1-calculator","team1-book","team1-retail-web","team1-operations"]); return items.length===resetIds.size&&items.every(item=>resetIds.has(item.id)); }
 function loadProjects(){
   try {
@@ -145,6 +145,7 @@ function progressOf(project){ const tasks = project.tasks || []; return tasks.le
 function stateOf(project){ const tasks=project.tasks||[]; if(tasks.length&&tasks.every(item=>item.status==="done"))return "Done"; if(tasks.some(item=>item.status!=="todo"))return "On going"; return "Not Started"; }
 function daysUntil(date){ const a = new Date(); a.setHours(0,0,0,0); return Math.ceil((new Date(date+"T00:00:00") - a)/86400000); }
 function formatDate(date, long=false){ return new Intl.DateTimeFormat("id-ID", long ? {day:"numeric",month:"long",year:"numeric"}:{day:"numeric",month:"short",year:"numeric"}).format(new Date(date+"T00:00:00")); }
+function todayISO(){const parts=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.year}-${parts.month}-${parts.day}`;}
 function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
 function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
 function upcomingTasks(project){ return (project.tasks || []).filter(item => item.status !== "done"); }
@@ -303,11 +304,21 @@ function openTaskModal(projectId,index=null){
   document.getElementById("taskName").value=item?.name||"";
   document.getElementById("taskShort").value=item?.short||"";
   document.getElementById("taskStatus").value=item?.status||"todo";
+  document.getElementById("taskCompletedDate").value=item?.completedAt||"";
   document.getElementById("taskContext").value=item?.context||"";
+  syncTaskCompletedDateField(false);
   document.getElementById("taskModal").hidden=false;
   setTimeout(()=>document.getElementById("taskName").focus(),50);
 }
 function closeTaskModal(){document.getElementById("taskModal").hidden=true;}
+function syncTaskCompletedDateField(autoFill=true){
+  const field=document.getElementById("taskCompletedDateField");
+  const input=document.getElementById("taskCompletedDate");
+  const isDone=document.getElementById("taskStatus").value==="done";
+  field.hidden=!isDone; input.disabled=!isDone; input.required=isDone;
+  if(isDone&&autoFill&&!input.value)input.value=todayISO();
+  if(!isDone)input.value="";
+}
 
 function openDrawer(id){
   if(!requireEditor())return;
@@ -318,7 +329,7 @@ function openDrawer(id){
     <div class="drawer-meta"><div><span>PIC</span><strong>${escapeHTML(project.owner)}</strong></div><div><span>Target</span><strong>${formatDate(project.end)}</strong></div><div><span>Status</span><strong>${stateOf(project)}</strong></div></div>
     <p class="drawer-source-note"><strong>Sumber:</strong> ${escapeHTML(project.source || "Input dashboard")} • Snapshot 29 September 2026. Status dan detail aktivitas dapat diperbarui langsung dari daftar di bawah.</p>
     <div class="stage-heading"><div><h3>Aktivitas</h3><span>Edit status atau detail setiap aktivitas</span></div><button class="task-add-btn" data-add-task="${project.id}">＋ Tambah Aktivitas</button></div>
-    <div class="stage-list">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}"><div class="stage-number">${item.status==='done'?'✓':index+1}</div><div><h4>${escapeHTML(item.name)}</h4><p><span class="status-context">${escapeHTML(item.context)}</span> • Kontribusi ${Math.round(100/project.tasks.length)}%</p></div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="done" ${item.status==='done'?'selected':''}>Done</option><option value="active" ${item.status==='active'?'selected':''}>On going</option><option value="todo" ${item.status==='todo'?'selected':''}>Not Started</option></select><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
+    <div class="stage-list">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}"><div class="stage-number">${item.status==='done'?'✓':index+1}</div><div><h4>${escapeHTML(item.name)}</h4><p><span class="status-context">${escapeHTML(item.context)}</span> • Kontribusi ${Math.round(100/project.tasks.length)}%</p>${item.status==='done'?`<span class="completion-date ${item.completedAt?'':'missing'}"><span class="material-symbols-rounded" aria-hidden="true">event_available</span>${item.completedAt?`Selesai ${formatDate(item.completedAt)}`:'Tanggal selesai belum diisi'}</span>`:''}</div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="done" ${item.status==='done'?'selected':''}>Done</option><option value="active" ${item.status==='active'?'selected':''}>On going</option><option value="todo" ${item.status==='todo'?'selected':''}>Not Started</option></select><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
     ${(project.tasks||[]).length?"":'<div class="empty-task-state">Belum ada aktivitas. Klik “Tambah Aktivitas” untuk memulai.</div>'}
     <div class="danger-zone"><button class="secondary-btn" data-edit-project="${project.id}">Edit informasi</button><button class="danger-btn" data-delete-project="${project.id}">Hapus project</button></div>`;
   document.getElementById("detailDrawer").hidden=false;
@@ -414,7 +425,8 @@ document.getElementById("taskForm").addEventListener("submit",event=>{
   const indexValue=document.getElementById("taskIndex").value;
   const index=indexValue===""?null:Number(indexValue);
   const previous=index===null?null:project.tasks[index];
-  const activity={key:previous?.key||`activity-${Date.now()}`,name:document.getElementById("taskName").value.trim(),short:document.getElementById("taskShort").value.trim(),status:document.getElementById("taskStatus").value,context:document.getElementById("taskContext").value.trim()};
+  const status=document.getElementById("taskStatus").value;
+  const activity={key:previous?.key||`activity-${Date.now()}`,name:document.getElementById("taskName").value.trim(),short:document.getElementById("taskShort").value.trim(),status,context:document.getElementById("taskContext").value.trim(),completedAt:status==="done"?document.getElementById("taskCompletedDate").value:""};
   if(index===null)project.tasks.push(activity);else project.tasks[index]=activity;
   saveProjects();closeTaskModal();render();openDrawer(projectId);showToast(index===null?"Aktivitas berhasil ditambahkan.":"Aktivitas berhasil diperbarui.");
 });
@@ -470,7 +482,8 @@ document.getElementById("projectList").addEventListener("keydown",event=>{
     requestAnimationFrame(()=>document.querySelector(`[data-reorder-project="${handle.dataset.reorderProject}"]`)?.focus());
   }
 });
-document.getElementById("drawerContent").addEventListener("change",event=>{if(!event.target.matches(".stage-select"))return;const project=projects.find(item=>item.id===event.target.dataset.project);project.tasks[Number(event.target.dataset.taskIndex)].status=event.target.value;saveProjects();render();openDrawer(project.id);showToast("Progress project diperbarui.");});
+document.getElementById("taskStatus").addEventListener("change",()=>syncTaskCompletedDateField(true));
+document.getElementById("drawerContent").addEventListener("change",event=>{if(!event.target.matches(".stage-select"))return;const project=projects.find(item=>item.id===event.target.dataset.project);const activity=project.tasks[Number(event.target.dataset.taskIndex)];activity.status=event.target.value;activity.completedAt=activity.status==="done"?(activity.completedAt||todayISO()):"";saveProjects();render();openDrawer(project.id);showToast(activity.status==="done"?`Aktivitas selesai pada ${formatDate(activity.completedAt)}.`:"Progress project diperbarui.");});
 document.getElementById("drawerContent").addEventListener("click",event=>{
   const addTask=event.target.closest("[data-add-task]"); if(addTask){openTaskModal(addTask.dataset.addTask);return;}
   const editTask=event.target.closest("[data-edit-task]"); if(editTask){openTaskModal(editTask.dataset.project,Number(editTask.dataset.editTask));return;}
