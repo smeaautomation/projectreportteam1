@@ -6,6 +6,18 @@ const LEGACY_STORAGE_KEY = "team1-weekly-progress-v2";
 const LAST_UPDATE_KEY = "team1-weekly-progress-last-update";
 const DEFAULT_LAST_UPDATE = "2026-10-14T10:00:00.000Z";
 const AUTH_ENDPOINT = "/api/auth";
+const CATEGORY_ALIASES = {
+  "Web Platform": "Web Automation",
+  "Web Automation": "Web Automation",
+  Operasional: "Operational Support",
+  "Dukungan Operasional": "Operational Support",
+  "Operational Support": "Operational Support",
+  "Digital Product": "Digital Product",
+  Dokumentasi: "Others",
+  Internal: "Others",
+  Lainnya: "Others",
+  Others: "Others"
+};
 let currentFilter = "Semua";
 let searchQuery = "";
 let authUser = null;
@@ -17,7 +29,7 @@ const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate(
 const task = (key, name, short, status, context, completedAt="") => ({ key, name, short, status, context, completedAt:status==="done"?completedAt:"" });
 const weeklyProjects = [
   {
-    id: "project-1791880366318", name: "Dokumentasi TC", owner: "Dita", category: "Web Platform",
+    id: "project-1791880366318", name: "Dokumentasi TC", owner: "Dita", category: "Web Automation",
     start: "2026-10-13", end: "2026-10-18", priority: "Tinggi", source: "Input dashboard",
     tasks: [
       task("planning", "Travel Safe", "794", "active", "Project baru"),
@@ -31,7 +43,7 @@ const weeklyProjects = [
     ]
   },
   {
-    id: "workstream-1791872633362", name: "Panduan Pembelian Polis melalui Jalur Internal", owner: "Dita", category: "Web Platform",
+    id: "workstream-1791872633362", name: "Panduan Pembelian Polis melalui Jalur Internal", owner: "Dita", category: "Web Automation",
     start: "2026-10-02", end: "2026-11-06", priority: "Normal", source: "Input dashboard",
     tasks: [
       task("planning", "Perencanaan", "Plan", "done", "Workstream baru"),
@@ -45,7 +57,7 @@ const weeklyProjects = [
     ]
   },
   {
-    id: "workstream-1791872133823", name: "UAT #6 Web Asuransi Ritel", owner: "Restu", category: "Web Platform",
+    id: "workstream-1791872133823", name: "UAT #6 Web Asuransi Ritel", owner: "Restu", category: "Web Automation",
     start: "2026-10-05", end: "2026-10-12", priority: "Tinggi", source: "Input dashboard",
     tasks: [
       task("planning", "Internal", "Internal", "done", "Workstream baru"),
@@ -54,7 +66,7 @@ const weeklyProjects = [
     ]
   },
   {
-    id: "workstream-1791872049323", name: "UAT #5 Web Asuransi Ritel", owner: "Restu", category: "Web Platform",
+    id: "workstream-1791872049323", name: "UAT #5 Web Asuransi Ritel", owner: "Restu", category: "Web Automation",
     start: "2026-09-27", end: "2026-10-05", priority: "Normal", source: "Input dashboard",
     tasks: [
       task("planning", "Internal", "Internal", "done", "Workstream baru"),
@@ -63,7 +75,7 @@ const weeklyProjects = [
     ]
   },
   {
-    id: "workstream-1791867721702", name: "Perubahan Tarif Premi Travel Safe ESPPA", owner: "Dita", category: "Web Platform",
+    id: "workstream-1791867721702", name: "Perubahan Tarif Premi Travel Safe ESPPA", owner: "Dita", category: "Web Automation",
     start: "2026-09-08", end: "2026-10-23", priority: "Normal", source: "Input dashboard",
     tasks: [
       task("planning", "Draft #1", "Draft", "done", "Workstream baru"),
@@ -89,7 +101,7 @@ const weeklyProjects = [
     ]
   },
   {
-    id: "team1-book", name: "Buku Otomatisasi Underwriting Fase 3", owner: "Dita", category: "Operasional",
+    id: "team1-book", name: "Buku Otomatisasi Underwriting Fase 3", owner: "Dita", category: "Operational Support",
     start: "2026-09-22", end: "2026-11-06", priority: "Normal", source: "Weekly Report Team 1",
     tasks: [
       task("discussion", "Diskusi dengan GH", "Diskusi", "done", "Target minggu lalu • GH mereviu mandiri"),
@@ -100,7 +112,7 @@ const weeklyProjects = [
     ]
   },
   {
-    id: "team1-retail-web", name: "Web Flow Rekanan", owner: "Dita", category: "Web Platform",
+    id: "team1-retail-web", name: "Web Flow Rekanan", owner: "Dita", category: "Web Automation",
     start: "2026-09-22", end: "2026-10-23", priority: "Tinggi", source: "Weekly Report Team 1",
     tasks: [
       task("tripguard", "Planning", "Plan", "done", "Sedang dikerjakan"),
@@ -111,7 +123,7 @@ const weeklyProjects = [
     ]
   },
   {
-    id: "team1-operations", name: "Monitoring Operasional", owner: "Dita & Restu", category: "Operasional",
+    id: "team1-operations", name: "Monitoring Operasional", owner: "Dita & Restu", category: "Operational Support",
     start: "2026-09-29", end: "2026-10-18", priority: "Normal", source: "Weekly Report Team 1",
     tasks: [
       task("asana", "Merapikan tasklist di Asana - September Week 1", "Recape Sep 1", "done", "Target 7 hari"),
@@ -126,7 +138,8 @@ const weeklyProjects = [
 ];
 
 let projects = loadProjects();
-function normalizeProjects(items){ return items.map(project=>({...project,tasks:(project.tasks||[]).map(item=>{const status=item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo";return {...item,status,completedAt:status==="done"&&typeof item.completedAt==="string"?item.completedAt:""};})})); }
+function normalizeCategory(category){ return CATEGORY_ALIASES[category] || "Others"; }
+function normalizeProjects(items){ return items.map(project=>({...project,category:normalizeCategory(project.category),tasks:(project.tasks||[]).map(item=>{const status=item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo";return {...item,status,completedAt:status==="done"&&typeof item.completedAt==="string"?item.completedAt:""};})})); }
 function isResetSnapshot(items){ const resetIds=new Set(["team1-calculator","team1-book","team1-retail-web","team1-operations"]); return items.length===resetIds.size&&items.every(item=>resetIds.has(item.id)); }
 function loadProjects(){
   try {
@@ -261,9 +274,8 @@ function openModal(project=null){
   document.getElementById("projectEnd").value=project?.end || addDays(new Date(),7);
   if(project){
     document.getElementById("projectName").value=project.name; document.getElementById("projectOwner").value=project.owner;
-    const legacyCategoryMap={"Web Platform":"Web Automation","Digital Product":"Web Automation",Operasional:"Dukungan Operasional"};
-    const selectedCategory=legacyCategoryMap[project.category] || project.category;
-    document.getElementById("projectCategory").value=[...document.getElementById("projectCategory").options].some(o=>o.value===selectedCategory)?selectedCategory:"Lainnya";
+    const selectedCategory=normalizeCategory(project.category);
+    document.getElementById("projectCategory").value=[...document.getElementById("projectCategory").options].some(o=>o.value===selectedCategory)?selectedCategory:"Others";
     document.querySelector(`input[name="priority"][value="${project.priority}"]`).checked=true;
   }
   document.getElementById("projectModal").hidden=false; setTimeout(()=>document.getElementById("projectName").focus(),50);
