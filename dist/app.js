@@ -4,7 +4,7 @@ const STATUS_VALUE = { todo: 0, active: .5, done: 1 };
 const STORAGE_KEY = "team1-weekly-progress-v3";
 const LEGACY_STORAGE_KEY = "team1-weekly-progress-v2";
 const LAST_UPDATE_KEY = "team1-weekly-progress-last-update";
-const DEFAULT_LAST_UPDATE = "2026-10-19T04:32:37.000Z";
+const DEFAULT_LAST_UPDATE = "2026-10-19T06:29:10.000Z";
 const AUTH_ENDPOINT = "/api/auth";
 const CATEGORY_ALIASES = {
   "Web Platform": "Web Automation",
@@ -18,6 +18,8 @@ const CATEGORY_ALIASES = {
   Lainnya: "Others",
   Others: "Others"
 };
+const URGENCY_ALIASES = {"Very High":"Very High",High:"High",Medium:"Medium",Low:"Low",Tinggi:"High",Normal:"Medium"};
+const URGENCY_CLASS = {"Very High":"urgency-very-high",High:"urgency-high",Medium:"urgency-medium",Low:"urgency-low"};
 let currentFilter = "Semua";
 let searchQuery = "";
 let authUser = null;
@@ -30,7 +32,7 @@ const task = (key, name, short, status, context, completedAt="") => ({ key, name
 const weeklyProjects = [
   {
     id: "project-1791880366318", name: "Dokumentasi TC", owner: "Dita", category: "Web Automation",
-    start: "2026-10-13", end: "2026-10-18", priority: "Tinggi", source: "Input dashboard",
+    start: "2026-10-13", end: "2026-10-18", urgency: "High", source: "Input dashboard",
     tasks: [
       task("planning", "Travel Safe", "794", "active", "Project baru"),
       task("design", "Life Guard", "705", "todo", "Project baru"),
@@ -44,7 +46,7 @@ const weeklyProjects = [
   },
   {
     id: "workstream-1791872633362", name: "Panduan Pembelian Polis melalui Jalur Internal", owner: "Dita", category: "Web Automation",
-    start: "2026-10-02", end: "2026-11-06", priority: "Normal", source: "Input dashboard",
+    start: "2026-10-02", end: "2026-11-06", urgency: "Medium", source: "Input dashboard",
     tasks: [
       task("planning", "Perencanaan", "Plan", "done", "Workstream baru"),
       task("design", "Draft #1", "Draft", "done", "Workstream baru"),
@@ -58,7 +60,7 @@ const weeklyProjects = [
   },
   {
     id: "workstream-1791872133823", name: "UAT #6 Web Asuransi Ritel", owner: "Restu", category: "Web Automation",
-    start: "2026-10-05", end: "2026-10-12", priority: "Tinggi", source: "Input dashboard",
+    start: "2026-10-05", end: "2026-10-12", urgency: "High", source: "Input dashboard",
     tasks: [
       task("planning", "Internal", "Internal", "done", "Workstream baru"),
       task("design", "Eksternal", "Eksternal", "done", "Workstream baru"),
@@ -67,7 +69,7 @@ const weeklyProjects = [
   },
   {
     id: "workstream-1791872049323", name: "UAT #5 Web Asuransi Ritel", owner: "Restu", category: "Web Automation",
-    start: "2026-09-27", end: "2026-10-05", priority: "Normal", source: "Input dashboard",
+    start: "2026-09-27", end: "2026-10-05", urgency: "Medium", source: "Input dashboard",
     tasks: [
       task("planning", "Internal", "Internal", "done", "Workstream baru"),
       task("design", "Eksternal", "Eksternal", "done", "Workstream baru"),
@@ -76,7 +78,7 @@ const weeklyProjects = [
   },
   {
     id: "workstream-1791867721702", name: "Perubahan Tarif Premi Travel Safe ESPPA", owner: "Dita", category: "Web Automation",
-    start: "2026-09-08", end: "2026-10-23", priority: "Normal", source: "Input dashboard",
+    start: "2026-09-08", end: "2026-10-23", urgency: "Medium", source: "Input dashboard",
     tasks: [
       task("planning", "Draft #1", "Draft", "done", "Workstream baru"),
       task("design", "Diskusi dengan Underwriter #1", "Diskusi", "done", "Workstream baru"),
@@ -91,7 +93,7 @@ const weeklyProjects = [
   },
   {
     id: "team1-calculator", name: "Kalkulator Premi Jasindo Travel Insurance", owner: "Restu", category: "Digital Product",
-    start: "2026-09-22", end: "2026-11-03", priority: "Tinggi", source: "Weekly Report Team 1",
+    start: "2026-09-22", end: "2026-11-03", urgency: "High", source: "Weekly Report Team 1",
     tasks: [
       task("url", "Rekomendasi URL untuk web app kalkulator premi", "URL", "done", "Target minggu lalu"),
       task("uiux", "Referensi UI/UX lain yang lebih modern", "UI/UX", "done", "Target minggu lalu"),
@@ -102,7 +104,7 @@ const weeklyProjects = [
   },
   {
     id: "team1-book", name: "Buku Otomatisasi Underwriting Fase 3", owner: "Dita", category: "Operational Support",
-    start: "2026-09-22", end: "2026-11-06", priority: "Normal", source: "Weekly Report Team 1",
+    start: "2026-09-22", end: "2026-11-06", urgency: "Medium", source: "Weekly Report Team 1",
     tasks: [
       task("discussion", "Diskusi dengan GH", "Diskusi", "done", "Target minggu lalu • GH mereviu mandiri"),
       task("revision", "Perbaikan sebagai hasil diskusi dengan GH", "Perbaikan", "done", "Target 7 hari"),
@@ -113,7 +115,7 @@ const weeklyProjects = [
   },
   {
     id: "team1-retail-web", name: "Web Flow Rekanan", owner: "Dita", category: "Web Automation",
-    start: "2026-09-22", end: "2026-10-23", priority: "Tinggi", source: "Weekly Report Team 1",
+    start: "2026-09-22", end: "2026-10-23", urgency: "High", source: "Weekly Report Team 1",
     tasks: [
       task("tripguard", "Planning", "Plan", "done", "Sedang dikerjakan"),
       task("travelsafe", "Inisiasi Pengembangan", "Build", "done", "Target 7 hari"),
@@ -124,7 +126,7 @@ const weeklyProjects = [
   },
   {
     id: "team1-operations", name: "Monitoring Operasional", owner: "Dita & Restu", category: "Operational Support",
-    start: "2026-09-29", end: "2026-10-18", priority: "Normal", source: "Weekly Report Team 1",
+    start: "2026-09-29", end: "2026-10-18", urgency: "Medium", source: "Weekly Report Team 1",
     tasks: [
       task("asana", "Merapikan tasklist di Asana - September Week 1", "Recape Sep 1", "done", "Target 7 hari"),
       task("activity-1791870429038", "Merapikan tasklist di Asana - September Week 2", "Recape Sep 2", "done", "Target 7 hari"),
@@ -139,7 +141,8 @@ const weeklyProjects = [
 
 let projects = loadProjects();
 function normalizeCategory(category){ return CATEGORY_ALIASES[category] || "Others"; }
-function normalizeProjects(items){ return items.map(project=>({...project,category:normalizeCategory(project.category),tasks:(project.tasks||[]).map(item=>{const status=item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo";return {...item,status,completedAt:status==="done"&&typeof item.completedAt==="string"?item.completedAt:""};})})); }
+function normalizeUrgency(urgency){ return URGENCY_ALIASES[urgency] || "Medium"; }
+function normalizeProjects(items){ return items.map(project=>({...project,category:normalizeCategory(project.category),urgency:normalizeUrgency(project.urgency||project.priority),tasks:(project.tasks||[]).map(item=>{const status=item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo";return {...item,status,completedAt:status==="done"&&typeof item.completedAt==="string"?item.completedAt:""};})})); }
 function isResetSnapshot(items){ const resetIds=new Set(["team1-calculator","team1-book","team1-retail-web","team1-operations"]); return items.length===resetIds.size&&items.every(item=>resetIds.has(item.id)); }
 function loadProjects(){
   try {
@@ -172,7 +175,7 @@ function upcomingTasks(project){ return (project.tasks || []).filter(item => ite
 
 function render(){
   const filtered = projects.filter(p => {
-    const searchable = `${p.name} ${p.owner} ${p.category} ${(p.tasks||[]).map(t=>t.name).join(" ")}`.toLowerCase();
+    const searchable = `${p.name} ${p.owner} ${p.category} ${p.urgency} ${(p.tasks||[]).map(t=>t.name).join(" ")}`.toLowerCase();
     return (currentFilter === "Semua" || stateOf(p) === currentFilter) && searchable.includes(searchQuery);
   });
   const tasks = allTasks();
@@ -205,7 +208,7 @@ function projectRow(project,index){
     const nextPosition=displayTasks.length===1 ? 50 : Math.min(100,(index+1)/(displayTasks.length-1)*100);
     return `<div class="timeline-node ${item.status}" style="--step-position:${stepPosition}%;--next-position:${nextPosition}%" title="${escapeHTML(item.short)}"><i></i><span>${escapeHTML(item.short)}</span></div>`;
   }).join("");
-  return `<article class="project-row" data-id="${project.id}">
+  return `<article class="project-row ${URGENCY_CLASS[project.urgency]||URGENCY_CLASS.Medium}" data-id="${project.id}" data-urgency="${escapeHTML(project.urgency)}">
     <div class="row-order"><span class="project-index">${index+1}</span><button class="drag-handle" type="button" draggable="${editorMode}" data-reorder-project="${project.id}" aria-label="Ubah urutan ${escapeHTML(project.name)}" title="Tarik untuk mengubah urutan"><span class="material-symbols-rounded" aria-hidden="true">drag_indicator</span></button></div>
     <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3></div></div>
     <div class="project-kind"><strong>${escapeHTML(project.category)}</strong><span>PIC: ${escapeHTML(project.owner)}</span></div>
@@ -277,7 +280,7 @@ function openModal(project=null){
     document.getElementById("projectName").value=project.name; document.getElementById("projectOwner").value=project.owner==="Restu"?"Restu":"Dita";
     const selectedCategory=normalizeCategory(project.category);
     document.getElementById("projectCategory").value=[...document.getElementById("projectCategory").options].some(o=>o.value===selectedCategory)?selectedCategory:"Others";
-    document.querySelector(`input[name="priority"][value="${project.priority}"]`).checked=true;
+    document.getElementById("projectUrgency").value=normalizeUrgency(project.urgency||project.priority);
   }
   document.getElementById("projectModal").hidden=false; setTimeout(()=>document.getElementById("projectName").focus(),50);
 }
@@ -432,7 +435,7 @@ document.getElementById("projectForm").addEventListener("submit",event=>{
   if(new Date(end)<new Date(start)){showToast("Target selesai harus setelah tanggal mulai.");return;}
   const editId=document.getElementById("projectId").value;
   const old=projects.find(project=>project.id===editId);
-  const project={id:editId || `project-${Date.now()}`,name:document.getElementById("projectName").value.trim(),owner:document.getElementById("projectOwner").value.trim(),category:document.getElementById("projectCategory").value,start,end,priority:document.querySelector('input[name="priority"]:checked').value,source:old?.source || "Input dashboard",tasks:old?.tasks || createDefaultTasks()};
+  const project={id:editId || `project-${Date.now()}`,name:document.getElementById("projectName").value.trim(),owner:document.getElementById("projectOwner").value.trim(),category:document.getElementById("projectCategory").value,start,end,urgency:document.getElementById("projectUrgency").value,source:old?.source || "Input dashboard",tasks:old?.tasks || createDefaultTasks()};
   if(old) projects=projects.map(item=>item.id===editId?project:item); else projects.unshift(project);
   saveProjects();closeModal();render();showToast(old ? "Informasi project diperbarui." : `Project “${project.name}” berhasil dibuat.`);setTimeout(()=>openDrawer(project.id),350);
 });
