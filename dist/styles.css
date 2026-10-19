@@ -227,10 +227,10 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 @keyframes target-refresh-spin{to{transform:rotate(360deg)}}
 .reorder-hint{margin-top:7px!important;color:#8b5b00!important;font-weight:700}
 .table-head,.project-row{display:grid;grid-template-columns:40px minmax(160px,.9fr) minmax(105px,.55fr) minmax(82px,.42fr) minmax(90px,.48fr) minmax(430px,2.15fr) 32px;gap:12px;align-items:center}
-.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:40px minmax(120px,.68fr) minmax(100px,.54fr) minmax(80px,.38fr) minmax(82px,.42fr) minmax(450px,2.55fr)}
+.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:40px minmax(110px,.58fr) minmax(90px,.45fr) minmax(76px,.32fr) minmax(78px,.36fr) minmax(440px,2.85fr);gap:10px}
 .table-head{padding:11px 18px;background:#f3f8fc;color:#8394aa;font-size:10px;letter-spacing:.75px}
 .timeline-head{display:grid;grid-template-columns:minmax(78px,.3fr) minmax(260px,1fr) minmax(78px,.3fr);gap:8px;align-items:center;text-align:center}
-.dashboard-view .timeline-head,.dashboard-view .project-timeline{grid-template-columns:minmax(70px,.2fr) minmax(290px,1fr) minmax(74px,.25fr)}
+.dashboard-view .timeline-head,.dashboard-view .project-timeline{grid-template-columns:minmax(62px,.16fr) minmax(290px,1fr) minmax(70px,.22fr)}
 .timeline-head span:first-child{text-align:left}
 .timeline-head span:last-child{text-align:right}
 .project-row{position:relative;min-height:58px;padding:7px 18px;border-top:1px solid #e8eef4;transition:background .15s ease,opacity .15s ease,transform .15s ease}
