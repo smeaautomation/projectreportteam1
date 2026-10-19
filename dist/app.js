@@ -26,6 +26,7 @@ let authUser = null;
 let authChecked = false;
 let pendingProtectedHash = "#project";
 let draggedProjectId = null;
+let draggedTask = null;
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const task = (key, name, short, status, context, completedAt="") => ({ key, name, short, status, context, completedAt:status==="done"?completedAt:"" });
@@ -239,6 +240,32 @@ function moveProject(sourceId,targetId,placeAfter=false){
   return true;
 }
 
+function moveTask(projectId,sourceKey,targetKey,placeAfter=false){
+  if(!authUser||sourceKey===targetKey)return false;
+  const project=projects.find(item=>item.id===projectId);
+  if(!project)return false;
+  const sourceIndex=project.tasks.findIndex(item=>item.key===sourceKey);
+  if(sourceIndex<0)return false;
+  const [moved]=project.tasks.splice(sourceIndex,1);
+  let targetIndex=project.tasks.findIndex(item=>item.key===targetKey);
+  if(targetIndex<0){project.tasks.splice(sourceIndex,0,moved);return false;}
+  if(placeAfter)targetIndex+=1;
+  project.tasks.splice(targetIndex,0,moved);
+  saveProjects();render();openDrawer(projectId);showToast("Urutan aktivitas diperbarui dan tersimpan.");
+  return true;
+}
+
+function duplicateTask(projectId,taskKey){
+  if(!requireEditor())return;
+  const project=projects.find(item=>item.id===projectId);
+  const sourceIndex=project?.tasks?.findIndex(item=>item.key===taskKey)??-1;
+  if(!project||sourceIndex<0)return;
+  const source=project.tasks[sourceIndex];
+  const copy={...structuredClone(source),key:`activity-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,name:`${source.name} (Salinan)`};
+  project.tasks.splice(sourceIndex+1,0,copy);
+  saveProjects();render();openDrawer(projectId);showToast(`Aktivitas “${source.name}” berhasil diduplikasi.`);
+}
+
 function renderTargets(){
   const items = projects.map(p=>({project:p,tasks:upcomingTasks(p)})).filter(x=>x.tasks.length);
   document.getElementById("deadlineList").innerHTML = items.length ? items.map(({project,tasks},i)=>{
@@ -354,7 +381,7 @@ function openDrawer(id){
     <div class="drawer-meta"><div><span>PIC</span><strong>${escapeHTML(project.owner)}</strong></div><div><span>Target</span><strong>${formatDate(project.end)}</strong></div><div><span>Status</span><strong>${stateOf(project)}</strong></div></div>
     <p class="drawer-source-note"><strong>Sumber:</strong> ${escapeHTML(project.source || "Input dashboard")} • Snapshot 29 September 2026. Status dan detail aktivitas dapat diperbarui langsung dari daftar di bawah.</p>
     <div class="stage-heading"><div><h3>Aktivitas</h3><span>Edit status atau detail setiap aktivitas</span></div><button class="task-add-btn" data-add-task="${project.id}">＋ Tambah Aktivitas</button></div>
-    <div class="stage-list">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}"><div class="stage-number">${item.status==='done'?'✓':index+1}</div><div><h4>${escapeHTML(item.name)}</h4><p>Kontribusi ${Math.round(100/project.tasks.length)}%</p>${item.status==='done'?`<label class="completion-date-editor ${item.completedAt?'':'missing'}"><span><span class="material-symbols-rounded" aria-hidden="true">event_available</span>Tanggal selesai</span><input class="completion-date-input" type="date" value="${item.completedAt||''}" data-project="${project.id}" data-task-index="${index}" aria-label="Tanggal penyelesaian ${escapeHTML(item.name)}" /></label>`:''}</div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="done" ${item.status==='done'?'selected':''}>Done</option><option value="active" ${item.status==='active'?'selected':''}>On going</option><option value="todo" ${item.status==='todo'?'selected':''}>Not Started</option></select><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
+    <div class="stage-list" data-task-list="${project.id}">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}" data-task-key="${escapeHTML(item.key)}" data-project="${project.id}"><div class="stage-order"><button class="task-drag-handle" type="button" draggable="true" data-reorder-task="${escapeHTML(item.key)}" data-project="${project.id}" aria-label="Ubah urutan aktivitas ${escapeHTML(item.name)}" title="Tarik untuk mengubah urutan"><span class="material-symbols-rounded" aria-hidden="true">drag_indicator</span></button><div class="stage-number">${item.status==='done'?'✓':index+1}</div></div><div class="stage-copy"><h4>${escapeHTML(item.name)}</h4><p>Kontribusi ${Math.round(100/project.tasks.length)}%</p>${item.status==='done'?`<label class="completion-date-editor ${item.completedAt?'':'missing'}"><span><span class="material-symbols-rounded" aria-hidden="true">event_available</span>Tanggal selesai</span><input class="completion-date-input" type="date" value="${item.completedAt||''}" data-project="${project.id}" data-task-index="${index}" aria-label="Tanggal penyelesaian ${escapeHTML(item.name)}" /></label>`:''}</div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="done" ${item.status==='done'?'selected':''}>Done</option><option value="active" ${item.status==='active'?'selected':''}>On going</option><option value="todo" ${item.status==='todo'?'selected':''}>Not Started</option></select><button class="task-duplicate-btn" data-duplicate-task="${escapeHTML(item.key)}" data-project="${project.id}" aria-label="Duplikasi aktivitas ${escapeHTML(item.name)}" title="Duplikasi aktivitas"><span class="material-symbols-rounded" aria-hidden="true">content_copy</span></button><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
     ${(project.tasks||[]).length?"":'<div class="empty-task-state">Belum ada aktivitas. Klik “Tambah Aktivitas” untuk memulai.</div>'}
     <div class="danger-zone"><button class="secondary-btn" data-edit-project="${project.id}">Edit informasi</button><button class="danger-btn" data-delete-project="${project.id}">Hapus project</button></div>`;
   document.getElementById("detailDrawer").hidden=false;
@@ -521,9 +548,53 @@ document.getElementById("drawerContent").addEventListener("change",event=>{
 });
 document.getElementById("drawerContent").addEventListener("click",event=>{
   const addTask=event.target.closest("[data-add-task]"); if(addTask){openTaskModal(addTask.dataset.addTask);return;}
+  const duplicate=event.target.closest("[data-duplicate-task]"); if(duplicate){duplicateTask(duplicate.dataset.project,duplicate.dataset.duplicateTask);return;}
   const editTask=event.target.closest("[data-edit-task]"); if(editTask){openTaskModal(editTask.dataset.project,Number(editTask.dataset.editTask));return;}
   const remove=event.target.closest("[data-delete-project]"); if(remove){const project=projects.find(item=>item.id===remove.dataset.deleteProject);if(confirm(`Hapus project “${project.name}”?`)){projects=projects.filter(item=>item.id!==project.id);saveProjects();closeDrawer();render();showToast("Project dihapus.");}}
   const edit=event.target.closest("[data-edit-project]"); if(edit){const project=projects.find(item=>item.id===edit.dataset.editProject);closeDrawer();openModal(project);}
+});
+document.getElementById("drawerContent").addEventListener("dragstart",event=>{
+  const handle=event.target.closest(".task-drag-handle");
+  if(!handle||!authUser){event.preventDefault();return;}
+  draggedTask={projectId:handle.dataset.project,key:handle.dataset.reorderTask};
+  handle.closest(".stage-item")?.classList.add("task-dragging");
+  event.dataTransfer.effectAllowed="move";
+  event.dataTransfer.setData("text/plain",draggedTask.key);
+});
+document.getElementById("drawerContent").addEventListener("dragover",event=>{
+  if(!draggedTask)return;
+  const row=event.target.closest(".stage-item");
+  if(!row||row.dataset.project!==draggedTask.projectId||row.dataset.taskKey===draggedTask.key)return;
+  event.preventDefault();
+  document.querySelectorAll(".stage-item.task-drag-over-before,.stage-item.task-drag-over-after").forEach(item=>item.classList.remove("task-drag-over-before","task-drag-over-after"));
+  const rect=row.getBoundingClientRect();
+  row.classList.add(event.clientY>rect.top+rect.height/2?"task-drag-over-after":"task-drag-over-before");
+  event.dataTransfer.dropEffect="move";
+});
+document.getElementById("drawerContent").addEventListener("drop",event=>{
+  const row=event.target.closest(".stage-item");
+  if(!draggedTask||!row||row.dataset.project!==draggedTask.projectId)return;
+  event.preventDefault();
+  const rect=row.getBoundingClientRect();
+  moveTask(draggedTask.projectId,draggedTask.key,row.dataset.taskKey,event.clientY>rect.top+rect.height/2);
+  draggedTask=null;
+});
+document.getElementById("drawerContent").addEventListener("dragend",()=>{
+  draggedTask=null;
+  document.querySelectorAll(".stage-item.task-dragging,.stage-item.task-drag-over-before,.stage-item.task-drag-over-after").forEach(item=>item.classList.remove("task-dragging","task-drag-over-before","task-drag-over-after"));
+});
+document.getElementById("drawerContent").addEventListener("keydown",event=>{
+  const handle=event.target.closest(".task-drag-handle");
+  if(!handle||!authUser||!['ArrowUp','ArrowDown'].includes(event.key))return;
+  event.preventDefault();
+  const project=projects.find(item=>item.id===handle.dataset.project);
+  const index=project?.tasks?.findIndex(item=>item.key===handle.dataset.reorderTask)??-1;
+  const targetIndex=event.key==='ArrowUp'?index-1:index+1;
+  if(index<0||targetIndex<0||targetIndex>=project.tasks.length)return;
+  const targetKey=project.tasks[targetIndex].key;
+  if(moveTask(project.id,handle.dataset.reorderTask,targetKey,event.key==='ArrowDown')){
+    requestAnimationFrame(()=>document.querySelector(`[data-reorder-task="${CSS.escape(handle.dataset.reorderTask)}"]`)?.focus());
+  }
 });
 render();
 refreshAuth();

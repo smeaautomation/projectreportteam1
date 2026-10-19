@@ -88,6 +88,48 @@ The implementation matches the selected direction in hierarchy, color family, di
 
 final result: passed
 
+## Latest build state — activity controls
+
+- Source visual truth: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-67857eef-52d3-4e57-a230-994237bde8ef.png`
+- Implementation evidence: `cua://iab/tab-33/activity-controls-desktop` and `cua://iab/tab-33/activity-controls-mobile`
+- Viewports: 1265 × 712 desktop and 390 × 844 responsive, device scale factor 1
+- State: Dokumentasi TC editor drawer with duplicate and reorder controls active
+- Checks: duplication, keyboard reorder, persisted order after refresh, dashboard timeline synchronization, Last Update synchronization, responsive fit, horizontal overflow, script syntax, diff whitespace, and browser console
+- Result: the detailed activity drag-and-duplicate iteration above has no remaining P0/P1/P2 findings; console errors and warnings are empty.
+
+final result: passed
+
+## Activity drag-and-duplicate iteration
+
+- Source visual truth: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-67857eef-52d3-4e57-a230-994237bde8ef.png`
+- Browser-rendered implementation: `cua://iab/tab-33/activity-controls-desktop` and `cua://iab/tab-33/activity-controls-mobile`
+- Source pixels: 643 × 981 px; the screenshot is a cropped desktop drawer state.
+- Implementation viewports: 1265 × 712 px desktop and 390 × 844 px responsive at device scale factor 1.
+- State: authenticated project editor, Dokumentasi TC drawer open, duplicated activity visible, and the first two activities reordered.
+- Primary interactions tested: duplicate an activity, reorder with the accessible drag handle using Arrow Down, refresh the page, reopen the drawer, confirm persisted order, confirm dashboard timeline order, and verify Last Update changes.
+- Console errors and warnings: none.
+
+### Findings
+
+- No actionable P0/P1/P2 issues remain. Drag handles are placed immediately left of the numbered activity marker, while duplicate and edit actions remain grouped beside the status selector.
+- The new controls preserve the source drawer's hierarchy and do not introduce horizontal overflow at desktop or 390 px.
+
+### Fidelity surfaces
+
+- Fonts and typography: existing Open Sans hierarchy and weights are unchanged; duplicated names wrap naturally without truncating the action controls.
+- Spacing and layout rhythm: the left order cluster uses a compact 28 px drag handle plus the existing 30 px number marker; duplicate and edit controls share equal 32 px desktop and 34 px mobile targets.
+- Colors and visual tokens: handles and actions reuse the existing blue, pale-blue hover, border, and focus tokens.
+- Image quality and asset fidelity: no new raster assets are needed; the added drag and copy icons use the page's existing Material Symbols library.
+- Copy and content: duplicate names receive the explicit suffix “(Salinan)”; accessible labels distinguish drag, duplicate, and edit actions for every activity.
+
+### Comparison history
+
+- Initial state: activity rows supported status changes and editing only.
+- Implemented state: each row has a drag handle and duplicate action; duplication inserts immediately below the source, and reordering persists to local storage and updates the dashboard timeline.
+- Final browser evidence: duplicated and reordered activities remain after refresh, Last Update changes in real time, desktop and mobile drawer widths have no horizontal overflow, and browser console inspection returns no errors or warnings.
+
+final result: passed
+
 ## Project-progress ring iteration
 
 - Source visual truth: `C:\Users\2994\.codex\generated_images\01a12f9d-cb8a-70a3-9caf-a123925efce9\exec-457def35-cad6-4d34-8288-b10fba264fe4.png`
@@ -155,6 +197,17 @@ final result: passed
 - State: dashboard route with all nine project rows and unchanged timelines
 - Checks: dynamic ring values, completed-state checks, responsive fit, horizontal overflow, script syntax, diff whitespace, and browser console
 - Result: the detailed project-progress ring iteration above has no remaining P0/P1/P2 findings; console errors and warnings are empty.
+
+final result: passed
+
+## Current handoff — activity controls
+
+- Source visual truth: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-67857eef-52d3-4e57-a230-994237bde8ef.png`
+- Implementation evidence: `cua://iab/tab-33/activity-controls-desktop` and `cua://iab/tab-33/activity-controls-mobile`
+- Viewports: 1265 × 712 desktop and 390 × 844 responsive, device scale factor 1
+- State: Dokumentasi TC editor drawer with duplicate and reorder controls active
+- Checks: duplication, keyboard reorder, persisted order after refresh, dashboard timeline synchronization, Last Update synchronization, responsive fit, horizontal overflow, script syntax, diff whitespace, and browser console
+- Result: no remaining P0/P1/P2 findings; console errors and warnings are empty.
 
 final result: passed
 
