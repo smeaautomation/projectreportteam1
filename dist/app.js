@@ -213,7 +213,10 @@ function projectRow(project,index){
     <div class="project-main"><div><h3>${escapeHTML(project.name)}</h3></div></div>
     <div class="project-kind"><strong>${escapeHTML(project.category)}</strong><span>PIC: ${escapeHTML(project.owner)}</span></div>
     <div class="urgency-cell"><span class="urgency-badge">${escapeHTML(project.urgency)}</span></div>
-    <div class="progress-cell"><div class="progress-track"><i style="width:${progress}%"></i></div><strong>${progress}%</strong></div>
+    <div class="progress-cell">
+      <span class="project-progress-ring${progress===100?' is-complete':''}" style="--project-progress:${progress}%" role="progressbar" aria-label="Progress ${progress} persen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${progress}">${progress===100?'<span class="material-symbols-rounded" aria-hidden="true">check</span>':''}</span>
+      <strong>${progress}%</strong>
+    </div>
     <div class="project-timeline">
       <div class="timeline-boundary project-start"><span class="material-symbols-rounded" aria-hidden="true">play_circle</span><strong>${project.start?formatDate(project.start):"-"}</strong></div>
       <div class="timeline-steps ${displayTasks.length>6?'timeline-dense':''}" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>

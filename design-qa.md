@@ -87,6 +87,39 @@
 The implementation matches the selected direction in hierarchy, color family, diagonal header, presentation-friendly contrast, compact project table, target panel, and status donut. The latest pass places all primary KPIs—including status distribution—above the project summary, exposes deadlines without sacrificing timeline width, and reduces the unfinished-work panel height with a two-column layout. Responsive fallbacks preserve the same information without collision or horizontal overflow.
 
 final result: passed
+
+## Project-progress ring iteration
+
+- Source visual truth: `C:\Users\2994\.codex\generated_images\01a12f9d-cb8a-70a3-9caf-a123925efce9\exec-457def35-cad6-4d34-8288-b10fba264fe4.png`
+- Browser-rendered desktop implementation screenshot: `cua://iab/tab-31/desktop-progress-ring`
+- Browser-rendered responsive implementation screenshot: `cua://iab/tab-31/mobile-progress-ring`
+- Source pixels: 696 × 2048 px; component art direction requested at 179 × 766 px.
+- Desktop viewport and implementation pixels: 1265 × 712 CSS px at device scale factor 1.
+- Responsive viewport and implementation pixels: 390 × 844 CSS px at device scale factor 1.
+- State: dashboard route, default project order, all nine progress values rendered.
+- Primary interactions tested: desktop render, one-page scroll through the remaining project rows, 390 px responsive reflow, and viewport reset.
+- Console errors and warnings: none.
+
+### Findings
+
+- No actionable P0/P1/P2 differences remain. The implementation preserves the selected compact-ring hierarchy: blue progress arc, pale blue-gray remainder, white center, bold navy percentage, and a centered check only at 100%.
+- The source is a focused progress-column study rather than a full dashboard composition. The implementation therefore scales the ring to 36 px on desktop and 28 px on small screens so it fits the existing table grid without shifting the timeline.
+
+### Fidelity surfaces
+
+- Fonts and typography: the existing Open Sans family is retained; percentages are increased to 14 px desktop and remain bold, legible, and consistently aligned. Mobile falls back to the existing 11 px table scale.
+- Spacing and layout rhythm: every desktop ring measures 36 × 36 px with a 9 px gap to the percentage; the 390 px layout uses 28 × 28 px rings and has no horizontal overflow. Existing row heights, urgency labels, start dates, timelines, and deadlines are unchanged.
+- Colors and visual tokens: the active arc uses dashboard blue `#1592d0`, the remainder uses `#e7eef2`, the center is white, and the percentage/check use the existing navy family.
+- Image quality and asset fidelity: the ring is rendered crisply at both tested sizes; the completion check uses the product's existing Material Symbols icon family.
+- Copy and content: all nine computed percentages remain unchanged and accessible through native `role="progressbar"` values. Two 100% rows display the completion check; incomplete rows do not.
+
+### Comparison history
+
+- Initial state: slim horizontal bars with percentages to the right.
+- Selected visual target: compact radial progress rings with completed-state checks.
+- Final browser evidence: nine rings render with correct dynamic percentages, all nine project timelines remain present, desktop and mobile have no horizontal overflow, and browser console inspection returns no errors or warnings.
+
+final result: passed
 ## Urgency-label width iteration
 
 - Source annotation: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-b4020157-4722-4495-976a-566abf0cb162.png` (153 × 920 px)
@@ -111,6 +144,17 @@ final result: passed
 - Copy and content: Very High, High, Medium, and Low labels are unchanged; the fixed width accommodates the longest label without wrapping.
 - Focused comparison evidence: the supplied reference and the live urgency column were rendered side by side at equal 153 px column width; no P0/P1/P2 mismatch remains.
 - Comparison history: variable intrinsic widths → fixed 88 px badges → browser measurement confirms every rendered badge is 88 px.
+
+final result: passed
+
+## Latest build state — project-progress rings
+
+- Source visual truth: `C:\Users\2994\.codex\generated_images\01a12f9d-cb8a-70a3-9caf-a123925efce9\exec-457def35-cad6-4d34-8288-b10fba264fe4.png`
+- Implementation evidence: `cua://iab/tab-31/desktop-progress-ring` and `cua://iab/tab-31/mobile-progress-ring`
+- Viewports: 1265 × 712 desktop and 390 × 844 responsive, device scale factor 1
+- State: dashboard route with all nine project rows and unchanged timelines
+- Checks: dynamic ring values, completed-state checks, responsive fit, horizontal overflow, script syntax, diff whitespace, and browser console
+- Result: the detailed project-progress ring iteration above has no remaining P0/P1/P2 findings; console errors and warnings are empty.
 
 final result: passed
 
