@@ -87,3 +87,30 @@
 The implementation matches the selected direction in hierarchy, color family, diagonal header, presentation-friendly contrast, compact project table, target panel, and status donut. The latest pass places all primary KPIs—including status distribution—above the project summary, exposes deadlines without sacrificing timeline width, and reduces the unfinished-work panel height with a two-column layout. Responsive fallbacks preserve the same information without collision or horizontal overflow.
 
 final result: passed
+## Urgency-label width iteration
+
+- Source annotation: `C:\Users\2994\AppData\Local\Temp\codex-clipboard-b4020157-4722-4495-976a-566abf0cb162.png` (153 × 920 px)
+- Browser implementation: `http://127.0.0.1:4179/?v=equal-badges#dashboard-app`
+- Implementation screenshot: `cua://iab/tab-27/latest-screenshot`
+- Focused side-by-side evidence: `cua://iab/tab-28/latest-screenshot`
+- Viewport: 1265 × 712 CSS px at device scale factor 1
+- State: dashboard, default project list
+- Primary interaction tested: responsive dashboard render and project-table alignment
+- Console errors: none observed
+
+### Finding and fix
+
+1. P2 — Urgency pill widths varied with the label length. Fixed by applying one 88 px width to every urgency badge while preserving centered text, semantic colors, and `max-width:100%` responsiveness.
+
+### Fidelity check
+
+- Fonts and typography: existing typeface, weight, size, line height, and centered text are preserved.
+- Spacing and layout rhythm: all rendered High and Medium badges measure exactly 88 px; row height, column tracks, and surrounding spacing are unchanged.
+- Colors and visual tokens: existing semantic badge colors remain unchanged.
+- Image quality and asset fidelity: no imagery or icon assets are affected.
+- Copy and content: Very High, High, Medium, and Low labels are unchanged; the fixed width accommodates the longest label without wrapping.
+- Focused comparison evidence: the supplied reference and the live urgency column were rendered side by side at equal 153 px column width; no P0/P1/P2 mismatch remains.
+- Comparison history: variable intrinsic widths → fixed 88 px badges → browser measurement confirms every rendered badge is 88 px.
+
+final result: passed
+
