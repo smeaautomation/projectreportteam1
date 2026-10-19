@@ -165,7 +165,7 @@ function stateOf(project){ const tasks=project.tasks||[]; if(tasks.length&&tasks
 function daysUntil(date){ const a = new Date(); a.setHours(0,0,0,0); return Math.ceil((new Date(date+"T00:00:00") - a)/86400000); }
 function formatDate(date, long=false){ return new Intl.DateTimeFormat("id-ID", long ? {day:"numeric",month:"long",year:"numeric"}:{day:"numeric",month:"short",year:"numeric"}).format(new Date(date+"T00:00:00")); }
 function todayISO(){const parts=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.year}-${parts.month}-${parts.day}`;}
-function updateReportDate(){const today=new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric"}).format(new Date());document.getElementById("reportDateText").textContent=today;document.getElementById("targetSubtitle").textContent=`Semua pekerjaan yang belum selesai per ${today}`;}
+function updateReportDate(){const today=new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric"}).format(new Date());document.getElementById("reportDateText").textContent=today;document.getElementById("targetSubtitle").textContent=`Otomatis dari project yang belum selesai per ${today}`;}
 function formatLastUpdate(value){let date=new Date(value);if(Number.isNaN(date.getTime()))date=new Date(DEFAULT_LAST_UPDATE);const parts=Object.fromEntries(new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.day} ${parts.month} ${parts.year}, ${parts.hour}.${parts.minute} WIB`;}
 function latestUpdateValue(value=localStorage.getItem(LAST_UPDATE_KEY)){const storedTime=Date.parse(value);const baselineTime=Date.parse(DEFAULT_LAST_UPDATE);const latest=Number.isNaN(storedTime)||storedTime<baselineTime?DEFAULT_LAST_UPDATE:value;if(latest!==value)localStorage.setItem(LAST_UPDATE_KEY,latest);return latest;}
 function updateLastUpdateText(value){document.getElementById("lastUpdateText").textContent=`Last Update: ${formatLastUpdate(latestUpdateValue(value))}`;}
@@ -173,6 +173,7 @@ function markDataUpdated(){const value=new Date().toISOString();localStorage.set
 function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
 function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
 function upcomingTasks(project){ return (project.tasks || []).filter(item => item.status !== "done"); }
+function unfinishedProjects(){ return projects.filter(project => progressOf(project) < 100); }
 
 function render(){
   const filtered = projects.filter(p => {
@@ -267,9 +268,9 @@ function duplicateTask(projectId,taskKey){
 }
 
 function renderTargets(){
-  const items = projects.map(p=>({project:p,tasks:upcomingTasks(p)})).filter(x=>x.tasks.length);
+  const items = unfinishedProjects().map(project=>({project,tasks:upcomingTasks(project)}));
   document.getElementById("deadlineList").innerHTML = items.length ? items.map(({project,tasks},i)=>{
-    const taskList = tasks.map(task=>`<li>${escapeHTML(task.name)}</li>`).join("");
+    const taskList = tasks.length ? tasks.map(task=>`<li>${escapeHTML(task.name)}</li>`).join("") : "<li>Belum ada aktivitas</li>";
     return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong></div><div><h3>${escapeHTML(project.name)}</h3><ul class="deadline-task-list">${taskList}</ul></div></div>`;
   }).join("") : `<div class="empty-state"><p>Semua pekerjaan sudah selesai.</p></div>`;
 }
