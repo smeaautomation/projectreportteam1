@@ -281,6 +281,7 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .project-deadline.overdue,.project-deadline.overdue .material-symbols-rounded{color:#df4565}
 .project-deadline.complete{color:#6680a0}
 .project-timeline .timeline-steps{height:42px;margin:0 22px}
+.dashboard-view .project-timeline .timeline-steps{margin-right:10px}
 .timeline-node span{top:19px;width:64px;font-size:9.5px;color:#8a96a8}
 .timeline-dense .timeline-node span{width:40px;font-size:8.5px}
 .timeline-node i{width:12px;height:12px;border-color:#d6e1e5}
