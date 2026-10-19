@@ -227,12 +227,13 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .timeline-head span:last-child{text-align:right}
 .project-row{position:relative;min-height:58px;padding:7px 18px;border-top:1px solid #e8eef4;transition:background .15s ease,opacity .15s ease,transform .15s ease}
 .project-row:hover{background:#f9fcff}
-.dashboard-view .portfolio-card{overflow-x:auto}
-.dashboard-view .table-head,.dashboard-view .project-row{width:120%;min-width:120%}
-.dashboard-view .project-row.urgency-very-high,.dashboard-view .project-row.urgency-very-high:hover{background:rgba(239,68,68,.15)}
-.dashboard-view .project-row.urgency-high,.dashboard-view .project-row.urgency-high:hover{background:rgba(245,158,11,.15)}
-.dashboard-view .project-row.urgency-medium,.dashboard-view .project-row.urgency-medium:hover{background:rgba(34,197,94,.15)}
-.dashboard-view .project-row.urgency-low,.dashboard-view .project-row.urgency-low:hover{background:rgba(59,130,246,.15)}
+.dashboard-view .portfolio-card{overflow:hidden}
+.dashboard-view .table-head,.dashboard-view .project-row{width:100%;min-width:0}
+.dashboard-view .project-row{min-height:70px;padding-top:10px;padding-bottom:10px}
+.dashboard-view .project-row.urgency-very-high,.dashboard-view .project-row.urgency-very-high:hover{background:rgba(239,68,68,.10)}
+.dashboard-view .project-row.urgency-high,.dashboard-view .project-row.urgency-high:hover{background:rgba(245,158,11,.10)}
+.dashboard-view .project-row.urgency-medium,.dashboard-view .project-row.urgency-medium:hover{background:rgba(34,197,94,.10)}
+.dashboard-view .project-row.urgency-low,.dashboard-view .project-row.urgency-low:hover{background:rgba(59,130,246,.10)}
 .row-order{display:grid;place-items:center}
 .project-index{width:34px;height:34px;display:grid;place-items:center;border-radius:50%;background:#eef6fa;color:#214e87;font-size:13px;font-weight:800}
 .drag-handle{display:none;width:34px;height:34px;border:1px solid #d5e4ef;border-radius:9px;background:#f7fbfe;color:#617895;cursor:grab;touch-action:none}
