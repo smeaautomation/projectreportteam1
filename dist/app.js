@@ -3,6 +3,8 @@ const REPORT_TARGET_DATE = "2026-10-06";
 const STATUS_VALUE = { todo: 0, active: .5, done: 1 };
 const STORAGE_KEY = "team1-weekly-progress-v3";
 const LEGACY_STORAGE_KEY = "team1-weekly-progress-v2";
+const LAST_UPDATE_KEY = "team1-weekly-progress-last-update";
+const DEFAULT_LAST_UPDATE = "2026-10-14T10:00:00.000Z";
 const AUTH_ENDPOINT = "/api/auth";
 let currentFilter = "Semua";
 let searchQuery = "";
@@ -139,7 +141,7 @@ function loadProjects(){
     const restored=normalizeProjects(structuredClone(weeklyProjects)); localStorage.setItem(STORAGE_KEY,JSON.stringify(restored)); return restored;
   }
 }
-function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); }
+function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); markDataUpdated(); }
 function allTasks(){ return projects.flatMap(project => project.tasks || []); }
 function progressOf(project){ const tasks = project.tasks || []; return tasks.length ? Math.round(tasks.reduce((total, item) => total + (STATUS_VALUE[item.status] || 0), 0) / tasks.length * 100) : 0; }
 function stateOf(project){ const tasks=project.tasks||[]; if(tasks.length&&tasks.every(item=>item.status==="done"))return "Done"; if(tasks.some(item=>item.status!=="todo"))return "On going"; return "Not Started"; }
@@ -147,6 +149,9 @@ function daysUntil(date){ const a = new Date(); a.setHours(0,0,0,0); return Math
 function formatDate(date, long=false){ return new Intl.DateTimeFormat("id-ID", long ? {day:"numeric",month:"long",year:"numeric"}:{day:"numeric",month:"short",year:"numeric"}).format(new Date(date+"T00:00:00")); }
 function todayISO(){const parts=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.year}-${parts.month}-${parts.day}`;}
 function updateReportDate(){const today=new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric"}).format(new Date());document.getElementById("reportDateText").textContent=today;document.getElementById("targetSubtitle").textContent=`Semua pekerjaan yang belum selesai per ${today}`;}
+function formatLastUpdate(value){let date=new Date(value);if(Number.isNaN(date.getTime()))date=new Date(DEFAULT_LAST_UPDATE);const parts=Object.fromEntries(new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.day} ${parts.month} ${parts.year}, ${parts.hour}.${parts.minute} WIB`;}
+function updateLastUpdateText(value=localStorage.getItem(LAST_UPDATE_KEY)||DEFAULT_LAST_UPDATE){document.getElementById("lastUpdateText").textContent=`Last Update: ${formatLastUpdate(value)}`;}
+function markDataUpdated(){const value=new Date().toISOString();localStorage.setItem(LAST_UPDATE_KEY,value);updateLastUpdateText(value);}
 function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
 function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
 function upcomingTasks(project){ return (project.tasks || []).filter(item => item.status !== "done"); }
@@ -367,7 +372,9 @@ function syncView(){
 }
 
 updateReportDate();
+updateLastUpdateText();
 setInterval(updateReportDate,60000);
+window.addEventListener("storage",event=>{if(event.key===LAST_UPDATE_KEY)updateLastUpdateText(event.newValue||DEFAULT_LAST_UPDATE);});
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.getElementById("workstreamFab").addEventListener("click",event=>{if(location.hash!=="#project"&&!authUser){event.preventDefault();openLoginModal("#project");}});
 document.querySelectorAll("[data-close-login]").forEach(button=>button.addEventListener("click",closeLoginModal));
