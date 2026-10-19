@@ -273,7 +273,7 @@ function openModal(project=null){
   document.getElementById("projectStart").value=project?.start || new Date().toISOString().slice(0,10);
   document.getElementById("projectEnd").value=project?.end || addDays(new Date(),7);
   if(project){
-    document.getElementById("projectName").value=project.name; document.getElementById("projectOwner").value=project.owner;
+    document.getElementById("projectName").value=project.name; document.getElementById("projectOwner").value=project.owner==="Restu"?"Restu":"Dita";
     const selectedCategory=normalizeCategory(project.category);
     document.getElementById("projectCategory").value=[...document.getElementById("projectCategory").options].some(o=>o.value===selectedCategory)?selectedCategory:"Others";
     document.querySelector(`input[name="priority"][value="${project.priority}"]`).checked=true;
