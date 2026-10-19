@@ -218,6 +218,13 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .section-header p{font-size:12px;color:#6880a5}
 .section-header.compact{padding:16px 20px 14px}
 .section-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#f0eaff;color:#7a25ed;font-size:21px}
+.target-refresh-btn{height:38px;padding:0 14px;border:1px solid #d7c5ff;border-radius:11px;background:#f0eaff;color:#6f1fe7;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-size:12px;font-weight:800;box-shadow:0 5px 14px rgba(111,31,231,.10);transition:background .2s ease,border-color .2s ease,box-shadow .2s ease,transform .2s ease;white-space:nowrap}
+.target-refresh-btn .material-symbols-rounded{font-size:19px}
+.target-refresh-btn:hover{background:#e7dbff;border-color:#bea0ff;box-shadow:0 7px 17px rgba(111,31,231,.16);transform:translateY(-1px)}
+.target-refresh-btn:focus-visible{outline:3px solid rgba(122,37,237,.24);outline-offset:3px}
+.target-refresh-btn:disabled{cursor:wait;opacity:.78;transform:none}
+.target-refresh-btn.is-refreshing .material-symbols-rounded{animation:target-refresh-spin .5s ease}
+@keyframes target-refresh-spin{to{transform:rotate(360deg)}}
 .reorder-hint{margin-top:7px!important;color:#8b5b00!important;font-weight:700}
 .table-head,.project-row{display:grid;grid-template-columns:40px minmax(160px,.9fr) minmax(105px,.55fr) minmax(82px,.42fr) minmax(90px,.48fr) minmax(430px,2.15fr) 32px;gap:12px;align-items:center}
 .dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:40px minmax(135px,.7875fr) minmax(110px,.65fr) minmax(86px,.45fr) minmax(90px,.55fr) minmax(420px,2.1625fr)}

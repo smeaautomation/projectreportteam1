@@ -175,6 +175,14 @@ function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;
 function upcomingTasks(project){ return (project.tasks || []).filter(item => item.status !== "done"); }
 function unfinishedProjects(){ return projects.filter(project => progressOf(project) < 100); }
 
+function refreshDashboardData(){
+  const button=document.getElementById("refreshTargetsBtn");
+  button.disabled=true;button.classList.remove("is-refreshing");void button.offsetWidth;button.classList.add("is-refreshing");
+  projects=loadProjects();render();updateReportDate();updateLastUpdateText();
+  showToast("Target Selanjutnya diperbarui dari data project terbaru.");
+  setTimeout(()=>{button.disabled=false;button.classList.remove("is-refreshing");},500);
+}
+
 function render(){
   const filtered = projects.filter(p => {
     const searchable = `${p.name} ${p.owner} ${p.category} ${p.urgency} ${(p.tasks||[]).map(t=>t.name).join(" ")}`.toLowerCase();
@@ -423,6 +431,7 @@ updateReportDate();
 updateLastUpdateText();
 setInterval(updateReportDate,60000);
 window.addEventListener("storage",event=>{if(event.key===LAST_UPDATE_KEY)updateLastUpdateText(event.newValue||DEFAULT_LAST_UPDATE);});
+document.getElementById("refreshTargetsBtn").addEventListener("click",refreshDashboardData);
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.getElementById("workstreamFab").addEventListener("click",event=>{if(location.hash!=="#project"&&!authUser){event.preventDefault();openLoginModal("#project");}});
 document.querySelectorAll("[data-close-login]").forEach(button=>button.addEventListener("click",closeLoginModal));
