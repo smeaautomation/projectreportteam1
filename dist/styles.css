@@ -220,7 +220,7 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .section-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#f0eaff;color:#7a25ed;font-size:21px}
 .reorder-hint{margin-top:7px!important;color:#8b5b00!important;font-weight:700}
 .table-head,.project-row{display:grid;grid-template-columns:40px minmax(180px,1.05fr) minmax(110px,.65fr) minmax(100px,.55fr) minmax(480px,2.35fr) 32px;gap:12px;align-items:center}
-.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:40px minmax(180px,1.05fr) minmax(110px,.65fr) minmax(100px,.55fr) minmax(480px,2.35fr)}
+.dashboard-view .table-head,.dashboard-view .project-row{grid-template-columns:40px minmax(135px,.7875fr) minmax(110px,.65fr) minmax(100px,.55fr) minmax(480px,2.6125fr)}
 .table-head{padding:11px 18px;background:#f3f8fc;color:#8394aa;font-size:10px;letter-spacing:.75px}
 .timeline-head{display:grid;grid-template-columns:minmax(78px,.3fr) minmax(260px,1fr) minmax(78px,.3fr);gap:8px;align-items:center;text-align:center}
 .timeline-head span:first-child{text-align:left}
