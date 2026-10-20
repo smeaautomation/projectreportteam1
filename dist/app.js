@@ -324,14 +324,18 @@ function targetCardMarkup(project,tasks,index,variant="next"){
   const remaining=Math.max(taskItems.length-visibleTasks.length,0);
   const timing=firstDue?daysUntil(firstDue):null;
   const timingLabel=timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
-  const taskList=visibleTasks.length?visibleTasks.map(item=>`<li><span class="target-task-dot"></span><span>${escapeHTML(item.name)}</span>${item.dueAt?`<time>${formatDate(item.dueAt)}</time>`:""}</li>`).join(""):"<li><span class=\"target-task-dot\"></span><span>Belum ada aktivitas</span></li>";
+  const showExactDates=variant!=="week";
+  const deadlineMeta=variant==="week"
+    ? `<span class="target-card-deadline"><span class="material-symbols-rounded">event_upcoming</span>Deadline terdekat</span>`
+    : `<span class="target-card-deadline"><span class="material-symbols-rounded">calendar_month</span>${lastDue?`Sampai ${formatDate(lastDue)}`:"Tanpa deadline"}</span>`;
+  const taskList=visibleTasks.length?visibleTasks.map(item=>`<li><span class="target-task-dot"></span><span>${escapeHTML(item.name)}</span>${showExactDates&&item.dueAt?`<time>${formatDate(item.dueAt)}</time>`:""}</li>`).join(""):"<li><span class=\"target-task-dot\"></span><span>Belum ada aktivitas</span></li>";
   return `<article class="target-card ${variant==='next'?'target-card-next':''}">
     <div class="target-card-top">
       <span class="target-card-index">${String(index+1).padStart(2,"0")}</span>
       <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>
       <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>
     </div>
-    <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span><span class="target-card-deadline"><span class="material-symbols-rounded">calendar_month</span>${lastDue?`Sampai ${formatDate(lastDue)}`:"Tanpa deadline"}</span><span class="target-card-countdown">${timingLabel}</span></div>
+    <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}<span class="target-card-countdown">${timingLabel}</span></div>
     <ul class="target-card-tasks">${taskList}</ul>
     ${remaining?`<div class="target-card-more">+${remaining} aktivitas lainnya</div>`:""}
   </article>`;
