@@ -182,10 +182,11 @@ function nextWeekTasks(project){
   const horizon=addDays(today,7);
   return (project.tasks || []).filter(item=>item.status!=="done"&&item.dueAt&&item.dueAt>=today&&item.dueAt<=horizon).sort((a,b)=>(a.dueAt||"").localeCompare(b.dueAt||""));
 }
-function startedThisWeekProjects(){
+function completedLastSevenDays(){
   const today=todayISO();
   const weekStart=addDays(today,-7);
-  return projects.filter(project=>project.start&&project.start>=weekStart&&project.start<=today).sort((a,b)=>(a.start||"").localeCompare(b.start||""));
+  const yesterday=addDays(today,-1);
+  return projects.map(project=>({project,tasks:(project.tasks||[]).filter(item=>item.status==="done"&&item.completedAt&&item.completedAt>=weekStart&&item.completedAt<=yesterday)})).filter(({tasks})=>tasks.length);
 }
 
 function refreshDashboardData(){
@@ -319,14 +320,12 @@ function renderTargets(){
 }
 
 function renderCurrentWeekProjects(){
-  const today=todayISO();
-  const weekStart=addDays(today,-7);
   const subtitle=document.getElementById("currentWeekSubtitle");
-  if(subtitle)subtitle.textContent=`Project mulai ${formatDate(weekStart,true)} sampai ${formatDate(today,true)}`;
+  if(subtitle)subtitle.textContent="Aktivitas berstatus Done dalam 7 hari sebelumnya";
   const list=document.getElementById("currentWeekList");
   if(!list)return;
-  const items=startedThisWeekProjects();
-  list.innerHTML=items.length?items.map((project,i)=>targetCardMarkup(project,project.tasks||[],i,"started")).join(""): `<div class="empty-state current-week-empty"><p>Tidak ada project yang mulai dikerjakan dalam 7 hari terakhir.</p></div>`;
+  const items=completedLastSevenDays();
+  list.innerHTML=items.length?items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"completed")).join(""): `<div class="empty-state current-week-empty"><p>Belum ada aktivitas Done dengan tanggal penyelesaian dalam 7 hari sebelumnya.</p></div>`;
 }
 
 function targetCardMarkup(project,tasks,index,variant="next"){
@@ -337,17 +336,17 @@ function targetCardMarkup(project,tasks,index,variant="next"){
   const progress=progressOf(project);
   const urgency=project.urgency||"Medium";
   const urgencyClass=URGENCY_CLASS[urgency]||"urgency-medium";
-  const visibleTasks=variant==="next"?taskItems:taskItems.slice(0,4);
-  const remainingTasks=variant==="next"?[]:taskItems.slice(visibleTasks.length);
+  const visibleTasks=variant==="next"||variant==="completed"?taskItems:taskItems.slice(0,4);
+  const remainingTasks=variant==="next"||variant==="completed"?[]:taskItems.slice(visibleTasks.length);
   const timing=firstDue?daysUntil(firstDue):null;
-  const timingLabel=variant==="started"&&project.start?`Mulai ${formatDate(project.start)}`:timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
-  const timingIcon=variant==="started"?"play_circle":"event_upcoming";
-  const showExactDates=variant!=="week";
-  const deadlineMeta=variant==="week"
+  const timingLabel=variant==="completed"?"Done":timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
+  const timingIcon=variant==="completed"?"check_circle":"event_upcoming";
+  const showExactDates=variant==="next";
+  const deadlineMeta=variant!=="next"
     ? ""
     : `<span class="target-card-deadline"><span class="material-symbols-rounded">calendar_month</span>${lastDue?`Sampai ${formatDate(lastDue)}`:"Tanpa deadline"}</span>`;
   const taskList=visibleTasks.length?visibleTasks.map(item=>`<li><span class="target-task-dot"></span><span>${escapeHTML(item.name)}</span>${showExactDates&&item.dueAt?`<time>${formatDate(item.dueAt)}</time>`:""}</li>`).join(""):"<li><span class=\"target-task-dot\"></span><span>Belum ada aktivitas</span></li>";
-  return `<article class="target-card ${variant==='next'?'target-card-next':''}">
+  return `<article class="target-card ${variant==='next'?'target-card-next':''} ${variant==='completed'?'target-card-completed':''}">
     <div class="target-card-top">
       <span class="target-card-index">${String(index+1).padStart(2,"0")}</span>
       <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>

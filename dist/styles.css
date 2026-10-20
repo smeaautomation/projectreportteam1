@@ -309,6 +309,7 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .current-week-card .target-card-index{background:#eaf7fd;color:#1675a7}
 .current-week-card .target-progress{background:conic-gradient(#168fce var(--target-progress),#e3eef3 0)}
 .current-week-card .target-card-countdown{color:#168fce}
+.current-week-card .target-card-tasks li>span:nth-child(2){white-space:normal;overflow:visible;text-overflow:clip}
 .next-week-card .section-header{border-left:4px solid #7a25ed;padding-left:16px}
 .next-week-card .deadline-task-list li{display:flex;align-items:baseline;justify-content:space-between;gap:14px}
 .next-week-card .deadline-task-list li:before{flex:0 0 auto;margin-right:1px}
