@@ -447,7 +447,8 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .next-week-card .target-task-dot{background:#9757e8}
 .target-card-tasks li>span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .target-card-tasks time{color:#6c36bd;font-size:9px;font-weight:800;white-space:nowrap}
-.target-card-more{color:#879bb2;font-size:10px;font-weight:700;white-space:nowrap}
+.target-card-more{display:grid;gap:6px;color:#617e9e;font-size:10px;font-weight:700;min-width:0}
+.target-card-more-item{display:flex;align-items:baseline;gap:7px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .next-week-card .section-header{border-left:4px solid #7a25ed;padding-left:16px;background:linear-gradient(90deg,#fbf9ff,transparent)}
 .target-next-card .section-header{gap:14px}
 .target-section-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}

@@ -321,7 +321,7 @@ function targetCardMarkup(project,tasks,index,variant="next"){
   const urgency=project.urgency||"Medium";
   const urgencyClass=URGENCY_CLASS[urgency]||"urgency-medium";
   const visibleTasks=taskItems.slice(0,4);
-  const remaining=Math.max(taskItems.length-visibleTasks.length,0);
+  const remainingTasks=taskItems.slice(visibleTasks.length);
   const timing=firstDue?daysUntil(firstDue):null;
   const timingLabel=timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
   const showExactDates=variant!=="week";
@@ -338,7 +338,7 @@ function targetCardMarkup(project,tasks,index,variant="next"){
     <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}<span class="target-card-countdown">${timingLabel}</span></div>
     <div class="target-card-task-area">
       <ul class="target-card-tasks">${taskList}</ul>
-      ${remaining?`<div class="target-card-more">+${remaining} aktivitas lainnya</div>`:""}
+      ${remainingTasks.length?`<div class="target-card-more">${remainingTasks.map(item=>`<span class="target-card-more-item"><span class="target-task-dot"></span>${escapeHTML(item.name)}</span>`).join("")}</div>`:""}
     </div>
   </article>`;
 }
