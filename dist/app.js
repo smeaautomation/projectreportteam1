@@ -182,6 +182,11 @@ function nextWeekTasks(project){
   const horizon=addDays(today,7);
   return (project.tasks || []).filter(item=>item.status!=="done"&&item.dueAt&&item.dueAt>=today&&item.dueAt<=horizon).sort((a,b)=>(a.dueAt||"").localeCompare(b.dueAt||""));
 }
+function startedThisWeekProjects(){
+  const today=todayISO();
+  const weekStart=addDays(today,-7);
+  return projects.filter(project=>project.start&&project.start>=weekStart&&project.start<=today).sort((a,b)=>(a.start||"").localeCompare(b.start||""));
+}
 
 function refreshDashboardData(){
   const button=document.getElementById("refreshTargetsBtn");
@@ -309,7 +314,19 @@ function duplicateTask(projectId,taskKey){
 function renderTargets(){
   const items = unfinishedProjects().map(project=>({project,tasks:upcomingTasks(project)}));
   document.getElementById("deadlineList").innerHTML = items.length ? items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"next")) .join("") : `<div class="empty-state"><p>Semua pekerjaan sudah selesai.</p></div>`;
+  renderCurrentWeekProjects();
   renderNextWeekTargets();
+}
+
+function renderCurrentWeekProjects(){
+  const today=todayISO();
+  const weekStart=addDays(today,-7);
+  const subtitle=document.getElementById("currentWeekSubtitle");
+  if(subtitle)subtitle.textContent=`Project mulai ${formatDate(weekStart,true)} sampai ${formatDate(today,true)}`;
+  const list=document.getElementById("currentWeekList");
+  if(!list)return;
+  const items=startedThisWeekProjects();
+  list.innerHTML=items.length?items.map((project,i)=>targetCardMarkup(project,project.tasks||[],i,"started")).join(""): `<div class="empty-state current-week-empty"><p>Tidak ada project yang mulai dikerjakan dalam 7 hari terakhir.</p></div>`;
 }
 
 function targetCardMarkup(project,tasks,index,variant="next"){
@@ -323,7 +340,8 @@ function targetCardMarkup(project,tasks,index,variant="next"){
   const visibleTasks=variant==="next"?taskItems:taskItems.slice(0,4);
   const remainingTasks=variant==="next"?[]:taskItems.slice(visibleTasks.length);
   const timing=firstDue?daysUntil(firstDue):null;
-  const timingLabel=timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
+  const timingLabel=variant==="started"&&project.start?`Mulai ${formatDate(project.start)}`:timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
+  const timingIcon=variant==="started"?"play_circle":"event_upcoming";
   const showExactDates=variant!=="week";
   const deadlineMeta=variant==="week"
     ? ""
@@ -335,7 +353,7 @@ function targetCardMarkup(project,tasks,index,variant="next"){
       <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>
       <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>
     </div>
-    <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}<span class="target-card-countdown"><span class="material-symbols-rounded">event_upcoming</span>${timingLabel}</span></div>
+    <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}<span class="target-card-countdown"><span class="material-symbols-rounded">${timingIcon}</span>${timingLabel}</span></div>
     <div class="target-card-task-area ${remainingTasks.length?"has-more":""}">
       <ul class="target-card-tasks">${taskList}</ul>
       ${remainingTasks.length?`<div class="target-card-more">${remainingTasks.map(item=>`<span class="target-card-more-item"><span class="target-task-dot"></span>${escapeHTML(item.name)}</span>`).join("")}</div>`:""}
@@ -702,3 +720,11 @@ document.getElementById("drawerContent").addEventListener("keydown",event=>{
 render();
 setTargetNextVisibility(localStorage.getItem(TARGET_NEXT_HIDDEN_KEY)==="true");
 refreshAuth();
+let realtimeDashboardDay=todayISO();
+setInterval(()=>{
+  const currentDay=todayISO();
+  if(currentDay===realtimeDashboardDay)return;
+  realtimeDashboardDay=currentDay;
+  updateReportDate();
+  render();
+},60000);
