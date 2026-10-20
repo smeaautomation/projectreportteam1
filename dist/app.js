@@ -1,10 +1,10 @@
 const REPORT_DATE = "2026-09-29";
 const REPORT_TARGET_DATE = "2026-10-06";
 const STATUS_VALUE = { todo: 0, active: .5, done: 1 };
-const STORAGE_KEY = "team1-weekly-progress-v3";
-const LEGACY_STORAGE_KEY = "team1-weekly-progress-v2";
+const STORAGE_KEY = "team1-weekly-progress-v4";
+const LEGACY_STORAGE_KEY = "team1-weekly-progress-v3";
 const LAST_UPDATE_KEY = "team1-weekly-progress-last-update";
-const DEFAULT_LAST_UPDATE = "2026-10-19T06:29:10.000Z";
+const DEFAULT_LAST_UPDATE = globalThis.TEAM1_PROJECT_DATA?.lastUpdate || "2026-10-19T17:20:17.747Z";
 const AUTH_ENDPOINT = "/api/auth";
 const CATEGORY_ALIASES = {
   "Web Platform": "Web Automation",
@@ -30,7 +30,7 @@ let draggedTask = null;
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const task = (key, name, short, status, context, completedAt="", startedAt="", dueAt="") => ({ key, name, short, status, context, startedAt, dueAt, completedAt:status==="done"?completedAt:"" });
-const weeklyProjects = [
+const weeklyProjects = globalThis.TEAM1_PROJECT_DATA?.projects || [
   {
     id: "project-1791880366318", name: "Dokumentasi TC", owner: "Dita", category: "Web Automation",
     start: "2026-10-13", end: "2026-10-18", urgency: "High", source: "Input dashboard",
@@ -150,7 +150,9 @@ function loadProjects(){
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if(Array.isArray(saved)) return normalizeProjects(saved);
     const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
-    if(Array.isArray(legacy) && !isResetSnapshot(legacy)){
+    const legacyUpdateTime=Date.parse(localStorage.getItem(LAST_UPDATE_KEY));
+    const baselineUpdateTime=Date.parse(DEFAULT_LAST_UPDATE);
+    if(Array.isArray(legacy) && !isResetSnapshot(legacy) && legacyUpdateTime>baselineUpdateTime){
       const migrated=normalizeProjects(legacy); localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated)); return migrated;
     }
     const restored=normalizeProjects(structuredClone(weeklyProjects)); localStorage.setItem(STORAGE_KEY,JSON.stringify(restored)); return restored;
