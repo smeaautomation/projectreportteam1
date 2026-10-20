@@ -326,12 +326,27 @@ function renderTargets(){
   renderNextWeekTargets();
 }
 
+function portfolioContribution(items){
+  if(!projects.length)return 0;
+  const projectShares=items.reduce((total,{project,tasks})=>{
+    const projectTaskCount=(project.tasks||[]).length;
+    return total+(projectTaskCount?(tasks||[]).length/projectTaskCount:0);
+  },0);
+  return Math.round(projectShares/projects.length*100);
+}
+
+function setSectionContribution(elementId,items){
+  const element=document.getElementById(elementId);
+  if(element)element.innerHTML=`Total Kontribusi: <strong>${portfolioContribution(items)}%</strong>`;
+}
+
 function renderCurrentWeekProjects(){
   const subtitle=document.getElementById("currentWeekSubtitle");
   if(subtitle)subtitle.textContent="Aktivitas berstatus Done dalam 7 hari sebelumnya";
   const list=document.getElementById("currentWeekList");
   if(!list)return;
   const items=completedLastSevenDays();
+  setSectionContribution("currentWeekTotalContribution",items);
   list.innerHTML=items.length?items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"completed")).join(""): `<div class="empty-state current-week-empty"><p>Belum ada aktivitas Done dengan tanggal penyelesaian dalam 7 hari sebelumnya.</p></div>`;
 }
 
@@ -380,6 +395,7 @@ function renderNextWeekTargets(){
   const subtitle=document.getElementById("nextWeekSubtitle");
   if(subtitle)subtitle.textContent=`Aktivitas belum selesai dengan deadline sampai ${formatDate(horizon,true)}`;
   const items=projects.map(project=>({project,tasks:nextWeekTasks(project)})).filter(({tasks})=>tasks.length);
+  setSectionContribution("nextWeekTotalContribution",items);
   const list=document.getElementById("nextWeekList");
   if(!list)return;
   list.innerHTML=items.length?items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"week")).join(""): `<div class="empty-state next-week-empty"><p>Tidak ada aktivitas yang belum selesai sampai ${formatDate(horizon,true)}.</p></div>`;

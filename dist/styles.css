@@ -464,6 +464,10 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .target-card-more{display:grid;gap:6px;color:#617e9e;font-size:10px;font-weight:700;min-width:0}
 .target-card-more-item{display:flex;align-items:baseline;gap:7px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .next-week-card .section-header{border-left:4px solid #7a25ed;padding-left:16px;background:linear-gradient(90deg,#fbf9ff,transparent)}
+.section-total-contribution{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;border:1px solid #cfe5f3;border-radius:999px;padding:8px 12px;background:#eef9fe;color:#4e7893;font-size:12px;font-weight:400;white-space:nowrap}
+.section-total-contribution strong{color:#1478aa;font-size:14px;font-weight:700}
+.next-week-card .section-total-contribution{border-color:#dfd0f7;background:#f5efff;color:#745aa3}
+.next-week-card .section-total-contribution strong{color:#7028d7}
 .target-next-card .section-header{gap:14px}
 .target-section-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .target-toggle-btn{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 10px;border:1px solid #dce5ef;border-radius:8px;background:#fff;color:#68819f;font-size:10px;font-weight:800;transition:.2s}
@@ -473,7 +477,7 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .target-next-card.is-collapsed .deadline-list{display:none}
 .target-next-card.is-collapsed .target-section-actions{margin-left:auto}
 @media(max-width:1100px){.deadline-card .deadline-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.deadline-card .deadline-list{grid-template-columns:1fr;padding:14px 12px 18px}.deadline-card .target-card{min-height:0}.target-card-heading h3{font-size:13px}.target-card-task-area{grid-template-columns:1fr;gap:6px}.target-card-more{justify-self:start}.target-section-actions{width:100%;justify-content:flex-start}.target-next-card .section-header{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){.deadline-card .deadline-list{grid-template-columns:1fr;padding:14px 12px 18px}.deadline-card .target-card{min-height:0}.target-card-heading h3{font-size:13px}.target-card-task-area{grid-template-columns:1fr;gap:6px}.target-card-more{justify-self:start}.target-section-actions{width:100%;justify-content:flex-start}.current-week-card .section-header,.next-week-card .section-header,.target-next-card .section-header{align-items:flex-start;flex-direction:column}.section-total-contribution{margin-top:10px}}
 
 /* Local preview: use Open Sans consistently across the interface */
 body,button,input,select,textarea,kbd{font-family:"Open Sans",sans-serif}
