@@ -440,6 +440,11 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .target-progress strong,.target-progress span{position:relative;z-index:1;display:block;text-align:center}
 .target-progress strong{margin-top:1px;color:#071866;font:800 13px Manrope}
 .target-progress span{margin-top:-2px;color:#8a9db5;font-size:7px;text-transform:uppercase;letter-spacing:.4px}
+.current-week-card .target-card-top,.next-week-card .target-card-top{grid-template-columns:31px minmax(0,1fr) auto}
+.target-contribution{align-self:center;justify-self:end;white-space:nowrap;border-radius:999px;padding:7px 10px;background:#eaf7fd;color:#356b8a;font-size:11px;font-weight:400}
+.target-contribution strong{color:#071866;font-weight:700}
+.next-week-card .target-contribution{background:#f1eaff;color:#6f55a0}
+.next-week-card .target-contribution strong{color:#7028d7}
 .target-card-info{display:flex;align-items:center;flex-wrap:wrap;gap:7px;min-height:25px;padding:9px 0;border-top:1px solid #edf2f6;border-bottom:1px solid #edf2f6}
 .target-card .urgency-badge{width:auto;padding:4px 8px;font-size:9px}
 .target-card-deadline{display:inline-flex;align-items:center;gap:4px;color:#54759d;font-size:10px;font-weight:700}

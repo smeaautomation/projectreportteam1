@@ -341,7 +341,9 @@ function targetCardMarkup(project,tasks,index,variant="next"){
   const firstDue=dates[0]||project.end;
   const lastDue=dates[dates.length-1]||project.end;
   const totalProjectTasks=(project.tasks||[]).length;
-  const progress=variant==="completed"&&totalProjectTasks?Math.round(taskItems.length/totalProjectTasks*100):progressOf(project);
+  const showsContribution=variant==="completed"||variant==="week";
+  const contribution=totalProjectTasks?Math.round(taskItems.length/totalProjectTasks*100):0;
+  const progress=showsContribution?contribution:progressOf(project);
   const urgency=project.urgency||"Medium";
   const urgencyClass=URGENCY_CLASS[urgency]||"urgency-medium";
   const visibleTasks=variant==="next"||variant==="completed"?taskItems:taskItems.slice(0,4);
@@ -355,11 +357,14 @@ function targetCardMarkup(project,tasks,index,variant="next"){
     ? ""
     : `<span class="target-card-deadline"><span class="material-symbols-rounded">calendar_month</span>${lastDue?`Sampai ${formatDate(lastDue)}`:"Tanpa deadline"}</span>`;
   const taskList=visibleTasks.length?visibleTasks.map(item=>`<li><span class="target-task-dot"></span><span>${escapeHTML(item.name)}</span>${showExactDates&&item.dueAt?`<time>${formatDate(item.dueAt)}</time>`:""}</li>`).join(""):"<li><span class=\"target-task-dot\"></span><span>Belum ada aktivitas</span></li>";
+  const progressMarkup=showsContribution
+    ? `<div class="target-contribution">Kontribusi: <strong>${progress}%</strong></div>`
+    : `<div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>`;
   return `<article class="target-card ${variant==='next'?'target-card-next':''} ${variant==='completed'?'target-card-completed':''}">
     <div class="target-card-top">
       <span class="target-card-index">${String(index+1).padStart(2,"0")}</span>
       <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>
-      <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>
+      ${progressMarkup}
     </div>
     <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}${countdownMeta}</div>
     <div class="target-card-task-area ${remainingTasks.length?"has-more":""}">
