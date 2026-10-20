@@ -336,8 +336,10 @@ function targetCardMarkup(project,tasks,index,variant="next"){
       <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>
     </div>
     <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}<span class="target-card-countdown">${timingLabel}</span></div>
-    <ul class="target-card-tasks">${taskList}</ul>
-    ${remaining?`<div class="target-card-more">+${remaining} aktivitas lainnya</div>`:""}
+    <div class="target-card-task-area">
+      <ul class="target-card-tasks">${taskList}</ul>
+      ${remaining?`<div class="target-card-more">+${remaining} aktivitas lainnya</div>`:""}
+    </div>
   </article>`;
 }
 
