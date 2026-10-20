@@ -412,3 +412,52 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
   .workstream-view .section-header{gap:13px}
   .section-tools{width:100%}
 }
+
+/* Local preview: target cards */
+.deadline-card .deadline-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:18px 20px 22px}
+.deadline-card .target-card{display:flex;min-height:206px;flex-direction:column;gap:12px;padding:15px 16px 14px;background:linear-gradient(145deg,#fff 0%,#f7fbff 100%);border:1px solid #dce8f2;border-radius:16px;box-shadow:0 8px 20px rgba(22,61,103,.06);transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.deadline-card .target-card:hover{transform:translateY(-3px);border-color:#b8d4ed;box-shadow:0 14px 28px rgba(22,61,103,.12)}
+.deadline-card .target-card-next{background:linear-gradient(145deg,#fff 0%,#fbfcff 100%)}
+.next-week-card .target-card{background:linear-gradient(145deg,#fff 0%,#fbf9ff 100%);border-color:#e3d9f8}
+.target-card-top{display:grid;grid-template-columns:31px minmax(0,1fr) 54px;gap:10px;align-items:start}
+.target-card-index{width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:#edf5fb;color:#1765a6;font:800 12px Manrope}
+.target-card-next .target-card-index{background:#eef5ff;color:#315bb4}
+.next-week-card .target-card-index{background:#f1eaff;color:#7028d7}
+.target-card-heading{min-width:0}
+.target-card-heading h3{margin:0 0 4px;color:#071866;font:800 14px/1.25 Manrope;letter-spacing:-.1px}
+.target-card-heading p{display:flex;align-items:center;gap:6px;margin:0;color:#7890ad;font-size:10px;white-space:nowrap}
+.target-card-heading p b{color:#c2cfdd;font-size:12px}
+.target-progress{width:54px;height:54px;display:grid;place-items:center;position:relative;border-radius:50%;background:conic-gradient(#168fce var(--target-progress),#e5edf3 0)}
+.next-week-card .target-progress{background:conic-gradient(#7a25ed var(--target-progress),#ece7f7 0)}
+.target-progress:after{content:"";position:absolute;inset:6px;border-radius:50%;background:#fff}
+.target-progress strong,.target-progress span{position:relative;z-index:1;display:block;text-align:center}
+.target-progress strong{margin-top:1px;color:#071866;font:800 13px Manrope}
+.target-progress span{margin-top:-2px;color:#8a9db5;font-size:7px;text-transform:uppercase;letter-spacing:.4px}
+.target-card-info{display:flex;align-items:center;flex-wrap:wrap;gap:7px;min-height:25px;padding:9px 0;border-top:1px solid #edf2f6;border-bottom:1px solid #edf2f6}
+.target-card .urgency-badge{width:auto;padding:4px 8px;font-size:9px}
+.target-card-deadline{display:inline-flex;align-items:center;gap:4px;color:#54759d;font-size:10px;font-weight:700}
+.target-card-deadline .material-symbols-rounded{font-size:14px;color:#168fce}
+.next-week-card .target-card-deadline .material-symbols-rounded{color:#7a25ed}
+.target-card-countdown{margin-left:auto;color:#168fce;font-size:10px;font-weight:800}
+.next-week-card .target-card-countdown{color:#7a25ed}
+.target-card-tasks{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.target-card-tasks li{display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:7px;align-items:baseline;min-width:0;color:#617e9e;font-size:10px;line-height:1.25}
+.target-task-dot{width:5px;height:5px;margin-top:3px;border-radius:50%;background:#35b4ed}
+.next-week-card .target-task-dot{background:#9757e8}
+.target-card-tasks li>span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.target-card-tasks time{color:#6c36bd;font-size:9px;font-weight:800;white-space:nowrap}
+.target-card-more{margin-top:auto;color:#879bb2;font-size:10px;font-weight:700}
+.next-week-card .section-header{border-left:4px solid #7a25ed;padding-left:16px;background:linear-gradient(90deg,#fbf9ff,transparent)}
+.target-next-card .section-header{gap:14px}
+.target-section-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.target-toggle-btn{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 10px;border:1px solid #dce5ef;border-radius:8px;background:#fff;color:#68819f;font-size:10px;font-weight:800;transition:.2s}
+.target-toggle-btn:hover{border-color:#a9c9e7;background:#f6fbff;color:#1765a6}
+.target-toggle-btn .material-symbols-rounded{font-size:15px}
+.target-next-card.is-collapsed .section-header{border-bottom:0}
+.target-next-card.is-collapsed .target-section-actions{margin-left:auto}
+@media(max-width:1100px){.deadline-card .deadline-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.deadline-card .deadline-list{grid-template-columns:1fr;padding:14px 12px 18px}.deadline-card .target-card{min-height:0}.target-card-heading h3{font-size:13px}.target-section-actions{width:100%;justify-content:flex-start}.target-next-card .section-header{align-items:flex-start;flex-direction:column}}
+
+/* Local preview: use Open Sans consistently across the interface */
+body,button,input,select,textarea,kbd{font-family:"Open Sans",sans-serif}
+.brand,.page-heading h1,.stat-card h2,.section-header h2,.deadline-date strong,.donut strong,.modal-head h2,.drawer-head h2,.drawer-progress .big-progress strong,.stage-heading h3,.insight-icon,.insight-card h3,.target-card-index,.target-card-heading h3,.target-progress strong{font-family:"Open Sans",sans-serif}

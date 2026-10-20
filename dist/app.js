@@ -4,6 +4,7 @@ const STATUS_VALUE = { todo: 0, active: .5, done: 1 };
 const STORAGE_KEY = "team1-weekly-progress-v4";
 const LEGACY_STORAGE_KEY = "team1-weekly-progress-v3";
 const LAST_UPDATE_KEY = "team1-weekly-progress-last-update";
+const TARGET_NEXT_HIDDEN_KEY = "team1-target-next-hidden";
 const DEFAULT_LAST_UPDATE = globalThis.TEAM1_PROJECT_DATA?.lastUpdate || "2026-10-19T17:20:17.747Z";
 const AUTH_ENDPOINT = "/api/auth";
 const CATEGORY_ALIASES = {
@@ -190,6 +191,28 @@ function refreshDashboardData(){
   setTimeout(()=>{button.disabled=false;button.classList.remove("is-refreshing");},500);
 }
 
+function setTargetNextVisibility(hidden){
+  const list=document.getElementById("deadlineList");
+  const card=document.querySelector(".target-next-card");
+  const button=document.getElementById("toggleNextTargetsBtn");
+  if(!list||!card||!button)return;
+  list.hidden=hidden;
+  card.classList.toggle("is-collapsed",hidden);
+  button.setAttribute("aria-expanded",String(!hidden));
+  button.title=hidden?"Tampilkan Target Selanjutnya":"Sembunyikan Target Selanjutnya";
+  const icon=button.querySelector(".material-symbols-rounded");
+  const label=button.querySelector("span:last-child");
+  if(icon)icon.textContent=hidden?"visibility":"visibility_off";
+  if(label)label.textContent=hidden?"Tampilkan":"Sembunyikan";
+}
+
+function toggleTargetNextVisibility(){
+  const hidden=localStorage.getItem(TARGET_NEXT_HIDDEN_KEY)==="true";
+  const next=!hidden;
+  localStorage.setItem(TARGET_NEXT_HIDDEN_KEY,String(next));
+  setTargetNextVisibility(next);
+}
+
 function render(){
   const filtered = projects.filter(p => {
     const searchable = `${p.name} ${p.owner} ${p.category} ${p.urgency} ${(p.tasks||[]).map(t=>t.name).join(" ")}`.toLowerCase();
@@ -284,11 +307,33 @@ function duplicateTask(projectId,taskKey){
 
 function renderTargets(){
   const items = unfinishedProjects().map(project=>({project,tasks:upcomingTasks(project)}));
-  document.getElementById("deadlineList").innerHTML = items.length ? items.map(({project,tasks},i)=>{
-    const taskList = tasks.length ? tasks.map(task=>`<li>${escapeHTML(task.name)}</li>`).join("") : "<li>Belum ada aktivitas</li>";
-    return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong></div><div><h3>${escapeHTML(project.name)}</h3><ul class="deadline-task-list">${taskList}</ul></div></div>`;
-  }).join("") : `<div class="empty-state"><p>Semua pekerjaan sudah selesai.</p></div>`;
+  document.getElementById("deadlineList").innerHTML = items.length ? items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"next")) .join("") : `<div class="empty-state"><p>Semua pekerjaan sudah selesai.</p></div>`;
   renderNextWeekTargets();
+}
+
+function targetCardMarkup(project,tasks,index,variant="next"){
+  const taskItems=tasks||[];
+  const dates=taskItems.map(item=>item.dueAt).filter(Boolean).sort();
+  const firstDue=dates[0]||project.end;
+  const lastDue=dates[dates.length-1]||project.end;
+  const progress=progressOf(project);
+  const urgency=project.urgency||"Medium";
+  const urgencyClass=URGENCY_CLASS[urgency]||"urgency-medium";
+  const visibleTasks=taskItems.slice(0,4);
+  const remaining=Math.max(taskItems.length-visibleTasks.length,0);
+  const timing=firstDue?daysUntil(firstDue):null;
+  const timingLabel=timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
+  const taskList=visibleTasks.length?visibleTasks.map(item=>`<li><span class="target-task-dot"></span><span>${escapeHTML(item.name)}</span>${item.dueAt?`<time>${formatDate(item.dueAt)}</time>`:""}</li>`).join(""):"<li><span class=\"target-task-dot\"></span><span>Belum ada aktivitas</span></li>";
+  return `<article class="target-card ${variant==='next'?'target-card-next':''}">
+    <div class="target-card-top">
+      <span class="target-card-index">${String(index+1).padStart(2,"0")}</span>
+      <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>
+      <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong><span>progress</span></div>
+    </div>
+    <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span><span class="target-card-deadline"><span class="material-symbols-rounded">calendar_month</span>${lastDue?`Sampai ${formatDate(lastDue)}`:"Tanpa deadline"}</span><span class="target-card-countdown">${timingLabel}</span></div>
+    <ul class="target-card-tasks">${taskList}</ul>
+    ${remaining?`<div class="target-card-more">+${remaining} aktivitas lainnya</div>`:""}
+  </article>`;
 }
 
 function renderNextWeekTargets(){
@@ -299,10 +344,7 @@ function renderNextWeekTargets(){
   const items=projects.map(project=>({project,tasks:nextWeekTasks(project)})).filter(({tasks})=>tasks.length);
   const list=document.getElementById("nextWeekList");
   if(!list)return;
-  list.innerHTML=items.length?items.map(({project,tasks},i)=>{
-    const taskList=tasks.map(item=>`<li><span>${escapeHTML(item.name)}</span><time>${formatDate(item.dueAt)}</time></li>`).join("");
-    return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong><span>${tasks.length} task</span></div><div><h3>${escapeHTML(project.name)}</h3><ul class="deadline-task-list">${taskList}</ul></div></div>`;
-  }).join(""): `<div class="empty-state next-week-empty"><p>Tidak ada aktivitas yang belum selesai sampai ${formatDate(horizon,true)}.</p></div>`;
+  list.innerHTML=items.length?items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"week")).join(""): `<div class="empty-state next-week-empty"><p>Tidak ada aktivitas yang belum selesai sampai ${formatDate(horizon,true)}.</p></div>`;
 }
 
 function renderDistribution(){
@@ -456,6 +498,7 @@ updateLastUpdateText();
 setInterval(updateReportDate,60000);
 window.addEventListener("storage",event=>{if(event.key===LAST_UPDATE_KEY)updateLastUpdateText(event.newValue||DEFAULT_LAST_UPDATE);});
 document.getElementById("refreshTargetsBtn").addEventListener("click",refreshDashboardData);
+document.getElementById("toggleNextTargetsBtn").addEventListener("click",toggleTargetNextVisibility);
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.getElementById("workstreamFab").addEventListener("click",event=>{if(location.hash!=="#project"&&!authUser){event.preventDefault();openLoginModal("#project");}});
 document.querySelectorAll("[data-close-login]").forEach(button=>button.addEventListener("click",closeLoginModal));
@@ -650,4 +693,5 @@ document.getElementById("drawerContent").addEventListener("keydown",event=>{
   }
 });
 render();
+setTargetNextVisibility(localStorage.getItem(TARGET_NEXT_HIDDEN_KEY)==="true");
 refreshAuth();

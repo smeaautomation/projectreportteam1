@@ -216,20 +216,25 @@
           </section>
 
           <section class="bottom-grid">
-            <article class="section-card deadline-card">
-              <div class="section-header compact">
-                <div><h2>Target Selanjutnya</h2><p id="targetSubtitle">Otomatis dari project yang belum selesai per hari ini</p></div>
-                <button id="refreshTargetsBtn" class="target-refresh-btn" type="button" title="Perbarui dari data project terbaru">
-                  <span class="material-symbols-rounded" aria-hidden="true">refresh</span><span>Update</span>
-                </button>
-              </div>
-              <div id="deadlineList" class="deadline-list"></div>
-            </article>
             <article class="section-card deadline-card next-week-card">
               <div class="section-header compact">
                 <div><h2>Target Minggu Depan</h2><p id="nextWeekSubtitle">Aktivitas belum selesai dalam 7 hari ke depan</p></div>
               </div>
               <div id="nextWeekList" class="deadline-list"></div>
+            </article>
+            <article class="section-card deadline-card target-next-card">
+              <div class="section-header compact">
+                <div><h2>Target Selanjutnya</h2><p id="targetSubtitle">Otomatis dari project yang belum selesai per hari ini</p></div>
+                <div class="target-section-actions">
+                  <button id="refreshTargetsBtn" class="target-refresh-btn" type="button" title="Perbarui dari data project terbaru">
+                    <span class="material-symbols-rounded" aria-hidden="true">refresh</span><span>Update</span>
+                  </button>
+                  <button id="toggleNextTargetsBtn" class="target-toggle-btn" type="button" aria-expanded="true" aria-controls="deadlineList" title="Sembunyikan Target Selanjutnya">
+                    <span class="material-symbols-rounded" aria-hidden="true">visibility_off</span><span>Sembunyikan</span>
+                  </button>
+                </div>
+              </div>
+              <div id="deadlineList" class="deadline-list"></div>
             </article>
           </section>
         </section>
