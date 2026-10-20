@@ -196,14 +196,6 @@ function completedLastSevenDays(){
   return projects.map(project=>({project,tasks:(project.tasks||[]).filter(item=>item.status==="done"&&item.completedAt&&item.completedAt>=weekStart&&item.completedAt<=yesterday)})).filter(({tasks})=>tasks.length);
 }
 
-function refreshDashboardData(){
-  const button=document.getElementById("refreshTargetsBtn");
-  button.disabled=true;button.classList.remove("is-refreshing");void button.offsetWidth;button.classList.add("is-refreshing");
-  projects=loadProjects();render();updateReportDate();updateLastUpdateText();
-  showToast("Target Selanjutnya diperbarui dari data project terbaru.");
-  setTimeout(()=>{button.disabled=false;button.classList.remove("is-refreshing");},500);
-}
-
 function setTargetNextVisibility(hidden){
   const list=document.getElementById("deadlineList");
   const card=document.querySelector(".target-next-card");
@@ -554,7 +546,6 @@ window.addEventListener("storage",event=>{
   if(event.key===STORAGE_KEY){projects=loadProjects();render();}
   if(event.key===LAST_UPDATE_KEY)updateLastUpdateText(event.newValue||DEFAULT_LAST_UPDATE);
 });
-document.getElementById("refreshTargetsBtn").addEventListener("click",refreshDashboardData);
 document.getElementById("toggleNextTargetsBtn").addEventListener("click",toggleTargetNextVisibility);
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.getElementById("workstreamFab").addEventListener("click",event=>{if(location.hash!=="#project"&&!authUser){event.preventDefault();openLoginModal("#project");}});
