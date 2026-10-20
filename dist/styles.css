@@ -464,3 +464,15 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 /* Local preview: use Open Sans consistently across the interface */
 body,button,input,select,textarea,kbd{font-family:"Open Sans",sans-serif}
 .brand,.page-heading h1,.stat-card h2,.section-header h2,.deadline-date strong,.donut strong,.modal-head h2,.drawer-head h2,.drawer-progress .big-progress strong,.stage-heading h3,.insight-icon,.insight-card h3,.target-card-index,.target-card-heading h3,.target-progress strong{font-family:"Open Sans",sans-serif}
+
+/* Activity detail typography */
+.stage-item h4{font-size:16px;font-weight:400}
+.stage-item p{font-size:14px;font-weight:400}
+.activity-date-editor>span{font-size:12px;font-weight:400}
+.activity-date-editor input{font-size:12px;font-weight:400}
+.deadline-task-list li{font-size:11px;font-weight:400}
+.next-week-card .deadline-task-list time{font-size:10px;font-weight:400}
+.target-card-tasks li{font-size:11px;font-weight:400}
+.target-card-tasks time{font-size:10px;font-weight:400}
+.target-card-more{font-size:11px;font-weight:400}
+.target-card-more-item{font-weight:400}
