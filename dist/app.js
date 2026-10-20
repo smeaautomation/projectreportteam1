@@ -197,6 +197,7 @@ function setTargetNextVisibility(hidden){
   const button=document.getElementById("toggleNextTargetsBtn");
   if(!list||!card||!button)return;
   list.hidden=hidden;
+  list.style.display=hidden?"none":"";
   card.classList.toggle("is-collapsed",hidden);
   button.setAttribute("aria-expanded",String(!hidden));
   button.title=hidden?"Tampilkan Target Selanjutnya":"Sembunyikan Target Selanjutnya";
@@ -328,7 +329,7 @@ function targetCardMarkup(project,tasks,index,variant="next"){
     <div class="target-card-top">
       <span class="target-card-index">${String(index+1).padStart(2,"0")}</span>
       <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>
-      <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong><span>progress</span></div>
+      <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>
     </div>
     <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span><span class="target-card-deadline"><span class="material-symbols-rounded">calendar_month</span>${lastDue?`Sampai ${formatDate(lastDue)}`:"Tanpa deadline"}</span><span class="target-card-countdown">${timingLabel}</span></div>
     <ul class="target-card-tasks">${taskList}</ul>
