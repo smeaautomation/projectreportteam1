@@ -320,8 +320,8 @@ function targetCardMarkup(project,tasks,index,variant="next"){
   const progress=progressOf(project);
   const urgency=project.urgency||"Medium";
   const urgencyClass=URGENCY_CLASS[urgency]||"urgency-medium";
-  const visibleTasks=taskItems.slice(0,4);
-  const remainingTasks=taskItems.slice(visibleTasks.length);
+  const visibleTasks=variant==="next"?taskItems:taskItems.slice(0,4);
+  const remainingTasks=variant==="next"?[]:taskItems.slice(visibleTasks.length);
   const timing=firstDue?daysUntil(firstDue):null;
   const timingLabel=timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
   const showExactDates=variant!=="week";
@@ -336,7 +336,7 @@ function targetCardMarkup(project,tasks,index,variant="next"){
       <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>
     </div>
     <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}<span class="target-card-countdown"><span class="material-symbols-rounded">event_upcoming</span>${timingLabel}</span></div>
-    <div class="target-card-task-area">
+    <div class="target-card-task-area ${remainingTasks.length?"has-more":""}">
       <ul class="target-card-tasks">${taskList}</ul>
       ${remainingTasks.length?`<div class="target-card-more">${remainingTasks.map(item=>`<span class="target-card-more-item"><span class="target-task-dot"></span>${escapeHTML(item.name)}</span>`).join("")}</div>`:""}
     </div>
