@@ -176,6 +176,11 @@ function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("
 function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
 function upcomingTasks(project){ return (project.tasks || []).filter(item => item.status !== "done"); }
 function unfinishedProjects(){ return projects.filter(project => progressOf(project) < 100); }
+function nextWeekTasks(project){
+  const today=todayISO();
+  const horizon=addDays(today,7);
+  return (project.tasks || []).filter(item=>item.status!=="done"&&item.dueAt&&item.dueAt>=today&&item.dueAt<=horizon).sort((a,b)=>(a.dueAt||"").localeCompare(b.dueAt||""));
+}
 
 function refreshDashboardData(){
   const button=document.getElementById("refreshTargetsBtn");
@@ -283,6 +288,21 @@ function renderTargets(){
     const taskList = tasks.length ? tasks.map(task=>`<li>${escapeHTML(task.name)}</li>`).join("") : "<li>Belum ada aktivitas</li>";
     return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong></div><div><h3>${escapeHTML(project.name)}</h3><ul class="deadline-task-list">${taskList}</ul></div></div>`;
   }).join("") : `<div class="empty-state"><p>Semua pekerjaan sudah selesai.</p></div>`;
+  renderNextWeekTargets();
+}
+
+function renderNextWeekTargets(){
+  const today=todayISO();
+  const horizon=addDays(today,7);
+  const subtitle=document.getElementById("nextWeekSubtitle");
+  if(subtitle)subtitle.textContent=`Aktivitas belum selesai dengan deadline sampai ${formatDate(horizon,true)}`;
+  const items=projects.map(project=>({project,tasks:nextWeekTasks(project)})).filter(({tasks})=>tasks.length);
+  const list=document.getElementById("nextWeekList");
+  if(!list)return;
+  list.innerHTML=items.length?items.map(({project,tasks},i)=>{
+    const taskList=tasks.map(item=>`<li><span>${escapeHTML(item.name)}</span><time>${formatDate(item.dueAt)}</time></li>`).join("");
+    return `<div class="deadline-item"><div class="deadline-date"><strong>${i+1}</strong><span>${tasks.length} task</span></div><div><h3>${escapeHTML(project.name)}</h3><ul class="deadline-task-list">${taskList}</ul></div></div>`;
+  }).join(""): `<div class="empty-state next-week-empty"><p>Tidak ada aktivitas yang belum selesai sampai ${formatDate(horizon,true)}.</p></div>`;
 }
 
 function renderDistribution(){
