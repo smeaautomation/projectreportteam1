@@ -29,7 +29,7 @@ let draggedProjectId = null;
 let draggedTask = null;
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
-const task = (key, name, short, status, context, completedAt="", startedAt="") => ({ key, name, short, status, context, startedAt, completedAt:status==="done"?completedAt:"" });
+const task = (key, name, short, status, context, completedAt="", startedAt="", dueAt="") => ({ key, name, short, status, context, startedAt, dueAt, completedAt:status==="done"?completedAt:"" });
 const weeklyProjects = [
   {
     id: "project-1791880366318", name: "Dokumentasi TC", owner: "Dita", category: "Web Automation",
@@ -143,7 +143,7 @@ const weeklyProjects = [
 let projects = loadProjects();
 function normalizeCategory(category){ return CATEGORY_ALIASES[category] || "Others"; }
 function normalizeUrgency(urgency){ return URGENCY_ALIASES[urgency] || "Medium"; }
-function normalizeProjects(items){ return items.map(project=>({...project,category:normalizeCategory(project.category),urgency:normalizeUrgency(project.urgency||project.priority),tasks:(project.tasks||[]).map(item=>{const status=item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo";const startedAt=typeof item.startedAt==="string"&&item.startedAt?item.startedAt:(project.start||"");return {...item,status,startedAt,completedAt:status==="done"&&typeof item.completedAt==="string"?item.completedAt:""};})})); }
+function normalizeProjects(items){ return items.map(project=>({...project,category:normalizeCategory(project.category),urgency:normalizeUrgency(project.urgency||project.priority),tasks:(project.tasks||[]).map(item=>{const status=item.status==="blocked"?"active":Object.hasOwn(STATUS_VALUE,item.status)?item.status:"todo";const startedAt=typeof item.startedAt==="string"&&item.startedAt?item.startedAt:(project.start||"");const dueAt=typeof item.dueAt==="string"&&item.dueAt?item.dueAt:(project.end||"");return {...item,status,startedAt,dueAt,completedAt:status==="done"&&typeof item.completedAt==="string"?item.completedAt:""};})})); }
 function isResetSnapshot(items){ const resetIds=new Set(["team1-calculator","team1-book","team1-retail-web","team1-operations"]); return items.length===resetIds.size&&items.every(item=>resetIds.has(item.id)); }
 function loadProjects(){
   try {
@@ -298,13 +298,13 @@ function renderDistribution(){
   document.getElementById("distributionLegend").innerHTML=Object.entries(counts).map(([label,value])=>`<div class="legend-item"><i style="background:${colors[label]}"></i><span>${label}</span><strong>${value}</strong></div>`).join("");
 }
 
-function createDefaultTasks(startedAt=todayISO()){
+function createDefaultTasks(startedAt=todayISO(),dueAt=addDays(new Date(),7)){
   return [
-    task("planning","Perencanaan dan ruang lingkup","Plan","todo","Project baru","",startedAt),
-    task("design","Desain solusi","Desain","todo","Project baru","",startedAt),
-    task("development","Implementasi","Build","todo","Project baru","",startedAt),
-    task("testing","Pengujian","Test","todo","Project baru","",startedAt),
-    task("final","Finalisasi","Final","todo","Project baru","",startedAt)
+    task("planning","Perencanaan dan ruang lingkup","Plan","todo","Project baru","",startedAt,dueAt),
+    task("design","Desain solusi","Desain","todo","Project baru","",startedAt,dueAt),
+    task("development","Implementasi","Build","todo","Project baru","",startedAt,dueAt),
+    task("testing","Pengujian","Test","todo","Project baru","",startedAt,dueAt),
+    task("final","Finalisasi","Final","todo","Project baru","",startedAt,dueAt)
   ];
 }
 
@@ -366,6 +366,7 @@ function openTaskModal(projectId,index=null){
   document.getElementById("taskName").value=item?.name||"";
   document.getElementById("taskShort").value=item?.short||"";
   document.getElementById("taskStartedDate").value=item?.startedAt||todayISO();
+  document.getElementById("taskDueDate").value=item?.dueAt||project.end||addDays(new Date(),7);
   document.getElementById("taskStatus").value=item?.status||"todo";
   document.getElementById("taskCompletedDate").value=item?.completedAt||"";
   syncTaskCompletedDateField(false);
@@ -391,7 +392,7 @@ function openDrawer(id){
     <div class="drawer-meta"><div><span>PIC</span><strong>${escapeHTML(project.owner)}</strong></div><div><span>Target</span><strong>${formatDate(project.end)}</strong></div><div><span>Status</span><strong>${stateOf(project)}</strong></div></div>
     <p class="drawer-source-note"><strong>Sumber:</strong> ${escapeHTML(project.source || "Input dashboard")} • Snapshot 29 September 2026. Status dan detail aktivitas dapat diperbarui langsung dari daftar di bawah.</p>
     <div class="stage-heading"><div><h3>Aktivitas</h3><span>Edit status atau detail setiap aktivitas</span></div><button class="task-add-btn" data-add-task="${project.id}">＋ Tambah Aktivitas</button></div>
-    <div class="stage-list" data-task-list="${project.id}">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}" data-task-key="${escapeHTML(item.key)}" data-project="${project.id}"><div class="stage-order"><button class="task-drag-handle" type="button" draggable="true" data-reorder-task="${escapeHTML(item.key)}" data-project="${project.id}" aria-label="Ubah urutan aktivitas ${escapeHTML(item.name)}" title="Tarik untuk mengubah urutan"><span class="material-symbols-rounded" aria-hidden="true">drag_indicator</span></button><div class="stage-number">${item.status==='done'?'✓':index+1}</div></div><div class="stage-copy"><h4>${escapeHTML(item.name)}</h4><p>Kontribusi ${Math.round(100/project.tasks.length)}%</p><div class="activity-dates"><label class="activity-date-editor start-date-editor"><span><span class="material-symbols-rounded" aria-hidden="true">play_circle</span>Tanggal mulai</span><input class="activity-start-date-input" type="date" value="${item.startedAt||project.start||''}" data-project="${project.id}" data-task-index="${index}" aria-label="Tanggal mulai ${escapeHTML(item.name)}" /></label>${item.status==='done'?`<label class="activity-date-editor completion-date-editor ${item.completedAt?'':'missing'}"><span><span class="material-symbols-rounded" aria-hidden="true">event_available</span>Tanggal selesai</span><input class="completion-date-input" type="date" value="${item.completedAt||''}" data-project="${project.id}" data-task-index="${index}" aria-label="Tanggal penyelesaian ${escapeHTML(item.name)}" /></label>`:''}</div></div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="done" ${item.status==='done'?'selected':''}>Done</option><option value="active" ${item.status==='active'?'selected':''}>On going</option><option value="todo" ${item.status==='todo'?'selected':''}>Not Started</option></select><button class="task-duplicate-btn" data-duplicate-task="${escapeHTML(item.key)}" data-project="${project.id}" aria-label="Duplikasi aktivitas ${escapeHTML(item.name)}" title="Duplikasi aktivitas"><span class="material-symbols-rounded" aria-hidden="true">content_copy</span></button><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
+    <div class="stage-list" data-task-list="${project.id}">${(project.tasks||[]).map((item,index)=>`<div class="stage-item ${item.status}" data-task-key="${escapeHTML(item.key)}" data-project="${project.id}"><div class="stage-order"><button class="task-drag-handle" type="button" draggable="true" data-reorder-task="${escapeHTML(item.key)}" data-project="${project.id}" aria-label="Ubah urutan aktivitas ${escapeHTML(item.name)}" title="Tarik untuk mengubah urutan"><span class="material-symbols-rounded" aria-hidden="true">drag_indicator</span></button><div class="stage-number">${item.status==='done'?'✓':index+1}</div></div><div class="stage-copy"><h4>${escapeHTML(item.name)}</h4><p>Kontribusi ${Math.round(100/project.tasks.length)}%</p><div class="activity-dates"><label class="activity-date-editor start-date-editor"><span><span class="material-symbols-rounded" aria-hidden="true">play_circle</span>Tanggal mulai</span><input class="activity-start-date-input" type="date" value="${item.startedAt||project.start||''}" data-project="${project.id}" data-task-index="${index}" aria-label="Tanggal mulai ${escapeHTML(item.name)}" /></label><label class="activity-date-editor deadline-date-editor"><span><span class="material-symbols-rounded" aria-hidden="true">event</span>Deadline</span><input class="activity-deadline-input" type="date" value="${item.dueAt||project.end||''}" data-project="${project.id}" data-task-index="${index}" aria-label="Deadline ${escapeHTML(item.name)}" /></label>${item.status==='done'?`<label class="activity-date-editor completion-date-editor ${item.completedAt?'':'missing'}"><span><span class="material-symbols-rounded" aria-hidden="true">event_available</span>Tanggal selesai</span><input class="completion-date-input" type="date" value="${item.completedAt||''}" data-project="${project.id}" data-task-index="${index}" aria-label="Tanggal penyelesaian ${escapeHTML(item.name)}" /></label>`:''}</div></div><div class="stage-controls"><select class="stage-select" data-project="${project.id}" data-task-index="${index}" aria-label="Status ${escapeHTML(item.name)}"><option value="done" ${item.status==='done'?'selected':''}>Done</option><option value="active" ${item.status==='active'?'selected':''}>On going</option><option value="todo" ${item.status==='todo'?'selected':''}>Not Started</option></select><button class="task-duplicate-btn" data-duplicate-task="${escapeHTML(item.key)}" data-project="${project.id}" aria-label="Duplikasi aktivitas ${escapeHTML(item.name)}" title="Duplikasi aktivitas"><span class="material-symbols-rounded" aria-hidden="true">content_copy</span></button><button class="task-edit-btn" data-edit-task="${index}" data-project="${project.id}" aria-label="Edit aktivitas ${escapeHTML(item.name)}" title="Edit aktivitas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 16-.7 4.7L8 20l10.8-10.8a2.1 2.1 0 0 0-3-3L4 16Z"/><path d="m14.5 7.5 3 3"/></svg></button></div></div>`).join("")}</div>
     ${(project.tasks||[]).length?"":'<div class="empty-task-state">Belum ada aktivitas. Klik “Tambah Aktivitas” untuk memulai.</div>'}
     <div class="danger-zone"><button class="secondary-btn" data-edit-project="${project.id}">Edit informasi</button><button class="danger-btn" data-delete-project="${project.id}">Hapus project</button></div>`;
   document.getElementById("detailDrawer").hidden=false;
@@ -477,7 +478,7 @@ document.getElementById("projectForm").addEventListener("submit",event=>{
   if(new Date(end)<new Date(start)){showToast("Target selesai harus setelah tanggal mulai.");return;}
   const editId=document.getElementById("projectId").value;
   const old=projects.find(project=>project.id===editId);
-  const project={id:editId || `project-${Date.now()}`,name:document.getElementById("projectName").value.trim(),owner:document.getElementById("projectOwner").value.trim(),category:document.getElementById("projectCategory").value,start,end,urgency:document.getElementById("projectUrgency").value,source:old?.source || "Input dashboard",tasks:old?.tasks || createDefaultTasks(start)};
+  const project={id:editId || `project-${Date.now()}`,name:document.getElementById("projectName").value.trim(),owner:document.getElementById("projectOwner").value.trim(),category:document.getElementById("projectCategory").value,start,end,urgency:document.getElementById("projectUrgency").value,source:old?.source || "Input dashboard",tasks:old?.tasks || createDefaultTasks(start,end)};
   if(old) projects=projects.map(item=>item.id===editId?project:item); else projects.unshift(project);
   saveProjects();closeModal();render();showToast(old ? "Informasi project diperbarui." : `Project “${project.name}” berhasil dibuat.`);setTimeout(()=>openDrawer(project.id),350);
 });
@@ -492,9 +493,11 @@ document.getElementById("taskForm").addEventListener("submit",event=>{
   const previous=index===null?null:project.tasks[index];
   const status=document.getElementById("taskStatus").value;
   const startedAt=document.getElementById("taskStartedDate").value;
+  const dueAt=document.getElementById("taskDueDate").value;
   const completedAt=status==="done"?document.getElementById("taskCompletedDate").value:"";
+  if(dueAt<startedAt){showToast("Deadline aktivitas tidak boleh lebih awal dari tanggal mulai.");return;}
   if(completedAt&&completedAt<startedAt){showToast("Tanggal penyelesaian tidak boleh lebih awal dari tanggal mulai aktivitas.");return;}
-  const activity={key:previous?.key||`activity-${Date.now()}`,name:document.getElementById("taskName").value.trim(),short:document.getElementById("taskShort").value.trim(),status,context:previous?.context||"",startedAt,completedAt};
+  const activity={key:previous?.key||`activity-${Date.now()}`,name:document.getElementById("taskName").value.trim(),short:document.getElementById("taskShort").value.trim(),status,context:previous?.context||"",startedAt,dueAt,completedAt};
   if(index===null)project.tasks.push(activity);else project.tasks[index]=activity;
   saveProjects();closeTaskModal();render();openDrawer(projectId);showToast(index===null?"Aktivitas berhasil ditambahkan.":"Aktivitas berhasil diperbarui.");
 });
@@ -555,8 +558,15 @@ document.getElementById("drawerContent").addEventListener("change",event=>{
   if(event.target.matches(".activity-start-date-input")){
     const project=projects.find(item=>item.id===event.target.dataset.project); const activity=project?.tasks?.[Number(event.target.dataset.taskIndex)]; if(!activity)return;
     if(!event.target.value){event.target.value=activity.startedAt||project.start||todayISO();showToast("Tanggal mulai aktivitas wajib diisi.");return;}
+    if(activity.dueAt&&event.target.value>activity.dueAt){event.target.value=activity.startedAt||project.start||todayISO();showToast("Tanggal mulai tidak boleh melewati deadline aktivitas.");return;}
     if(activity.completedAt&&event.target.value>activity.completedAt){event.target.value=activity.startedAt||project.start||todayISO();showToast("Tanggal mulai tidak boleh melewati tanggal penyelesaian.");return;}
     activity.startedAt=event.target.value; saveProjects(); openDrawer(project.id); showToast(`Tanggal mulai aktivitas diperbarui menjadi ${formatDate(activity.startedAt)}.`); return;
+  }
+  if(event.target.matches(".activity-deadline-input")){
+    const project=projects.find(item=>item.id===event.target.dataset.project); const activity=project?.tasks?.[Number(event.target.dataset.taskIndex)]; if(!activity)return;
+    if(!event.target.value){event.target.value=activity.dueAt||project.end||todayISO();showToast("Deadline aktivitas wajib diisi.");return;}
+    if(activity.startedAt&&event.target.value<activity.startedAt){event.target.value=activity.dueAt||project.end||todayISO();showToast("Deadline aktivitas tidak boleh lebih awal dari tanggal mulai.");return;}
+    activity.dueAt=event.target.value; saveProjects(); openDrawer(project.id); showToast(`Deadline aktivitas diperbarui menjadi ${formatDate(activity.dueAt)}.`); return;
   }
   if(event.target.matches(".completion-date-input")){
     const project=projects.find(item=>item.id===event.target.dataset.project); const activity=project?.tasks?.[Number(event.target.dataset.taskIndex)]; if(!activity)return;
@@ -565,7 +575,7 @@ document.getElementById("drawerContent").addEventListener("change",event=>{
     activity.completedAt=event.target.value; saveProjects(); openDrawer(project.id); showToast(`Tanggal penyelesaian diperbarui menjadi ${formatDate(activity.completedAt)}.`); return;
   }
   if(!event.target.matches(".stage-select"))return;
-  const project=projects.find(item=>item.id===event.target.dataset.project);const activity=project.tasks[Number(event.target.dataset.taskIndex)];activity.status=event.target.value;activity.startedAt=activity.startedAt||project.start||todayISO();activity.completedAt=activity.status==="done"?(activity.completedAt||todayISO()):"";if(activity.completedAt<activity.startedAt)activity.completedAt=activity.startedAt;saveProjects();render();openDrawer(project.id);showToast(activity.status==="done"?`Aktivitas selesai pada ${formatDate(activity.completedAt)}.`:"Progress project diperbarui.");
+  const project=projects.find(item=>item.id===event.target.dataset.project);const activity=project.tasks[Number(event.target.dataset.taskIndex)];activity.status=event.target.value;activity.startedAt=activity.startedAt||project.start||todayISO();activity.dueAt=activity.dueAt||project.end||activity.startedAt;activity.completedAt=activity.status==="done"?(activity.completedAt||todayISO()):"";if(activity.completedAt<activity.startedAt)activity.completedAt=activity.startedAt;saveProjects();render();openDrawer(project.id);showToast(activity.status==="done"?`Aktivitas selesai pada ${formatDate(activity.completedAt)}.`:"Progress project diperbarui.");
 });
 document.getElementById("drawerContent").addEventListener("click",event=>{
   const addTask=event.target.closest("[data-add-task]"); if(addTask){openTaskModal(addTask.dataset.addTask);return;}
