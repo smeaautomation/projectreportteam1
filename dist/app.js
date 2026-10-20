@@ -333,7 +333,8 @@ function targetCardMarkup(project,tasks,index,variant="next"){
   const dates=taskItems.map(item=>item.dueAt).filter(Boolean).sort();
   const firstDue=dates[0]||project.end;
   const lastDue=dates[dates.length-1]||project.end;
-  const progress=progressOf(project);
+  const totalProjectTasks=(project.tasks||[]).length;
+  const progress=variant==="completed"&&totalProjectTasks?Math.round(taskItems.length/totalProjectTasks*100):progressOf(project);
   const urgency=project.urgency||"Medium";
   const urgencyClass=URGENCY_CLASS[urgency]||"urgency-medium";
   const visibleTasks=variant==="next"||variant==="completed"?taskItems:taskItems.slice(0,4);
