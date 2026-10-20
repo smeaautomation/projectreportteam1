@@ -438,7 +438,8 @@ body{background:var(--page) url("assets/project-page-watermark.webp") center top
 .target-card-deadline{display:inline-flex;align-items:center;gap:4px;color:#54759d;font-size:10px;font-weight:700}
 .target-card-deadline .material-symbols-rounded{font-size:14px;color:#168fce}
 .next-week-card .target-card-deadline .material-symbols-rounded{color:#7a25ed}
-.target-card-countdown{margin-left:auto;color:#168fce;font-size:10px;font-weight:800}
+.target-card-countdown{display:inline-flex;align-items:center;gap:4px;margin-left:auto;color:#168fce;font-size:10px;font-weight:800}
+.target-card-countdown .material-symbols-rounded{font-size:14px}
 .next-week-card .target-card-countdown{color:#7a25ed}
 .target-card-tasks{display:grid;gap:6px;margin:0;padding:0;list-style:none}
 .target-card-task-area{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,28%);gap:10px;align-items:start;min-width:0}
