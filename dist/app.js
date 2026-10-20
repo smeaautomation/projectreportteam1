@@ -161,7 +161,7 @@ function loadProjects(){
     const restored=normalizeProjects(structuredClone(weeklyProjects)); localStorage.setItem(STORAGE_KEY,JSON.stringify(restored)); return restored;
   }
 }
-function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); markDataUpdated(); }
+function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); markDataUpdated(); renderCurrentWeekProjects(); }
 function allTasks(){ return projects.flatMap(project => project.tasks || []); }
 function progressOf(project){ const tasks = project.tasks || []; return tasks.length ? Math.round(tasks.reduce((total, item) => total + (STATUS_VALUE[item.status] || 0), 0) / tasks.length * 100) : 0; }
 function stateOf(project){ const tasks=project.tasks||[]; if(tasks.length&&tasks.every(item=>item.status==="done"))return "Done"; if(tasks.some(item=>item.status!=="todo"))return "On going"; return "Not Started"; }
@@ -339,8 +339,9 @@ function targetCardMarkup(project,tasks,index,variant="next"){
   const visibleTasks=variant==="next"||variant==="completed"?taskItems:taskItems.slice(0,4);
   const remainingTasks=variant==="next"||variant==="completed"?[]:taskItems.slice(visibleTasks.length);
   const timing=firstDue?daysUntil(firstDue):null;
-  const timingLabel=variant==="completed"?"Done":timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
-  const timingIcon=variant==="completed"?"check_circle":"event_upcoming";
+  const timingLabel=timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
+  const timingIcon="event_upcoming";
+  const countdownMeta=variant==="completed"?"":`<span class="target-card-countdown"><span class="material-symbols-rounded">${timingIcon}</span>${timingLabel}</span>`;
   const showExactDates=variant==="next";
   const deadlineMeta=variant!=="next"
     ? ""
@@ -352,7 +353,7 @@ function targetCardMarkup(project,tasks,index,variant="next"){
       <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>
       <div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>
     </div>
-    <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}<span class="target-card-countdown"><span class="material-symbols-rounded">${timingIcon}</span>${timingLabel}</span></div>
+    <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}${countdownMeta}</div>
     <div class="target-card-task-area ${remainingTasks.length?"has-more":""}">
       <ul class="target-card-tasks">${taskList}</ul>
       ${remainingTasks.length?`<div class="target-card-more">${remainingTasks.map(item=>`<span class="target-card-more-item"><span class="target-task-dot"></span>${escapeHTML(item.name)}</span>`).join("")}</div>`:""}
@@ -520,7 +521,10 @@ function syncView(){
 updateReportDate();
 updateLastUpdateText();
 setInterval(updateReportDate,60000);
-window.addEventListener("storage",event=>{if(event.key===LAST_UPDATE_KEY)updateLastUpdateText(event.newValue||DEFAULT_LAST_UPDATE);});
+window.addEventListener("storage",event=>{
+  if(event.key===STORAGE_KEY){projects=loadProjects();render();}
+  if(event.key===LAST_UPDATE_KEY)updateLastUpdateText(event.newValue||DEFAULT_LAST_UPDATE);
+});
 document.getElementById("refreshTargetsBtn").addEventListener("click",refreshDashboardData);
 document.getElementById("toggleNextTargetsBtn").addEventListener("click",toggleTargetNextVisibility);
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
