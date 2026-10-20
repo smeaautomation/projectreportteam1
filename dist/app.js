@@ -149,10 +149,17 @@ function isResetSnapshot(items){ const resetIds=new Set(["team1-calculator","tea
 function loadProjects(){
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if(Array.isArray(saved)) return normalizeProjects(saved);
+    const savedUpdateTime=Date.parse(localStorage.getItem(LAST_UPDATE_KEY));
+    const baselineUpdateTime=Date.parse(DEFAULT_LAST_UPDATE);
+    if(Array.isArray(saved)&&!Number.isNaN(savedUpdateTime)&&savedUpdateTime>=baselineUpdateTime)return normalizeProjects(saved);
+    if(Array.isArray(saved)){
+      const restored=normalizeProjects(structuredClone(weeklyProjects));
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(restored));
+      localStorage.setItem(LAST_UPDATE_KEY,DEFAULT_LAST_UPDATE);
+      return restored;
+    }
     const legacy = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY));
     const legacyUpdateTime=Date.parse(localStorage.getItem(LAST_UPDATE_KEY));
-    const baselineUpdateTime=Date.parse(DEFAULT_LAST_UPDATE);
     if(Array.isArray(legacy) && !isResetSnapshot(legacy) && legacyUpdateTime>baselineUpdateTime){
       const migrated=normalizeProjects(legacy); localStorage.setItem(STORAGE_KEY,JSON.stringify(migrated)); return migrated;
     }
