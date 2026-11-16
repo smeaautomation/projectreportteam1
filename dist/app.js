@@ -5,6 +5,7 @@ const STORAGE_KEY = "team1-weekly-progress-v4";
 const LEGACY_STORAGE_KEY = "team1-weekly-progress-v3";
 const LAST_UPDATE_KEY = "team1-weekly-progress-last-update";
 const TARGET_NEXT_HIDDEN_KEY = "team1-target-next-hidden";
+const BOARD_STAGE_KEY = "team1-execution-board-stage-v1";
 const DEFAULT_LAST_UPDATE = globalThis.TEAM1_PROJECT_DATA?.lastUpdate || "2026-10-19T17:20:17.747Z";
 const AUTH_ENDPOINT = "/api/auth";
 const CATEGORY_ALIASES = {
@@ -28,6 +29,9 @@ let authChecked = false;
 let pendingProtectedHash = "#project";
 let draggedProjectId = null;
 let draggedTask = null;
+let draggedBoardProjectId = null;
+let currentView = "board";
+let archiveMode = false;
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const task = (key, name, short, status, context, completedAt="", startedAt="", dueAt="") => ({ key, name, short, status, context, startedAt, dueAt, completedAt:status==="done"?completedAt:"" });
@@ -168,17 +172,17 @@ function loadProjects(){
     const restored=normalizeProjects(structuredClone(weeklyProjects)); localStorage.setItem(STORAGE_KEY,JSON.stringify(restored)); return restored;
   }
 }
-function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); markDataUpdated(); renderCurrentWeekProjects(); }
+function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); markDataUpdated(); renderWeeklyStory(); }
 function allTasks(){ return projects.flatMap(project => project.tasks || []); }
 function progressOf(project){ const tasks = project.tasks || []; return tasks.length ? Math.round(tasks.reduce((total, item) => total + (STATUS_VALUE[item.status] || 0), 0) / tasks.length * 100) : 0; }
 function stateOf(project){ const tasks=project.tasks||[]; if(tasks.length&&tasks.every(item=>item.status==="done"))return "Done"; if(tasks.some(item=>item.status!=="todo"))return "On going"; return "Not Started"; }
 function daysUntil(date){ const a = new Date(); a.setHours(0,0,0,0); return Math.ceil((new Date(date+"T00:00:00") - a)/86400000); }
 function formatDate(date, long=false){ return new Intl.DateTimeFormat("id-ID", long ? {day:"numeric",month:"long",year:"numeric"}:{day:"numeric",month:"short",year:"numeric"}).format(new Date(date+"T00:00:00")); }
 function todayISO(){const parts=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.year}-${parts.month}-${parts.day}`;}
-function updateReportDate(){const today=new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric"}).format(new Date());document.getElementById("reportDateText").textContent=today;document.getElementById("targetSubtitle").textContent=`Otomatis dari project yang belum selesai per ${today}`;}
+function updateReportDate(){const today=new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric"}).format(new Date());document.getElementById("reportDateText").textContent=today;const targetSubtitle=document.getElementById("targetSubtitle");if(targetSubtitle)targetSubtitle.textContent=`Otomatis dari project yang belum selesai per ${today}`;}
 function formatLastUpdate(value){let date=new Date(value);if(Number.isNaN(date.getTime()))date=new Date(DEFAULT_LAST_UPDATE);const parts=Object.fromEntries(new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.day} ${parts.month} ${parts.year}, ${parts.hour}.${parts.minute} WIB`;}
 function latestUpdateValue(value=localStorage.getItem(LAST_UPDATE_KEY)){const storedTime=Date.parse(value);const baselineTime=Date.parse(DEFAULT_LAST_UPDATE);const latest=Number.isNaN(storedTime)||storedTime<baselineTime?DEFAULT_LAST_UPDATE:value;if(latest!==value)localStorage.setItem(LAST_UPDATE_KEY,latest);return latest;}
-function updateLastUpdateText(value){document.getElementById("lastUpdateText").textContent=`Last Update: ${formatLastUpdate(latestUpdateValue(value))}`;}
+function updateLastUpdateText(value){document.getElementById("lastUpdateText").textContent=`Update terakhir: ${formatLastUpdate(latestUpdateValue(value))}`;}
 function markDataUpdated(){const value=new Date().toISOString();localStorage.setItem(LAST_UPDATE_KEY,value);updateLastUpdateText(value);}
 function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
 function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
@@ -226,20 +230,84 @@ function render(){
   });
   const tasks = allTasks();
   const done = tasks.filter(t=>t.status === "done").length;
-  const active = projects.filter(p=>progressOf(p)<100).length;
   const avg = projects.length ? Math.round(projects.reduce((sum,p)=>sum+progressOf(p),0)/projects.length) : 0;
-  const completionRate = tasks.length ? Math.round(done/tasks.length*100) : 0;
-
   document.getElementById("totalProjects").textContent = projects.length;
-  document.getElementById("activeSummary").textContent = `${active} project aktif`;
+  document.getElementById("totalActivities").textContent = tasks.length;
   document.getElementById("avgProgress").textContent = `${avg}%`;
   document.getElementById("completedProjects").textContent = done;
-  document.getElementById("completedSummary").textContent = `${done} dari ${tasks.length} item pekerjaan`;
-  document.getElementById("completionRate").textContent = `${completionRate}%`;
-  document.getElementById("completionRing").style.setProperty("--ring", `${completionRate}%`);
   document.getElementById("projectList").innerHTML = filtered.map((project,index)=>projectRow(project,index)).join("");
   document.getElementById("emptyState").hidden = filtered.length > 0;
-  renderTargets(); renderDistribution();
+  renderBoard(filtered); renderTargets(); renderDistribution();
+}
+
+const BOARD_COLUMNS = [
+  {key:"urgent",title:"Urgent",subtitle:"Perlu eksekusi segera",icon:"warning",tone:"coral"},
+  {key:"this-week",title:"This Week",subtitle:"Fokus penyelesaian minggu ini",icon:"calendar_month",tone:"orange"},
+  {key:"in-progress",title:"In Progress",subtitle:"Sedang dikerjakan",icon:"play_circle",tone:"blue"},
+  {key:"review",title:"Review",subtitle:"Menunggu review/validasi",icon:"search",tone:"purple"},
+  {key:"done",title:"Done",subtitle:"Selesai minggu ini",icon:"task_alt",tone:"teal"}
+];
+
+function loadBoardStages(){
+  try{return JSON.parse(localStorage.getItem(BOARD_STAGE_KEY))||{};}catch{return {};}
+}
+
+function automaticBoardStage(project){
+  const progress=progressOf(project);
+  if(progress>=100)return "done";
+  const openTasks=(project.tasks||[]).filter(item=>item.status!=="done");
+  const activeTask=openTasks.find(item=>item.status==="active");
+  const activeText=`${activeTask?.name||""} ${activeTask?.short||""}`.toLowerCase();
+  if(project.urgency==="Very High")return "urgent";
+  if(progress>=85||/(review|validasi|testing|test|uat)/.test(activeText))return "review";
+  const hasThisWeek=openTasks.some(item=>item.dueAt&&daysUntil(item.dueAt)>=0&&daysUntil(item.dueAt)<=7);
+  if(hasThisWeek||project.urgency==="High"&&progress<75||project.end&&daysUntil(project.end)>=0&&daysUntil(project.end)<=7)return "this-week";
+  if(activeTask)return "in-progress";
+  return project.urgency==="High"?"this-week":"in-progress";
+}
+
+function boardStageFor(project){
+  if(progressOf(project)>=100)return "done";
+  const saved=loadBoardStages()[project.id];
+  return BOARD_COLUMNS.some(column=>column.key===saved)?saved:automaticBoardStage(project);
+}
+
+function setBoardStage(projectId,stage){
+  const stages=loadBoardStages();
+  stages[projectId]=stage;
+  localStorage.setItem(BOARD_STAGE_KEY,JSON.stringify(stages));
+}
+
+function boardCardMarkup(project){
+  const progress=progressOf(project);
+  const tasks=project.tasks||[];
+  const nextTask=tasks.find(item=>item.status==="active")||tasks.find(item=>item.status==="todo");
+  const isDone=progress>=100;
+  const urgencyClass=URGENCY_CLASS[project.urgency]||URGENCY_CLASS.Medium;
+  const dateLabel=isDone?`Selesai: ${formatDate(project.end)}`:`Deadline: ${formatDate(project.end)}`;
+  return `<article class="execution-card" draggable="${Boolean(authUser)}" data-board-project="${project.id}" tabindex="0" aria-label="Buka ${escapeHTML(project.name)}">
+    <div class="execution-card-heading"><span class="material-symbols-rounded board-card-handle" aria-hidden="true">drag_indicator</span><h3>${escapeHTML(project.name)}</h3></div>
+    <div class="execution-card-meta"><span class="material-symbols-rounded">person</span><span>PIC: ${escapeHTML(project.owner)}</span><span class="board-urgency ${urgencyClass}">${escapeHTML(project.urgency)}</span></div>
+    <div class="execution-progress"><strong>${progress}%</strong><span><i style="width:${progress}%"></i></span></div>
+    ${isDone?"":`<div class="execution-next"><span class="material-symbols-rounded">check_box</span><strong>Next:</strong><span>${escapeHTML(nextTask?.name||"Aktivitas belum ditentukan")}</span></div>`}
+    <div class="execution-card-footer"><span><span class="material-symbols-rounded">${isDone?"check_circle":"calendar_month"}</span>${dateLabel}</span><i></i><span><span class="material-symbols-rounded">layers</span>${tasks.length} aktivitas</span></div>
+  </article>`;
+}
+
+function renderBoard(filteredProjects=projects){
+  const container=document.getElementById("boardColumns");
+  if(!container)return;
+  const visible=archiveMode?filteredProjects.filter(project=>progressOf(project)>=100):filteredProjects;
+  const columns=archiveMode?BOARD_COLUMNS.filter(column=>column.key==="done"):BOARD_COLUMNS;
+  container.classList.toggle("archive-board",archiveMode);
+  container.innerHTML=columns.map(column=>{
+    const items=visible.filter(project=>boardStageFor(project)===column.key);
+    return `<section class="board-column board-${column.tone}" data-board-stage="${column.key}">
+      <header><span class="material-symbols-rounded">${column.icon}</span><div><h2>${archiveMode?"Arsip Project":column.title}</h2><p>${archiveMode?"Project yang sudah selesai":column.subtitle}</p></div><strong>${items.length}</strong></header>
+      <div class="board-card-list">${items.map(boardCardMarkup).join("")}${items.length?"":`<div class="board-column-empty">Belum ada project</div>`}</div>
+    </section>`;
+  }).join("");
+  document.getElementById("boardEmpty").hidden=visible.length>0;
 }
 
 function projectRow(project,index){
@@ -252,7 +320,8 @@ function projectRow(project,index){
   const timeline = displayTasks.map((item,index)=>{
     const stepPosition=displayTasks.length===1 ? 50 : index/(displayTasks.length-1)*100;
     const nextPosition=displayTasks.length===1 ? 50 : Math.min(100,(index+1)/(displayTasks.length-1)*100);
-    return `<div class="timeline-node ${item.status}" style="--step-position:${stepPosition}%;--next-position:${nextPosition}%" title="${escapeHTML(item.short)}"><i></i><span>${escapeHTML(item.short)}</span></div>`;
+    const labelPosition=index%2===0?"label-above":"label-below";
+    return `<div class="timeline-node ${item.status} ${labelPosition}" style="--step-position:${stepPosition}%;--next-position:${nextPosition}%" title="${escapeHTML(item.short)}"><i aria-hidden="true"></i><span class="timeline-label">${escapeHTML(item.short)}</span></div>`;
   }).join("");
   return `<article class="project-row ${URGENCY_CLASS[project.urgency]||URGENCY_CLASS.Medium}" data-id="${project.id}" data-urgency="${escapeHTML(project.urgency)}">
     <div class="row-order"><span class="project-index">${index+1}</span><button class="drag-handle" type="button" draggable="${editorMode}" data-reorder-project="${project.id}" aria-label="Ubah urutan ${escapeHTML(project.name)}" title="Tarik untuk mengubah urutan"><span class="material-symbols-rounded" aria-hidden="true">drag_indicator</span></button></div>
@@ -264,9 +333,9 @@ function projectRow(project,index){
       <strong>${progress}%</strong>
     </div>
     <div class="project-timeline">
-      <div class="timeline-boundary project-start"><span class="material-symbols-rounded" aria-hidden="true">play_circle</span><strong>${project.start?formatDate(project.start):"-"}</strong></div>
+      <div class="timeline-boundary project-start"><span class="material-symbols-rounded" aria-hidden="true">calendar_month</span><strong>${project.start?formatDate(project.start):"-"}</strong></div>
       <div class="timeline-steps ${displayTasks.length>6?'timeline-dense':''}" aria-label="Aktivitas ${escapeHTML(project.name)}">${timeline}</div>
-      <div class="timeline-boundary project-deadline ${deadlineTone}"><span class="material-symbols-rounded" aria-hidden="true">event</span><strong>${project.end?formatDate(project.end):"-"}</strong></div>
+      <div class="timeline-boundary project-deadline ${deadlineTone}"><span class="material-symbols-rounded" aria-hidden="true">flag</span><strong>${project.end?formatDate(project.end):"-"}</strong></div>
     </div>
     <button class="more-btn" data-open-project="${project.id}" aria-label="Buka detail ${escapeHTML(project.name)}"><span class="material-symbols-rounded" aria-hidden="true">chevron_right</span></button>
   </article>`;
@@ -312,10 +381,89 @@ function duplicateTask(projectId,taskKey){
 }
 
 function renderTargets(){
-  const items = unfinishedProjects().map(project=>({project,tasks:upcomingTasks(project)}));
-  document.getElementById("deadlineList").innerHTML = items.length ? items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"next")) .join("") : `<div class="empty-state"><p>Semua pekerjaan sudah selesai.</p></div>`;
-  renderCurrentWeekProjects();
-  renderNextWeekTargets();
+  renderWeeklyStory();
+}
+
+function weeklyStoryTone(task,date){
+  const text=`${task.name||""} ${task.short||""}`.toLowerCase();
+  if(task.status==="done"&&/(review|validasi|approval|persetujuan)/.test(text))return {tone:"review",icon:"task_alt",label:"Review Disetujui"};
+  if(task.status==="done"&&/(milestone|50%|75%|rilis|live)/.test(text))return {tone:"milestone",icon:"flag",label:"Milestone"};
+  if(task.status==="done")return {tone:"done",icon:"check_circle",label:"Selesai"};
+  if(date<todayISO())return {tone:"late",icon:"warning",label:"Terlambat"};
+  if(task.status==="active")return {tone:"review",icon:"search",label:"Sedang Review"};
+  return {tone:"milestone",icon:"flag",label:"Terjadwal"};
+}
+
+function weeklyStoryEvents(weekStart,weekEnd){
+  const events=[];
+  projects.forEach(project=>{
+    const total=(project.tasks||[]).length||1;
+    (project.tasks||[]).forEach(taskItem=>{
+      const eventDate=taskItem.status==="done"&&taskItem.completedAt?taskItem.completedAt:taskItem.dueAt;
+      if(!eventDate||eventDate<weekStart||eventDate>weekEnd)return;
+      const tone=weeklyStoryTone(taskItem,eventDate);
+      events.push({date:eventDate,project,task:taskItem,contribution:Math.round(100/total),...tone});
+    });
+  });
+  return events.sort((a,b)=>a.date.localeCompare(b.date)||a.project.name.localeCompare(b.project.name)||a.task.name.localeCompare(b.task.name));
+}
+
+function weeklyDayParts(date){
+  const value=new Date(`${date}T00:00:00`);
+  return {
+    weekday:new Intl.DateTimeFormat("id-ID",{weekday:"long"}).format(value),
+    dayMonth:new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"short"}).format(value),
+    year:new Intl.DateTimeFormat("id-ID",{year:"numeric"}).format(value)
+  };
+}
+
+function weeklyEventMarkup(event){
+  const contribution=event.task.status==="done"?`+${event.contribution}%`:"0%";
+  return `<article class="weekly-event weekly-event-${event.tone}">
+    <span class="weekly-event-icon material-symbols-rounded" aria-hidden="true">${event.icon}</span>
+    <div class="weekly-event-copy"><strong>${escapeHTML(event.task.name)}</strong><span>— ${escapeHTML(event.project.name)}</span></div>
+    <span class="weekly-event-owner"><span class="material-symbols-rounded" aria-hidden="true">person</span>PIC: ${escapeHTML(event.project.owner)}</span>
+    <strong class="weekly-event-contribution">${contribution}</strong>
+    <span class="weekly-event-status">${event.label}</span>
+  </article>`;
+}
+
+function renderWeeklyStory(){
+  const timeline=document.getElementById("weeklyStoryTimeline");
+  const today=todayISO();
+  const weekStart=addDays(today,-6);
+  const events=weeklyStoryEvents(weekStart,today);
+  const days=Array.from({length:7},(_,index)=>addDays(weekStart,index));
+  const period=document.getElementById("weeklyStoryPeriod");
+  if(period)period.textContent=`Laporan Eksekusi Mingguan • ${formatDate(weekStart)} – ${formatDate(today)}`;
+
+  const totalTasks=allTasks().length;
+  const totalDone=allTasks().filter(item=>item.status==="done").length;
+  const average=projects.length?Math.round(projects.reduce((sum,project)=>sum+progressOf(project),0)/projects.length):0;
+  const completedEvents=events.filter(event=>event.task.status==="done");
+  const completedProjects=new Set(completedEvents.map(event=>event.project.id));
+  const carryOver=projects.flatMap(project=>(project.tasks||[]).filter(item=>item.status!=="done").map(item=>({project,task:item}))).sort((a,b)=>(a.task.dueAt||"9999").localeCompare(b.task.dueAt||"9999")||a.project.name.localeCompare(b.project.name)).slice(0,6);
+  const reviewEvents=completedEvents.filter(event=>/(review|validasi|approval|persetujuan)/i.test(`${event.task.name} ${event.task.short||""}`));
+  const activeProjects=projects.filter(project=>progressOf(project)<100);
+  const onTrack=activeProjects.filter(project=>!project.end||project.end>=today).length;
+
+  const narrative=document.getElementById("weeklyStoryNarrative");
+  if(narrative)narrative.innerHTML=`Minggu ini, Team 1 menjaga momentum eksekusi dengan <strong>${totalDone} aktivitas selesai (${average}% progress)</strong>, mencatat <strong>${completedEvents.length} penyelesaian pada periode ini</strong>, dan menyiapkan ${carryOver.length} prioritas utama untuk minggu depan.`;
+  if(timeline)timeline.innerHTML=days.map(date=>{
+    const parts=weeklyDayParts(date);
+    const dayEvents=events.filter(event=>event.date===date).slice(0,3);
+    const rows=dayEvents.length?dayEvents.map(weeklyEventMarkup).join(""):`<div class="weekly-event weekly-event-empty"><span class="material-symbols-rounded" aria-hidden="true">more_horiz</span><p>Tidak ada perubahan aktivitas</p></div>`;
+    return `<section class="weekly-day"><div class="weekly-day-marker" aria-hidden="true"></div><time datetime="${date}"><span>${escapeHTML(parts.weekday)}</span><strong>${escapeHTML(parts.dayMonth)}</strong><small>${parts.year}</small></time><div class="weekly-day-events">${rows}</div></section>`;
+  }).join("");
+
+  document.getElementById("weeklyResultSummary").innerHTML=[
+    `<strong>${completedEvents.length} aktivitas</strong> selesai pada periode ini dari ${totalTasks} aktivitas`,
+    `<strong>${completedProjects.size} project</strong> mencatat penyelesaian minggu ini`,
+    `<strong>${reviewEvents.length} aktivitas review</strong> atau validasi diselesaikan`,
+    `Eksekusi tetap on track untuk <strong>${onTrack} dari ${activeProjects.length} project aktif</strong>`
+  ].map(item=>`<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span><span>${item}</span></li>`).join("");
+
+  document.getElementById("weeklyCarryOver").innerHTML=carryOver.length?carryOver.map(({project,task})=>`<li><span class="material-symbols-rounded" aria-hidden="true">flag</span><span><strong>${escapeHTML(task.name)}</strong><small>${escapeHTML(project.name)}</small></span></li>`).join(""):`<li class="weekly-carry-empty"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span><span>Semua aktivitas sudah selesai.</span></li>`;
 }
 
 function portfolioContribution(items){
@@ -364,10 +512,16 @@ function targetCardMarkup(project,tasks,index,variant="next"){
     ? ""
     : `<span class="target-card-deadline"><span class="material-symbols-rounded">calendar_month</span>${lastDue?`Sampai ${formatDate(lastDue)}`:"Tanpa deadline"}</span>`;
   const taskList=visibleTasks.length?visibleTasks.map(item=>`<li><span class="target-task-dot"></span><span>${escapeHTML(item.name)}</span>${showExactDates&&item.dueAt?`<time>${formatDate(item.dueAt)}</time>`:""}</li>`).join(""):"<li><span class=\"target-task-dot\"></span><span>Belum ada aktivitas</span></li>";
-  const progressMarkup=showsContribution
-    ? `<div class="target-contribution">Kontribusi: <strong>${progress}%</strong></div>`
-    : `<div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>`;
+  const completedContributionMarkup=variant==="completed"
+    ? `<div class="target-card-contribution-band" aria-label="Kontribusi ${progress} persen"><span class="target-card-contribution-track"><span style="--target-contribution:${progress}%"></span></span><span class="target-card-contribution-copy">Kontribusi: <strong>${progress}%</strong></span></div>`
+    : "";
+  const progressMarkup=variant==="completed"
+    ? ""
+    : showsContribution
+      ? `<div class="target-contribution">Kontribusi: <strong>${progress}%</strong></div>`
+      : `<div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>`;
   return `<article class="target-card ${variant==='next'?'target-card-next':''} ${variant==='completed'?'target-card-completed':''}">
+    ${completedContributionMarkup}
     <div class="target-card-top">
       <span class="target-card-index">${String(index+1).padStart(2,"0")}</span>
       <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>
@@ -394,6 +548,8 @@ function renderNextWeekTargets(){
 }
 
 function renderDistribution(){
+  const donut=document.getElementById("distributionDonut");
+  if(!donut)return;
   const tasks = allTasks();
   const counts = {
     Done: tasks.filter(t=>t.status==="done").length,
@@ -402,7 +558,7 @@ function renderDistribution(){
   };
   const total = tasks.length || 1;
   const p1=counts.Done/total*360, p2=p1+counts["On going"]/total*360;
-  const donut=document.getElementById("distributionDonut"); donut.style.setProperty("--p1",`${p1}deg`);donut.style.setProperty("--p2",`${p2}deg`);
+  donut.style.setProperty("--p1",`${p1}deg`);donut.style.setProperty("--p2",`${p2}deg`);
   document.getElementById("donutTotal").textContent=tasks.length;
   const colors={Done:"var(--green)","On going":"#ffad14","Not Started":"#dfe6e4"};
   document.getElementById("distributionLegend").innerHTML=Object.entries(counts).map(([label,value])=>`<div class="legend-item"><i style="background:${colors[label]}"></i><span>${label}</span><strong>${value}</strong></div>`).join("");
@@ -509,6 +665,25 @@ function openDrawer(id){
 }
 function closeDrawer(){document.getElementById("detailDrawer").hidden=true;}
 
+function switchWorkspace(view,options={}){
+  const normalized=["board","timeline","report","archive"].includes(view)?view:"board";
+  currentView=normalized;
+  archiveMode=normalized==="archive";
+  document.body.classList.toggle("report-view",normalized==="report");
+  const panelView=archiveMode?"board":normalized;
+  document.querySelectorAll(".workspace-panel").forEach(panel=>{
+    const active=panel.dataset.panel===panelView;
+    panel.hidden=!active;
+    panel.classList.toggle("is-active",active);
+  });
+  document.querySelectorAll("[data-view]").forEach(button=>button.classList.toggle("is-active",button.dataset.view===normalized));
+  document.querySelector(".workspace-toolbar")?.classList.toggle("report-mode",normalized==="report");
+  if(normalized==="board")document.querySelector('.workspace-tab[data-view="board"]')?.classList.add("is-active");
+  if(archiveMode)document.querySelector('.execution-nav-link[data-view="archive"]')?.classList.add("is-active");
+  if(!options.keepHash&&location.hash==="#project")history.replaceState(null,"","#dashboard-app");
+  render();
+}
+
 function syncView(){
   let isWorkstream=location.hash==="#project";
   if(isWorkstream&&authChecked&&!authUser){
@@ -518,19 +693,20 @@ function syncView(){
   }
   document.body.classList.toggle("workstream-view",isWorkstream);
   document.body.classList.toggle("dashboard-view",!isWorkstream);
-  document.getElementById("pageEyebrow").textContent="TEAM 1";
-  document.getElementById("pageTitle").textContent="SME UNDERWRITING & ADMINISTRATION";
-  document.getElementById("pageSubtitle").textContent="PROJECT REPORT";
-  document.getElementById("workstreamSectionTitle").textContent=isWorkstream?"Draft Project":"Progress Project";
-  document.getElementById("workstreamSectionDescription").textContent=isWorkstream?"Edit detail dan susun urutan project":"Ringkasan progres seluruh pekerjaan";
+  document.getElementById("pageEyebrow").textContent="Team 1";
+  document.getElementById("pageTitle").textContent="SME Underwriting & Administration";
+  document.getElementById("pageSubtitle").textContent=isWorkstream?"PROJECT EDITOR":"WEEKLY EXECUTION";
+  document.getElementById("workstreamSectionTitle").textContent=isWorkstream?"Editor Project":"Timeline Project";
+  document.getElementById("workstreamSectionDescription").textContent=isWorkstream?"Edit detail dan susun urutan project":"Urutan aktivitas dari tanggal mulai sampai deadline";
   document.getElementById("reorderHint").hidden=!isWorkstream;
   const fab=document.getElementById("workstreamFab");
-  const label=isWorkstream?"Kembali ke dashboard":"Buka draft project";
+  const label=isWorkstream?"Kembali ke board":"Buka editor project";
   fab.href=isWorkstream?"#dashboard-app":"#project";
   fab.setAttribute("aria-label",label);
   fab.title=label;
   document.getElementById("workstreamFabLabel").textContent=label;
   updateAuthUI();
+  if(isWorkstream)switchWorkspace("timeline",{keepHash:true});
   if(!isWorkstream&&(currentFilter!=="Semua"||searchQuery)){
     currentFilter="Semua";searchQuery="";document.getElementById("searchInput").value="";
     document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter==="Semua"));
@@ -546,9 +722,11 @@ window.addEventListener("storage",event=>{
   if(event.key===STORAGE_KEY){projects=loadProjects();render();}
   if(event.key===LAST_UPDATE_KEY)updateLastUpdateText(event.newValue||DEFAULT_LAST_UPDATE);
 });
-document.getElementById("toggleNextTargetsBtn").addEventListener("click",toggleTargetNextVisibility);
+document.getElementById("toggleNextTargetsBtn")?.addEventListener("click",toggleTargetNextVisibility);
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
+document.getElementById("reportExportBtn")?.addEventListener("click",()=>window.print());
 document.getElementById("workstreamFab").addEventListener("click",event=>{if(location.hash!=="#project"&&!authUser){event.preventDefault();openLoginModal("#project");}});
+document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener("click",event=>{event.preventDefault();switchWorkspace(button.dataset.view);}));
 document.querySelectorAll("[data-close-login]").forEach(button=>button.addEventListener("click",closeLoginModal));
 document.querySelectorAll("[data-close-modal]").forEach(button=>button.addEventListener("click",closeModal));
 document.querySelectorAll("[data-close-task]").forEach(button=>button.addEventListener("click",closeTaskModal));
@@ -560,7 +738,46 @@ document.getElementById("loginModal").addEventListener("click",event=>{if(event.
 window.addEventListener("hashchange",syncView);
 document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeLoginModal();closeTaskModal();closeModal();closeDrawer();}});
 document.getElementById("searchInput").addEventListener("input",event=>{searchQuery=event.target.value.trim().toLowerCase();render()});
-document.querySelectorAll(".filter-chip,.filter-nav").forEach(button=>button.addEventListener("click",()=>{currentFilter=button.dataset.filter;document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter===currentFilter));render();if(button.classList.contains("filter-nav"))document.querySelector(".sidebar").classList.remove("open");}));
+document.querySelectorAll(".filter-chip,.filter-nav").forEach(button=>button.addEventListener("click",()=>{currentFilter=button.dataset.filter;document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter===currentFilter));render();if(button.classList.contains("filter-nav"))document.querySelector(".sidebar")?.classList.remove("open");}));
+
+document.getElementById("boardColumns").addEventListener("click",event=>{
+  const card=event.target.closest("[data-board-project]");
+  if(card)openDrawer(card.dataset.boardProject);
+});
+document.getElementById("boardColumns").addEventListener("keydown",event=>{
+  const card=event.target.closest("[data-board-project]");
+  if(card&&(event.key==="Enter"||event.key===" ")){event.preventDefault();openDrawer(card.dataset.boardProject);}
+});
+document.getElementById("boardColumns").addEventListener("dragstart",event=>{
+  const card=event.target.closest("[data-board-project]");
+  if(!card||!authUser){event.preventDefault();return;}
+  draggedBoardProjectId=card.dataset.boardProject;
+  card.classList.add("is-dragging");
+  event.dataTransfer.effectAllowed="move";
+  event.dataTransfer.setData("text/plain",draggedBoardProjectId);
+});
+document.getElementById("boardColumns").addEventListener("dragover",event=>{
+  if(!draggedBoardProjectId)return;
+  const column=event.target.closest("[data-board-stage]");
+  if(!column)return;
+  event.preventDefault();
+  document.querySelectorAll(".board-column.is-drop-target").forEach(item=>item.classList.remove("is-drop-target"));
+  column.classList.add("is-drop-target");
+  event.dataTransfer.dropEffect="move";
+});
+document.getElementById("boardColumns").addEventListener("drop",event=>{
+  const column=event.target.closest("[data-board-stage]");
+  if(!draggedBoardProjectId||!column)return;
+  event.preventDefault();
+  setBoardStage(draggedBoardProjectId,column.dataset.boardStage);
+  draggedBoardProjectId=null;
+  renderBoard(projects.filter(p=>`${p.name} ${p.owner} ${p.category} ${p.urgency} ${(p.tasks||[]).map(t=>t.name).join(" ")}`.toLowerCase().includes(searchQuery)));
+  showToast("Posisi project pada board diperbarui.");
+});
+document.getElementById("boardColumns").addEventListener("dragend",()=>{
+  draggedBoardProjectId=null;
+  document.querySelectorAll(".execution-card.is-dragging,.board-column.is-drop-target").forEach(item=>item.classList.remove("is-dragging","is-drop-target"));
+});
 
 document.getElementById("loginForm").addEventListener("submit",async event=>{
   event.preventDefault();
@@ -570,7 +787,8 @@ document.getElementById("loginForm").addEventListener("submit",async event=>{
   try{
     const response=await fetch(AUTH_ENDPOINT,{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json",Accept:"application/json"},body:JSON.stringify({user:document.getElementById("loginUser").value,password:document.getElementById("loginPassword").value})});
     const data=await response.json().catch(()=>({}));
-    if(!response.ok||!data.authenticated)throw new Error(data.error||"Login belum dapat diproses.");
+    const errorMessage=typeof data.error==="string"?data.error:data.error?.message;
+    if(!response.ok||!data.authenticated)throw new Error(errorMessage||"Login belum dapat diproses. Silakan coba lagi.");
     authUser=data.user; authChecked=true; closeLoginModal(); updateAuthUI();
     const destination=pendingProtectedHash||"#project"; pendingProtectedHash="#project";
     if(location.hash===destination)syncView();else location.hash=destination;
@@ -688,6 +906,7 @@ document.getElementById("drawerContent").addEventListener("change",event=>{
     activity.completedAt=event.target.value; saveProjects(); openDrawer(project.id); showToast(`Tanggal penyelesaian diperbarui menjadi ${formatDate(activity.completedAt)}.`); return;
   }
   if(!event.target.matches(".stage-select"))return;
+  if(!requireEditor()){openDrawer(event.target.dataset.project);return;}
   const project=projects.find(item=>item.id===event.target.dataset.project);const activity=project.tasks[Number(event.target.dataset.taskIndex)];activity.status=event.target.value;activity.startedAt=activity.startedAt||project.start||todayISO();activity.dueAt=activity.dueAt||project.end||activity.startedAt;activity.completedAt=activity.status==="done"?(activity.completedAt||todayISO()):"";if(activity.completedAt<activity.startedAt)activity.completedAt=activity.startedAt;saveProjects();render();openDrawer(project.id);showToast(activity.status==="done"?`Aktivitas selesai pada ${formatDate(activity.completedAt)}.`:"Progress project diperbarui.");
 });
 document.getElementById("drawerContent").addEventListener("click",event=>{
@@ -740,7 +959,8 @@ document.getElementById("drawerContent").addEventListener("keydown",event=>{
     requestAnimationFrame(()=>document.querySelector(`[data-reorder-task="${CSS.escape(handle.dataset.reorderTask)}"]`)?.focus());
   }
 });
-render();
+const requestedView=new URLSearchParams(location.search).get("view");
+if(["board","timeline","report","archive"].includes(requestedView))switchWorkspace(requestedView,{keepHash:true});else render();
 setTargetNextVisibility(localStorage.getItem(TARGET_NEXT_HIDDEN_KEY)==="true");
 refreshAuth();
 let realtimeDashboardDay=todayISO();
