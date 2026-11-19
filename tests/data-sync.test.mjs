@@ -166,6 +166,33 @@ test("refreshes from the server when Realtime announces a newer row", async () =
   assert.equal(unsubscribed, true);
 });
 
+test("refreshes server state and re-enables editing after Realtime reconnects", async () => {
+  const Team1DataSync = await loadSync();
+  let onStatus;
+  const fetchImpl = queuedFetch([
+    Response.json(payload(1)),
+    Response.json(payload(1)),
+  ]);
+  const controller = Team1DataSync.create({
+    fetchImpl,
+    storage: memoryStorage(),
+    realtimeFactory: (_config, _changeHandler, statusHandler) => {
+      onStatus = statusHandler;
+      return { unsubscribe() {} };
+    },
+  });
+  await controller.start();
+
+  onStatus("CHANNEL_ERROR");
+  assert.equal(controller.getState().status, "stale");
+  assert.equal(controller.isReady(), false);
+
+  await onStatus("SUBSCRIBED");
+  assert.equal(controller.getState().status, "ready");
+  assert.equal(controller.isReady(), true);
+  assert.equal(fetchImpl.calls.length, 2);
+});
+
 test("rolls back to confirmed state and reports offline when a save fails", async () => {
   const Team1DataSync = await loadSync();
   const controller = Team1DataSync.create({

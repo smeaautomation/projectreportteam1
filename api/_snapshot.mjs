@@ -1,4 +1,5 @@
 export const MAX_SNAPSHOT_BYTES = 1024 * 1024;
+const SAFE_IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/;
 
 export class SnapshotValidationError extends Error {
   constructor(message) {
@@ -21,6 +22,11 @@ function validateString(value, label, { required = true, max = 300 } = {}) {
   if (value.length > max) fail(`${label} exceeds ${max} characters`);
 }
 
+function validateIdentifier(value, label) {
+  validateString(value, label, { max: 200 });
+  if (!SAFE_IDENTIFIER.test(value)) fail(`${label} contains unsupported characters`);
+}
+
 function validateDate(value, label, { required = true } = {}) {
   validateString(value, label, { required, max: 10 });
   if (!value && !required) return;
@@ -34,7 +40,7 @@ function validateDate(value, label, { required = true } = {}) {
 function validateTask(task, projectId, taskKeys, index) {
   const prefix = `Project ${projectId} task ${index + 1}`;
   if (!isObject(task)) fail(`${prefix} must be an object`);
-  validateString(task.key, `${prefix} key`, { max: 200 });
+  validateIdentifier(task.key, `${prefix} key`);
   if (taskKeys.has(task.key)) fail(`Duplicate task key ${task.key} in project ${projectId}`);
   taskKeys.add(task.key);
   validateString(task.name, `${prefix} name`, { max: 300 });
@@ -49,7 +55,7 @@ function validateTask(task, projectId, taskKeys, index) {
 function validateProject(project, projectIds, index) {
   const prefix = `Project ${index + 1}`;
   if (!isObject(project)) fail(`${prefix} must be an object`);
-  validateString(project.id, `${prefix} project id`, { max: 200 });
+  validateIdentifier(project.id, `${prefix} project id`);
   if (projectIds.has(project.id)) fail(`Duplicate project id ${project.id}`);
   projectIds.add(project.id);
   validateString(project.name, `${prefix} project name`, { max: 300 });

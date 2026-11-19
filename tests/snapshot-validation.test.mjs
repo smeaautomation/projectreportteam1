@@ -51,8 +51,16 @@ test("rejects non-array snapshots and duplicate or missing IDs", () => {
   );
   assert.throws(() => validateSnapshot([validProject({ id: "" })]), /project id/i);
   assert.throws(
+    () => validateSnapshot([validProject({ id: 'project-1" onmouseover="alert(1)' })]),
+    /project id/i,
+  );
+  assert.throws(
     () => validateSnapshot([validProject({ tasks: [validProject().tasks[0], validProject().tasks[0]] })]),
     /duplicate task key/i,
+  );
+  assert.throws(
+    () => validateSnapshot([validProject({ tasks: [{ ...validProject().tasks[0], key: 'task-1" autofocus onfocus="alert(1)' }] })]),
+    /task .* key/i,
   );
 });
 

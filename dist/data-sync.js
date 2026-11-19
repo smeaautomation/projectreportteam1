@@ -117,6 +117,7 @@
             ready = false;
             setState("stale", { error: "Koneksi pembaruan langsung terputus." });
           }
+          if (subscriptionStatus === "SUBSCRIBED" && !ready) return refresh();
         },
       );
     }
