@@ -160,6 +160,16 @@ The migration is idempotent: it inserts the row only when `id = 'team1'` does no
 5. Run cross-browser and authentication checks.
 6. Promote the verified deployment to production.
 
+### Deployment record — 19 November 2026
+
+- Supabase project `projectreport-team1` (`okpssgoblqfxnbjpjrqo`) is running the `dashboard_state` schema, read-only public RLS policy, server-role grant, and Realtime publication on the Free plan.
+- The latest Chrome snapshot was selected over the older deployed fallback and seeded with 18 projects and 124 activities. The initial database row was revision 1; acceptance-test edits were restored to the identical project payload after every test.
+- Vercel project `team1-smea-report` has the six required variables scoped to both Preview and Production. Secret values remain outside Git and browser responses.
+- Final preview `https://team1-smea-report-mfn8lbvrs-smea2.vercel.app/` was Ready on commit `06e4e9054ff653081193aa15575a612a3d72caa6`.
+- Production is public at `https://projectreport-team1-smea.vercel.app/` from the same commit. The final production row is revision 11 after a Restu-authenticated restoration, with the original 18-project/124-activity payload intact.
+- Verification passed 33 automated tests and syntax/diff checks. Production checks covered public read, anonymous-write rejection, Dita and Restu login/write, stale revision 409, malformed payload 400, oversized payload 413, logout, and Chrome-to-in-app-browser Realtime update/restore without reload.
+- No dedicated uptime alert is configured; failures remain visible through the dashboard offline/stale notice and Vercel/Supabase logs.
+
 ## Cost
 
 The current workload is expected to remain within Supabase Free quotas. The main Free-plan operational constraint is that a project may pause after a week of inactivity; the first request after a pause can take longer while it resumes.
