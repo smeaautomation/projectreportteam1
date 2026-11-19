@@ -837,3 +837,11 @@ body.dashboard-view,body.workstream-view{background:var(--sage-ivory);color:var(
 .report-panel .weekly-report-sidebar{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto;align-items:start}
 .report-panel .weekly-insight-card{height:auto}
 @media(max-width:760px){.report-panel .weekly-report-sidebar{grid-template-columns:1fr}}
+
+/* Shared data connection feedback appears only when editing is unsafe. */
+.sync-notice{display:flex;align-items:center;gap:10px;margin:-2px 0 14px;padding:10px 14px;border:1px solid #efc6c8;border-radius:10px;background:#fff1f1;color:#87333b;font-size:13px;font-weight:600}
+.sync-notice[hidden]{display:none!important}
+.sync-notice .material-symbols-rounded{font-size:21px}
+.sync-notice p{margin:0}
+.sync-notice[data-status="stale"]{border-color:#ead49e;background:#fff8e6;color:#755515}
+.sync-notice[data-status="conflict"]{border-color:#cfc2ec;background:#f6f1ff;color:#5c3b92}

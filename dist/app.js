@@ -8,6 +8,7 @@ const TARGET_NEXT_HIDDEN_KEY = "team1-target-next-hidden";
 const BOARD_STAGE_KEY = "team1-execution-board-stage-v1";
 const DEFAULT_LAST_UPDATE = globalThis.TEAM1_PROJECT_DATA?.lastUpdate || "2026-10-19T17:20:17.747Z";
 const AUTH_ENDPOINT = "/api/auth";
+const DATA_ENDPOINT = "/api/data";
 const CATEGORY_ALIASES = {
   "Web Platform": "Web Automation",
   "Web Automation": "Web Automation",
@@ -32,6 +33,8 @@ let draggedTask = null;
 let draggedBoardProjectId = null;
 let currentView = "board";
 let archiveMode = false;
+let dashboardData = null;
+let lastSyncStatus = "loading";
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const task = (key, name, short, status, context, completedAt="", startedAt="", dueAt="") => ({ key, name, short, status, context, startedAt, dueAt, completedAt:status==="done"?completedAt:"" });
@@ -172,7 +175,14 @@ function loadProjects(){
     const restored=normalizeProjects(structuredClone(weeklyProjects)); localStorage.setItem(STORAGE_KEY,JSON.stringify(restored)); return restored;
   }
 }
-function saveProjects(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(projects)); markDataUpdated(); renderWeeklyStory(); }
+function saveProjects(){
+  renderWeeklyStory();
+  if(!dashboardData?.canEdit()){
+    showToast("Data online belum siap. Perubahan tidak disimpan.");
+    return;
+  }
+  dashboardData.save(normalizeProjects(projects)).catch(()=>{});
+}
 function allTasks(){ return projects.flatMap(project => project.tasks || []); }
 function progressOf(project){ const tasks = project.tasks || []; return tasks.length ? Math.round(tasks.reduce((total, item) => total + (STATUS_VALUE[item.status] || 0), 0) / tasks.length * 100) : 0; }
 function stateOf(project){ const tasks=project.tasks||[]; if(tasks.length&&tasks.every(item=>item.status==="done"))return "Done"; if(tasks.some(item=>item.status!=="todo"))return "On going"; return "Not Started"; }
@@ -181,9 +191,8 @@ function formatDate(date, long=false){ return new Intl.DateTimeFormat("id-ID", l
 function todayISO(){const parts=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Bangkok",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.year}-${parts.month}-${parts.day}`;}
 function updateReportDate(){const today=new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric"}).format(new Date());document.getElementById("reportDateText").textContent=today;const targetSubtitle=document.getElementById("targetSubtitle");if(targetSubtitle)targetSubtitle.textContent=`Otomatis dari project yang belum selesai per ${today}`;}
 function formatLastUpdate(value){let date=new Date(value);if(Number.isNaN(date.getTime()))date=new Date(DEFAULT_LAST_UPDATE);const parts=Object.fromEntries(new Intl.DateTimeFormat("id-ID",{timeZone:"Asia/Jakarta",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date).filter(part=>part.type!=="literal").map(part=>[part.type,part.value]));return `${parts.day} ${parts.month} ${parts.year}, ${parts.hour}.${parts.minute} WIB`;}
-function latestUpdateValue(value=localStorage.getItem(LAST_UPDATE_KEY)){const storedTime=Date.parse(value);const baselineTime=Date.parse(DEFAULT_LAST_UPDATE);const latest=Number.isNaN(storedTime)||storedTime<baselineTime?DEFAULT_LAST_UPDATE:value;if(latest!==value)localStorage.setItem(LAST_UPDATE_KEY,latest);return latest;}
+function latestUpdateValue(value=localStorage.getItem(LAST_UPDATE_KEY)){return Number.isNaN(Date.parse(value))?DEFAULT_LAST_UPDATE:value;}
 function updateLastUpdateText(value){document.getElementById("lastUpdateText").textContent=`Update terakhir: ${formatLastUpdate(latestUpdateValue(value))}`;}
-function markDataUpdated(){const value=new Date().toISOString();localStorage.setItem(LAST_UPDATE_KEY,value);updateLastUpdateText(value);}
 function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase(); }
 function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
 function upcomingTasks(project){ return (project.tasks || []).filter(item => item.status !== "done"); }
@@ -316,7 +325,7 @@ function projectRow(project,index){
   const displayTasks = tasks;
   const deadlineDays=project.end?daysUntil(project.end):null;
   const deadlineTone=progress>=100?"complete":deadlineDays!==null&&deadlineDays<0?"overdue":deadlineDays!==null&&deadlineDays<=7?"urgent":"";
-  const editorMode=location.hash==="#project"&&Boolean(authUser);
+  const editorMode=location.hash==="#project"&&Boolean(authUser)&&Boolean(dashboardData?.canEdit());
   const timeline = displayTasks.map((item,index)=>{
     const stepPosition=displayTasks.length===1 ? 50 : index/(displayTasks.length-1)*100;
     const nextPosition=displayTasks.length===1 ? 50 : Math.min(100,(index+1)/(displayTasks.length-1)*100);
@@ -342,7 +351,7 @@ function projectRow(project,index){
 }
 
 function moveProject(sourceId,targetId,placeAfter=false){
-  if(!authUser||sourceId===targetId)return false;
+  if(!requireEditor()||sourceId===targetId)return false;
   const sourceIndex=projects.findIndex(project=>project.id===sourceId);
   if(sourceIndex<0)return false;
   const [moved]=projects.splice(sourceIndex,1);
@@ -355,7 +364,7 @@ function moveProject(sourceId,targetId,placeAfter=false){
 }
 
 function moveTask(projectId,sourceKey,targetKey,placeAfter=false){
-  if(!authUser||sourceKey===targetKey)return false;
+  if(!requireEditor()||sourceKey===targetKey)return false;
   const project=projects.find(item=>item.id===projectId);
   if(!project)return false;
   const sourceIndex=project.tasks.findIndex(item=>item.key===sourceKey);
@@ -593,6 +602,66 @@ function openModal(project=null){
 function closeModal(){document.getElementById("projectModal").hidden=true;}
 function showToast(message){const toast=document.getElementById("toast");toast.querySelector("p").textContent=message;toast.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>toast.classList.remove("show"),2600);}
 
+function applySharedSnapshot(snapshot){
+  projects=normalizeProjects(structuredClone(snapshot.projects||[]));
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(projects));
+  if(snapshot.updatedAt){
+    localStorage.setItem(LAST_UPDATE_KEY,snapshot.updatedAt);
+    updateLastUpdateText(snapshot.updatedAt);
+  }
+  render();
+}
+
+function updateSharedDataStatus(state){
+  const notice=document.getElementById("syncNotice");
+  const copy=document.getElementById("syncNoticeText");
+  const previousStatus=lastSyncStatus;
+  lastSyncStatus=state.status;
+  const messages={
+    offline:"Data online tidak dapat dijangkau. Dashboard menampilkan salinan terakhir dan mode edit dinonaktifkan.",
+    stale:"Koneksi pembaruan langsung terputus. Muat ulang data sebelum melanjutkan edit.",
+    conflict:"Ada perubahan lebih baru dari editor lain. Versi terbaru sudah dimuat; periksa kembali sebelum mengedit.",
+  };
+  if(messages[state.status]){
+    copy.textContent=messages[state.status];
+    notice.dataset.status=state.status;
+    notice.hidden=false;
+  }else{
+    notice.hidden=true;
+    notice.dataset.status=state.status;
+  }
+  if(state.status==="saving"&&previousStatus!=="saving")showToast("Menyimpan perubahan ke online…");
+  if(state.status==="saved")showToast("Perubahan sudah tersimpan online.");
+  if(state.status==="conflict"&&previousStatus!=="conflict")showToast("Data berubah di perangkat lain. Versi terbaru sudah dimuat.");
+  if((state.status==="offline"||state.status==="stale")&&previousStatus!==state.status)showToast("Koneksi data online terputus. Mode edit dinonaktifkan.");
+}
+
+function createRealtimeSubscription(config,onChange,onStatus){
+  const client=globalThis.supabase.createClient(config.url,config.publishableKey,{
+    auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
+  });
+  const channel=client.channel("team1-dashboard-state")
+    .on("postgres_changes",{event:"UPDATE",schema:"public",table:config.table,filter:`id=eq.${config.rowId}`},onChange)
+    .subscribe(onStatus);
+  return {unsubscribe(){client.removeChannel(channel);}};
+}
+
+function startSharedData(){
+  const controller=globalThis.Team1DataSync.create({
+    endpoint:DATA_ENDPOINT,
+    fetchImpl:globalThis.fetch.bind(globalThis),
+    storage:localStorage,
+    deployed:{projects:normalizeProjects(structuredClone(weeklyProjects)),updatedAt:DEFAULT_LAST_UPDATE},
+    realtimeFactory:createRealtimeSubscription,
+  });
+  dashboardData=globalThis.Team1DashboardData.create({
+    controller,
+    onSnapshot:applySharedSnapshot,
+    onStatus:updateSharedDataStatus,
+  });
+  dashboardData.start().catch(()=>{});
+}
+
 function updateAuthUI(){
   const session=document.getElementById("editorSession");
   session.hidden=!authUser;
@@ -610,7 +679,14 @@ function openLoginModal(returnHash="#project"){
   setTimeout(()=>document.getElementById("loginUser").focus(),50);
 }
 function closeLoginModal(){document.getElementById("loginModal").hidden=true;}
-function requireEditor(){if(authUser)return true;openLoginModal("#project");return false;}
+function requireEditor(){
+  if(!authUser){openLoginModal("#project");return false;}
+  if(!dashboardData?.canEdit()){
+    showToast("Data online belum siap. Tunggu koneksi pulih sebelum mengedit.");
+    return false;
+  }
+  return true;
+}
 async function refreshAuth(){
   try{
     const response=await fetch(AUTH_ENDPOINT,{credentials:"same-origin",headers:{Accept:"application/json"}});
@@ -718,10 +794,6 @@ function syncView(){
 updateReportDate();
 updateLastUpdateText();
 setInterval(updateReportDate,60000);
-window.addEventListener("storage",event=>{
-  if(event.key===STORAGE_KEY){projects=loadProjects();render();}
-  if(event.key===LAST_UPDATE_KEY)updateLastUpdateText(event.newValue||DEFAULT_LAST_UPDATE);
-});
 document.getElementById("toggleNextTargetsBtn")?.addEventListener("click",toggleTargetNextVisibility);
 document.getElementById("addProjectBtn").addEventListener("click",()=>openModal());
 document.getElementById("reportExportBtn")?.addEventListener("click",()=>window.print());
@@ -844,7 +916,7 @@ document.getElementById("deleteTaskBtn").addEventListener("click",()=>{
 document.getElementById("projectList").addEventListener("click",event=>{const button=event.target.closest("[data-open-project]");if(button)openDrawer(button.dataset.openProject);});
 document.getElementById("projectList").addEventListener("dragstart",event=>{
   const handle=event.target.closest(".drag-handle");
-  if(!handle||!authUser||location.hash!=="#project"){event.preventDefault();return;}
+  if(!handle||location.hash!=="#project"||!requireEditor()){event.preventDefault();return;}
   draggedProjectId=handle.dataset.reorderProject;
   const row=handle.closest(".project-row");
   row.classList.add("dragging");
@@ -874,7 +946,8 @@ document.getElementById("projectList").addEventListener("dragend",()=>{
 });
 document.getElementById("projectList").addEventListener("keydown",event=>{
   const handle=event.target.closest(".drag-handle");
-  if(!handle||!authUser||!['ArrowUp','ArrowDown'].includes(event.key))return;
+  if(!handle||!['ArrowUp','ArrowDown'].includes(event.key))return;
+  if(!requireEditor())return;
   event.preventDefault();
   const index=projects.findIndex(project=>project.id===handle.dataset.reorderProject);
   const targetIndex=event.key==='ArrowUp'?index-1:index+1;
@@ -886,6 +959,7 @@ document.getElementById("projectList").addEventListener("keydown",event=>{
 });
 document.getElementById("taskStatus").addEventListener("change",()=>syncTaskCompletedDateField(true));
 document.getElementById("drawerContent").addEventListener("change",event=>{
+  if(event.target.matches(".activity-start-date-input,.activity-deadline-input,.completion-date-input,.stage-select")&&!requireEditor())return;
   if(event.target.matches(".activity-start-date-input")){
     const project=projects.find(item=>item.id===event.target.dataset.project); const activity=project?.tasks?.[Number(event.target.dataset.taskIndex)]; if(!activity)return;
     if(!event.target.value){event.target.value=activity.startedAt||project.start||todayISO();showToast("Tanggal mulai aktivitas wajib diisi.");return;}
@@ -906,19 +980,18 @@ document.getElementById("drawerContent").addEventListener("change",event=>{
     activity.completedAt=event.target.value; saveProjects(); openDrawer(project.id); showToast(`Tanggal penyelesaian diperbarui menjadi ${formatDate(activity.completedAt)}.`); return;
   }
   if(!event.target.matches(".stage-select"))return;
-  if(!requireEditor()){openDrawer(event.target.dataset.project);return;}
   const project=projects.find(item=>item.id===event.target.dataset.project);const activity=project.tasks[Number(event.target.dataset.taskIndex)];activity.status=event.target.value;activity.startedAt=activity.startedAt||project.start||todayISO();activity.dueAt=activity.dueAt||project.end||activity.startedAt;activity.completedAt=activity.status==="done"?(activity.completedAt||todayISO()):"";if(activity.completedAt<activity.startedAt)activity.completedAt=activity.startedAt;saveProjects();render();openDrawer(project.id);showToast(activity.status==="done"?`Aktivitas selesai pada ${formatDate(activity.completedAt)}.`:"Progress project diperbarui.");
 });
 document.getElementById("drawerContent").addEventListener("click",event=>{
   const addTask=event.target.closest("[data-add-task]"); if(addTask){openTaskModal(addTask.dataset.addTask);return;}
   const duplicate=event.target.closest("[data-duplicate-task]"); if(duplicate){duplicateTask(duplicate.dataset.project,duplicate.dataset.duplicateTask);return;}
   const editTask=event.target.closest("[data-edit-task]"); if(editTask){openTaskModal(editTask.dataset.project,Number(editTask.dataset.editTask));return;}
-  const remove=event.target.closest("[data-delete-project]"); if(remove){const project=projects.find(item=>item.id===remove.dataset.deleteProject);if(confirm(`Hapus project “${project.name}”?`)){projects=projects.filter(item=>item.id!==project.id);saveProjects();closeDrawer();render();showToast("Project dihapus.");}}
+  const remove=event.target.closest("[data-delete-project]"); if(remove&&requireEditor()){const project=projects.find(item=>item.id===remove.dataset.deleteProject);if(confirm(`Hapus project “${project.name}”?`)){projects=projects.filter(item=>item.id!==project.id);saveProjects();closeDrawer();render();showToast("Project dihapus.");}}
   const edit=event.target.closest("[data-edit-project]"); if(edit){const project=projects.find(item=>item.id===edit.dataset.editProject);closeDrawer();openModal(project);}
 });
 document.getElementById("drawerContent").addEventListener("dragstart",event=>{
   const handle=event.target.closest(".task-drag-handle");
-  if(!handle||!authUser){event.preventDefault();return;}
+  if(!handle||!requireEditor()){event.preventDefault();return;}
   draggedTask={projectId:handle.dataset.project,key:handle.dataset.reorderTask};
   handle.closest(".stage-item")?.classList.add("task-dragging");
   event.dataTransfer.effectAllowed="move";
@@ -948,7 +1021,8 @@ document.getElementById("drawerContent").addEventListener("dragend",()=>{
 });
 document.getElementById("drawerContent").addEventListener("keydown",event=>{
   const handle=event.target.closest(".task-drag-handle");
-  if(!handle||!authUser||!['ArrowUp','ArrowDown'].includes(event.key))return;
+  if(!handle||!['ArrowUp','ArrowDown'].includes(event.key))return;
+  if(!requireEditor())return;
   event.preventDefault();
   const project=projects.find(item=>item.id===handle.dataset.project);
   const index=project?.tasks?.findIndex(item=>item.key===handle.dataset.reorderTask)??-1;
@@ -962,6 +1036,7 @@ document.getElementById("drawerContent").addEventListener("keydown",event=>{
 const requestedView=new URLSearchParams(location.search).get("view");
 if(["board","timeline","report","archive"].includes(requestedView))switchWorkspace(requestedView,{keepHash:true});else render();
 setTargetNextVisibility(localStorage.getItem(TARGET_NEXT_HIDDEN_KEY)==="true");
+startSharedData();
 refreshAuth();
 let realtimeDashboardDay=todayISO();
 setInterval(()=>{

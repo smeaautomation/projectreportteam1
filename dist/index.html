@@ -157,6 +157,11 @@
         </div>
       </header>
 
+      <div class="sync-notice" id="syncNotice" hidden role="status" aria-live="polite">
+        <span class="material-symbols-rounded" aria-hidden="true">cloud_off</span>
+        <p id="syncNoticeText">Koneksi data online sedang tidak tersedia.</p>
+      </div>
+
       <section class="execution-kpis" aria-label="Ringkasan dashboard">
         <article class="execution-kpi kpi-projects"><span class="kpi-icon material-symbols-rounded">folder_open</span><div><p>Total Proyek</p><strong id="totalProjects">0</strong></div></article>
         <article class="execution-kpi kpi-activities"><span class="kpi-icon material-symbols-rounded">layers</span><div><p>Total Aktivitas</p><strong id="totalActivities">0</strong></div></article>
@@ -294,6 +299,9 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"><span>✓</span><p></p></div>
   <script src="latest-data.js?v=20261110-1149"></script>
-  <script src="app.js?v=20261109-2"></script>
+  <script src="vendor/supabase.min.js?v=2.119.1"></script>
+  <script src="data-sync.js?v=20261119-1"></script>
+  <script src="dashboard-data-bridge.js?v=20261119-1"></script>
+  <script src="app.js?v=20261119-1"></script>
 </body>
 </html>
