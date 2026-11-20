@@ -392,10 +392,10 @@ globalThis.TEAM1_PROJECT_DATA = {
           "name": "Submit ke TI",
           "dueAt": "2026-10-30",
           "short": "Submit",
-          "status": "todo",
+          "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-21",
-          "completedAt": ""
+          "completedAt": "2026-11-20"
         }
       ],
       "source": "Input dashboard",
@@ -739,17 +739,17 @@ globalThis.TEAM1_PROJECT_DATA = {
           "name": "UAT",
           "dueAt": "2026-11-04",
           "short": "UAT",
-          "status": "todo",
+          "status": "done",
           "context": "Target 7 hari",
           "startedAt": "2026-11-02",
-          "completedAt": ""
+          "completedAt": "2026-11-20"
         },
         {
           "key": "activity-1791871350050",
           "name": "Live di Web",
           "dueAt": "2026-11-06",
           "short": "Live",
-          "status": "todo",
+          "status": "active",
           "context": "Target 7 hari",
           "startedAt": "2026-09-08",
           "completedAt": ""
@@ -893,60 +893,60 @@ globalThis.TEAM1_PROJECT_DATA = {
           "name": "Edu Protect",
           "dueAt": "2026-10-23",
           "short": "705 AS",
-          "status": "active",
+          "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": ""
+          "completedAt": "2026-11-20"
         },
         {
           "key": "final",
           "name": "Kebakaran",
           "dueAt": "2026-10-23",
           "short": "201",
-          "status": "todo",
+          "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": ""
+          "completedAt": "2026-11-20"
         },
         {
           "key": "activity-1791880695045",
           "name": "Property All Risks",
           "dueAt": "2026-10-23",
           "short": "297",
-          "status": "todo",
+          "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": ""
+          "completedAt": "2026-11-20"
         },
         {
           "key": "activity-1791880727995",
           "name": "Motor TLO",
           "dueAt": "2026-10-23",
           "short": "605",
-          "status": "todo",
+          "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": ""
+          "completedAt": "2026-11-20"
         },
         {
           "key": "activity-1791880738585",
           "name": "Mobil TLO",
           "dueAt": "2026-10-23",
           "short": "601",
-          "status": "todo",
+          "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": ""
+          "completedAt": "2026-11-20"
         },
         {
           "key": "activity-1792429185643-v8mci",
           "name": "Mobil Compre",
           "dueAt": "2026-10-23",
           "short": "601 C",
-          "status": "todo",
+          "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": ""
+          "completedAt": "2026-11-20"
         }
       ],
       "source": "Input dashboard",
@@ -1459,5 +1459,5 @@ globalThis.TEAM1_PROJECT_DATA = {
       "category": "Operational Support"
     }
   ],
-  "lastUpdate": "2026-11-19T08:16:54.339Z"
+  "lastUpdate": "2026-11-20T04:29:12.927Z"
 };
