@@ -28,9 +28,9 @@
       return controller.start();
     }
 
-    async function save(projects) {
+    async function save(projects, options) {
       if (!canEdit()) throw new Error("Shared data is not ready for editing.");
-      return controller.save(projects);
+      return controller.save(projects, options);
     }
 
     function canEdit() {

@@ -1,6 +1,48 @@
 globalThis.TEAM1_PROJECT_DATA = {
   "projects": [
     {
+      "id": "project-1795435163824",
+      "end": "2026-11-20",
+      "name": "UAT #2 Web Rekanan",
+      "owner": "Dita",
+      "start": "2026-11-16",
+      "tasks": [
+        {
+          "key": "planning",
+          "name": "Setting Rekanan",
+          "dueAt": "2026-11-20",
+          "short": "Setting",
+          "status": "done",
+          "context": "Project baru",
+          "startedAt": "2026-11-18",
+          "completedAt": "2026-11-18"
+        },
+        {
+          "key": "design",
+          "name": "Pembelian Polis",
+          "dueAt": "2026-11-20",
+          "short": "Pembelian",
+          "status": "done",
+          "context": "Project baru",
+          "startedAt": "2026-11-18",
+          "completedAt": "2026-11-18"
+        },
+        {
+          "key": "development",
+          "name": "Submit Request Revisi",
+          "dueAt": "2026-11-20",
+          "short": "Submit TI",
+          "status": "done",
+          "context": "Project baru",
+          "startedAt": "2026-11-18",
+          "completedAt": "2026-11-18"
+        }
+      ],
+      "source": "Input dashboard",
+      "urgency": "Very High",
+      "category": "Web Automation"
+    },
+    {
       "id": "project-1792382235783",
       "end": "2026-10-19",
       "name": "Dashboard Progress Project",
@@ -385,7 +427,7 @@ globalThis.TEAM1_PROJECT_DATA = {
           "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-21",
-          "completedAt": "2026-11-19"
+          "completedAt": "2026-11-13"
         },
         {
           "key": "final",
@@ -395,7 +437,7 @@ globalThis.TEAM1_PROJECT_DATA = {
           "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-21",
-          "completedAt": "2026-11-20"
+          "completedAt": "2026-11-13"
         }
       ],
       "source": "Input dashboard",
@@ -746,13 +788,13 @@ globalThis.TEAM1_PROJECT_DATA = {
         },
         {
           "key": "activity-1791871350050",
-          "name": "Live di Web",
-          "dueAt": "2026-11-06",
-          "short": "Live",
-          "status": "active",
+          "name": "Development oleh TI",
+          "dueAt": "2026-11-20",
+          "short": "Finish",
+          "status": "done",
           "context": "Target 7 hari",
           "startedAt": "2026-09-08",
-          "completedAt": ""
+          "completedAt": "2026-11-19"
         }
       ],
       "source": "Input dashboard",
@@ -866,7 +908,7 @@ globalThis.TEAM1_PROJECT_DATA = {
           "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": "2026-10-19"
+          "completedAt": "2026-11-20"
         },
         {
           "key": "design",
@@ -876,7 +918,7 @@ globalThis.TEAM1_PROJECT_DATA = {
           "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": "2026-10-19"
+          "completedAt": "2026-11-19"
         },
         {
           "key": "testing",
@@ -886,7 +928,7 @@ globalThis.TEAM1_PROJECT_DATA = {
           "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": "2026-10-19"
+          "completedAt": "2026-11-19"
         },
         {
           "key": "development",
@@ -926,7 +968,7 @@ globalThis.TEAM1_PROJECT_DATA = {
           "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": "2026-11-20"
+          "completedAt": "2026-11-05"
         },
         {
           "key": "activity-1791880738585",
@@ -936,7 +978,7 @@ globalThis.TEAM1_PROJECT_DATA = {
           "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": "2026-11-20"
+          "completedAt": "2026-11-05"
         },
         {
           "key": "activity-1792429185643-v8mci",
@@ -946,7 +988,7 @@ globalThis.TEAM1_PROJECT_DATA = {
           "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-13",
-          "completedAt": "2026-11-20"
+          "completedAt": "2026-11-05"
         }
       ],
       "source": "Input dashboard",
@@ -1071,7 +1113,7 @@ globalThis.TEAM1_PROJECT_DATA = {
       "id": "project-1792429660069",
       "end": "2026-11-05",
       "name": "Update Wording Web",
-      "owner": "Restu",
+      "owner": "Dita",
       "start": "2026-10-26",
       "tasks": [
         {
@@ -1119,10 +1161,10 @@ globalThis.TEAM1_PROJECT_DATA = {
           "name": "Update di Sistem",
           "dueAt": "2026-11-05",
           "short": "Submit",
-          "status": "todo",
+          "status": "done",
           "context": "Project baru",
           "startedAt": "2026-10-26",
-          "completedAt": ""
+          "completedAt": "2026-11-13"
         }
       ],
       "source": "Input dashboard",
@@ -1223,7 +1265,7 @@ globalThis.TEAM1_PROJECT_DATA = {
     },
     {
       "id": "team1-book",
-      "end": "2026-11-06",
+      "end": "2026-12-18",
       "name": "Buku Otomatisasi Underwriting Fase 3",
       "owner": "Dita",
       "start": "2026-09-22",
@@ -1261,7 +1303,7 @@ globalThis.TEAM1_PROJECT_DATA = {
         {
           "key": "activity-1791870866921",
           "name": "Diskusi Perbaikan dengan GH",
-          "dueAt": "2026-11-11",
+          "dueAt": "2026-12-16",
           "short": "Diskusi",
           "status": "todo",
           "context": "Target 7 hari",
@@ -1271,7 +1313,7 @@ globalThis.TEAM1_PROJECT_DATA = {
         {
           "key": "activity-1791871648689",
           "name": "Perbaikan",
-          "dueAt": "2026-11-12",
+          "dueAt": "2026-12-18",
           "short": "Revisi",
           "status": "todo",
           "context": "Target 7 hari",
@@ -1281,12 +1323,11 @@ globalThis.TEAM1_PROJECT_DATA = {
       ],
       "source": "Weekly Report Team 1",
       "urgency": "Medium",
-      "category": "Operational Support",
-      "priority": "Normal"
+      "category": "Operational Support"
     },
     {
       "id": "workstream-1791872633362",
-      "end": "2026-11-06",
+      "end": "2026-12-18",
       "name": "Panduan Pembelian Polis melalui Jalur Internal",
       "owner": "Dita",
       "start": "2026-10-02",
@@ -1343,18 +1384,28 @@ globalThis.TEAM1_PROJECT_DATA = {
         },
         {
           "key": "activity-1791872724637",
-          "name": "Finalisasi",
+          "name": "Revisi & Finalisasi",
           "dueAt": "2026-11-06",
-          "short": "Finalisasi",
+          "short": "Revisi",
           "status": "done",
           "context": "Target 7 hari",
           "startedAt": "2026-10-02",
           "completedAt": "2026-11-19"
         },
         {
+          "key": "activity-1795452111787-17vyf",
+          "name": "Review HO",
+          "dueAt": "2026-11-30",
+          "short": "Review",
+          "status": "active",
+          "context": "Target 7 hari",
+          "startedAt": "2026-10-02",
+          "completedAt": ""
+        },
+        {
           "key": "activity-1791872787848",
           "name": "Submit ke MRK",
-          "dueAt": "2026-11-06",
+          "dueAt": "2026-12-01",
           "short": "Submit",
           "status": "todo",
           "context": "Target 7 hari",
@@ -1364,7 +1415,7 @@ globalThis.TEAM1_PROJECT_DATA = {
         {
           "key": "activity-1791872814823",
           "name": "Review oleh MRK",
-          "dueAt": "2026-11-06",
+          "dueAt": "2026-12-11",
           "short": "Review",
           "status": "todo",
           "context": "Target 7 hari",
@@ -1459,5 +1510,5 @@ globalThis.TEAM1_PROJECT_DATA = {
       "category": "Operational Support"
     }
   ],
-  "lastUpdate": "2026-11-20T04:29:12.927Z"
+  "lastUpdate": "2026-11-23T16:42:51.787+00:00"
 };

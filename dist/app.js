@@ -9,6 +9,7 @@ const BOARD_STAGE_KEY = "team1-execution-board-stage-v1";
 const DEFAULT_LAST_UPDATE = globalThis.TEAM1_PROJECT_DATA?.lastUpdate || "2026-10-19T17:20:17.747Z";
 const AUTH_ENDPOINT = "/api/auth";
 const DATA_ENDPOINT = "/api/data";
+const POLICY_COUNT_EXAMPLES = ["127.0.0.1", "localhost"].includes(location.hostname) ? { "2026-11-23": 24 } : {};
 const CATEGORY_ALIASES = {
   "Web Platform": "Web Automation",
   "Web Automation": "Web Automation",
@@ -27,7 +28,7 @@ let currentFilter = "Semua";
 let searchQuery = "";
 let authUser = null;
 let authChecked = false;
-let pendingProtectedHash = "#project";
+let pendingEditorDestination = "#project";
 let draggedProjectId = null;
 let draggedTask = null;
 let draggedBoardProjectId = null;
@@ -35,6 +36,10 @@ let currentView = "board";
 let archiveMode = false;
 let dashboardData = null;
 let lastSyncStatus = "loading";
+let weeklyPolicyCounts = {};
+let editingPolicyWeek = null;
+let weeklyObstacles = {};
+let editingObstaclesWeek = null;
 
 const addDays = (date, days) => { const d = new Date(date); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 const task = (key, name, short, status, context, completedAt="", startedAt="", dueAt="") => ({ key, name, short, status, context, startedAt, dueAt, completedAt:status==="done"?completedAt:"" });
@@ -176,7 +181,7 @@ function loadProjects(){
   }
 }
 function saveProjects(){
-  renderWeeklyStory();
+  renderWeeklyReport();
   if(!dashboardData?.canEdit()){
     showToast("Data online belum siap. Perubahan tidak disimpan.");
     return;
@@ -197,17 +202,6 @@ function initials(name){ return name.split(/\s+/).map(x=>x[0]).slice(0,2).join("
 function escapeHTML(str){ return String(str).replace(/[&<>'"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
 function upcomingTasks(project){ return (project.tasks || []).filter(item => item.status !== "done"); }
 function unfinishedProjects(){ return projects.filter(project => progressOf(project) < 100); }
-function nextWeekTasks(project){
-  const today=todayISO();
-  const horizon=addDays(today,7);
-  return (project.tasks || []).filter(item=>item.status!=="done"&&item.dueAt&&item.dueAt>=today&&item.dueAt<=horizon).sort((a,b)=>(a.dueAt||"").localeCompare(b.dueAt||""));
-}
-function completedLastSevenDays(){
-  const today=todayISO();
-  const weekStart=addDays(today,-7);
-  const yesterday=addDays(today,-1);
-  return projects.map(project=>({project,tasks:(project.tasks||[]).filter(item=>item.status==="done"&&item.completedAt&&item.completedAt>=weekStart&&item.completedAt<=yesterday)})).filter(({tasks})=>tasks.length);
-}
 
 function setTargetNextVisibility(hidden){
   const list=document.getElementById("deadlineList");
@@ -246,14 +240,12 @@ function render(){
   document.getElementById("completedProjects").textContent = done;
   document.getElementById("projectList").innerHTML = filtered.map((project,index)=>projectRow(project,index)).join("");
   document.getElementById("emptyState").hidden = filtered.length > 0;
-  renderBoard(filtered); renderTargets(); renderDistribution();
+  renderBoard(filtered); renderWeeklyReport(); renderDistribution();
 }
 
 const BOARD_COLUMNS = [
-  {key:"urgent",title:"Urgent",subtitle:"Perlu eksekusi segera",icon:"warning",tone:"coral"},
-  {key:"this-week",title:"This Week",subtitle:"Fokus penyelesaian minggu ini",icon:"calendar_month",tone:"orange"},
+  {key:"not-started",title:"Not Started",subtitle:"Belum mulai dikerjakan",icon:"radio_button_unchecked",tone:"orange"},
   {key:"in-progress",title:"In Progress",subtitle:"Sedang dikerjakan",icon:"play_circle",tone:"blue"},
-  {key:"review",title:"Review",subtitle:"Menunggu review/validasi",icon:"search",tone:"purple"},
   {key:"done",title:"Done",subtitle:"Selesai minggu ini",icon:"task_alt",tone:"teal"}
 ];
 
@@ -261,24 +253,11 @@ function loadBoardStages(){
   try{return JSON.parse(localStorage.getItem(BOARD_STAGE_KEY))||{};}catch{return {};}
 }
 
-function automaticBoardStage(project){
-  const progress=progressOf(project);
-  if(progress>=100)return "done";
-  const openTasks=(project.tasks||[]).filter(item=>item.status!=="done");
-  const activeTask=openTasks.find(item=>item.status==="active");
-  const activeText=`${activeTask?.name||""} ${activeTask?.short||""}`.toLowerCase();
-  if(project.urgency==="Very High")return "urgent";
-  if(progress>=85||/(review|validasi|testing|test|uat)/.test(activeText))return "review";
-  const hasThisWeek=openTasks.some(item=>item.dueAt&&daysUntil(item.dueAt)>=0&&daysUntil(item.dueAt)<=7);
-  if(hasThisWeek||project.urgency==="High"&&progress<75||project.end&&daysUntil(project.end)>=0&&daysUntil(project.end)<=7)return "this-week";
-  if(activeTask)return "in-progress";
-  return project.urgency==="High"?"this-week":"in-progress";
-}
-
 function boardStageFor(project){
   if(progressOf(project)>=100)return "done";
   const saved=loadBoardStages()[project.id];
-  return BOARD_COLUMNS.some(column=>column.key===saved)?saved:automaticBoardStage(project);
+  if(BOARD_COLUMNS.some(column=>column.key===saved))return saved;
+  return stateOf(project)==="Not Started"?"not-started":"in-progress";
 }
 
 function setBoardStage(projectId,stage){
@@ -304,13 +283,55 @@ function boardCardMarkup(project){
   </article>`;
 }
 
+function currentWeekMonday(){
+  const monday=new Date(`${todayISO()}T00:00:00Z`);
+  monday.setUTCDate(monday.getUTCDate()-(monday.getUTCDay()+6)%7);
+  return monday;
+}
+
+function weeklyPeriod(monday, daysFromMonday){
+  const start=new Date(monday);
+  start.setUTCDate(start.getUTCDate()+daysFromMonday);
+  const end=new Date(start);
+  end.setUTCDate(end.getUTCDate()+6);
+  const dateFormat=new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"});
+  return {start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10),label:dateFormat.formatRange(start,end)};
+}
+
+function reportResultPeriod(monday=currentWeekMonday()){
+  return weeklyPeriod(monday,-6);
+}
+
+function policyCountFor(weekEnding){
+  const saved=weeklyPolicyCounts[weekEnding];
+  const example=POLICY_COUNT_EXAMPLES[weekEnding];
+  return {count:saved??example,isExample:saved===undefined&&example!==undefined};
+}
+
+function policyEntryColumnMarkup(){
+  const week=reportResultPeriod();
+  const {count,isExample}=policyCountFor(week.end);
+  const exampleLabel=isExample?'<span class="policy-entry-example">Data contoh</span>':"";
+  return `<section class="board-column board-coral policy-entry-column" aria-labelledby="policyEntryTitle">
+    <header><span class="material-symbols-rounded" aria-hidden="true">description</span><div><h2 id="policyEntryTitle">Entry Data Polis</h2><p>${escapeHTML(week.label)}</p></div></header>
+    <div class="board-card-list"><div class="policy-entry-card">
+      ${count===undefined?'<p class="policy-entry-empty">Belum ada data</p>':`<strong class="policy-entry-count">${count.toLocaleString("id-ID")}</strong>`}
+      <span class="policy-entry-document material-symbols-rounded" aria-hidden="true">task</span>
+      ${count===undefined?"":`<p class="policy-entry-caption"><span>Polis dientri</span>${exampleLabel}</p>`}
+      <button type="button" class="policy-entry-edit" data-edit-policy-count aria-label="Edit jumlah polis" title="Edit jumlah polis">
+        <span class="material-symbols-rounded" aria-hidden="true">edit</span>
+      </button>
+    </div></div>
+  </section>`;
+}
+
 function renderBoard(filteredProjects=projects){
   const container=document.getElementById("boardColumns");
   if(!container)return;
   const visible=archiveMode?filteredProjects.filter(project=>progressOf(project)>=100):filteredProjects;
   const columns=archiveMode?BOARD_COLUMNS.filter(column=>column.key==="done"):BOARD_COLUMNS;
   container.classList.toggle("archive-board",archiveMode);
-  container.innerHTML=columns.map(column=>{
+  container.innerHTML=(archiveMode?"":policyEntryColumnMarkup())+columns.map(column=>{
     const items=visible.filter(project=>boardStageFor(project)===column.key);
     return `<section class="board-column board-${column.tone}" data-board-stage="${column.key}">
       <header><span class="material-symbols-rounded">${column.icon}</span><div><h2>${archiveMode?"Arsip Project":column.title}</h2><p>${archiveMode?"Project yang sudah selesai":column.subtitle}</p></div><strong>${items.length}</strong></header>
@@ -391,171 +412,72 @@ function duplicateTask(projectId,taskKey){
   saveProjects();render();openDrawer(projectId);showToast(`Aktivitas “${source.name}” berhasil diduplikasi.`);
 }
 
-function renderTargets(){
-  renderWeeklyStory();
+function reportPolicyEntryMarkup(weekEnding){
+  const {count,isExample}=policyCountFor(weekEnding);
+  return `<li class="weekly-report-project weekly-report-policy">
+    <h3>Entry Data Polis</h3>
+    <p class="weekly-report-pic">PIC: <strong>Restu</strong></p>
+    ${count===undefined?'<p class="weekly-report-task-copy">Belum ada jumlah polis.</p>':`<p class="weekly-report-task-copy"><strong>Total ${count.toLocaleString("id-ID")} Polis</strong></p>`}
+    ${isExample?'<p class="weekly-report-example">Data contoh</p>':""}
+  </li>`;
 }
 
-function weeklyStoryTone(task,date){
-  const text=`${task.name||""} ${task.short||""}`.toLowerCase();
-  if(task.status==="done"&&/(review|validasi|approval|persetujuan)/.test(text))return {tone:"review",icon:"task_alt",label:"Review Disetujui"};
-  if(task.status==="done"&&/(milestone|50%|75%|rilis|live)/.test(text))return {tone:"milestone",icon:"flag",label:"Milestone"};
-  if(task.status==="done")return {tone:"done",icon:"check_circle",label:"Selesai"};
-  if(date<todayISO())return {tone:"late",icon:"warning",label:"Terlambat"};
-  if(task.status==="active")return {tone:"review",icon:"search",label:"Sedang Review"};
-  return {tone:"milestone",icon:"flag",label:"Terjadwal"};
+function renderWeeklyReportSection({listId, periodId, period, dateFor, includePolicy=false}){
+  document.getElementById(periodId).textContent=period.label;
+  const days=new Map();
+  if(includePolicy)days.set(period.end,new Map());
+  for(const project of projects){
+    for(const task of project.tasks){
+      const date=dateFor(task);
+      if(!date||date<period.start||date>period.end)continue;
+      if(!days.has(date))days.set(date,new Map());
+      const dateProjects=days.get(date);
+      if(!dateProjects.has(project))dateProjects.set(project,[]);
+      dateProjects.get(project).push(task);
+    }
+  }
+
+  document.getElementById(listId).innerHTML=[...days].sort(([a],[b])=>a.localeCompare(b)).map(([date,dateProjects])=>{
+    const entries=[...dateProjects].sort(([a],[b])=>a.name.localeCompare(b.name,"id")).map(([project,tasks])=>{
+      const names=tasks.map(task=>task.name).sort((a,b)=>a.localeCompare(b,"id"));
+      return `<li class="weekly-report-project">
+        <h3>${escapeHTML(project.name)}</h3>
+        <p class="weekly-report-pic">PIC: <strong>${escapeHTML(project.owner||"Belum ditentukan")}</strong></p>
+        ${names.length===1
+          ? `<p class="weekly-report-task-copy">Subtask: ${escapeHTML(names[0])}</p>`
+          : `<p class="weekly-report-task-copy">Subtask</p><ul class="weekly-report-tasks">${names.map(name=>`<li>${escapeHTML(name)}</li>`).join("")}</ul>`}
+      </li>`;
+    }).join("");
+    const policy=includePolicy&&date===period.end?reportPolicyEntryMarkup(date):"";
+    const [day,month,year]=formatDate(date).split(/\s+/);
+    return `<li class="weekly-report-day">
+      <time datetime="${escapeHTML(date)}"><span>${day} ${month}</span> <span>${year}</span></time>
+      <ul class="weekly-report-day-entries">${entries}${policy}</ul>
+    </li>`;
+  }).join("")||'<li class="weekly-report-empty">Tidak ada subtask terbuka dengan deadline pada periode ini.</li>';
 }
 
-function weeklyStoryEvents(weekStart,weekEnd){
-  const events=[];
-  projects.forEach(project=>{
-    const total=(project.tasks||[]).length||1;
-    (project.tasks||[]).forEach(taskItem=>{
-      const eventDate=taskItem.status==="done"&&taskItem.completedAt?taskItem.completedAt:taskItem.dueAt;
-      if(!eventDate||eventDate<weekStart||eventDate>weekEnd)return;
-      const tone=weeklyStoryTone(taskItem,eventDate);
-      events.push({date:eventDate,project,task:taskItem,contribution:Math.round(100/total),...tone});
-    });
+function renderWeeklyReport(){
+  const monday=currentWeekMonday();
+  const resultPeriod=reportResultPeriod(monday);
+  renderWeeklyReportSection({
+    listId:"weeklyResultSummary",
+    periodId:"weeklyResultPeriod",
+    period:resultPeriod,
+    dateFor:task=>task.status==="done"?task.completedAt:"",
+    includePolicy:true,
   });
-  return events.sort((a,b)=>a.date.localeCompare(b.date)||a.project.name.localeCompare(b.project.name)||a.task.name.localeCompare(b.task.name));
-}
-
-function weeklyDayParts(date){
-  const value=new Date(`${date}T00:00:00`);
-  return {
-    weekday:new Intl.DateTimeFormat("id-ID",{weekday:"long"}).format(value),
-    dayMonth:new Intl.DateTimeFormat("id-ID",{day:"numeric",month:"short"}).format(value),
-    year:new Intl.DateTimeFormat("id-ID",{year:"numeric"}).format(value)
-  };
-}
-
-function weeklyEventMarkup(event){
-  const contribution=event.task.status==="done"?`+${event.contribution}%`:"0%";
-  return `<article class="weekly-event weekly-event-${event.tone}">
-    <span class="weekly-event-icon material-symbols-rounded" aria-hidden="true">${event.icon}</span>
-    <div class="weekly-event-copy"><strong>${escapeHTML(event.task.name)}</strong><span>— ${escapeHTML(event.project.name)}</span></div>
-    <span class="weekly-event-owner"><span class="material-symbols-rounded" aria-hidden="true">person</span>PIC: ${escapeHTML(event.project.owner)}</span>
-    <strong class="weekly-event-contribution">${contribution}</strong>
-    <span class="weekly-event-status">${event.label}</span>
-  </article>`;
-}
-
-function renderWeeklyStory(){
-  const timeline=document.getElementById("weeklyStoryTimeline");
-  const today=todayISO();
-  const weekStart=addDays(today,-6);
-  const events=weeklyStoryEvents(weekStart,today);
-  const days=Array.from({length:7},(_,index)=>addDays(weekStart,index));
-  const period=document.getElementById("weeklyStoryPeriod");
-  if(period)period.textContent=`Laporan Eksekusi Mingguan • ${formatDate(weekStart)} – ${formatDate(today)}`;
-
-  const totalTasks=allTasks().length;
-  const totalDone=allTasks().filter(item=>item.status==="done").length;
-  const average=projects.length?Math.round(projects.reduce((sum,project)=>sum+progressOf(project),0)/projects.length):0;
-  const completedEvents=events.filter(event=>event.task.status==="done");
-  const completedProjects=new Set(completedEvents.map(event=>event.project.id));
-  const carryOver=projects.flatMap(project=>(project.tasks||[]).filter(item=>item.status!=="done").map(item=>({project,task:item}))).sort((a,b)=>(a.task.dueAt||"9999").localeCompare(b.task.dueAt||"9999")||a.project.name.localeCompare(b.project.name)).slice(0,6);
-  const reviewEvents=completedEvents.filter(event=>/(review|validasi|approval|persetujuan)/i.test(`${event.task.name} ${event.task.short||""}`));
-  const activeProjects=projects.filter(project=>progressOf(project)<100);
-  const onTrack=activeProjects.filter(project=>!project.end||project.end>=today).length;
-
-  const narrative=document.getElementById("weeklyStoryNarrative");
-  if(narrative)narrative.innerHTML=`Minggu ini, Team 1 menjaga momentum eksekusi dengan <strong>${totalDone} aktivitas selesai (${average}% progress)</strong>, mencatat <strong>${completedEvents.length} penyelesaian pada periode ini</strong>, dan menyiapkan ${carryOver.length} prioritas utama untuk minggu depan.`;
-  if(timeline)timeline.innerHTML=days.map(date=>{
-    const parts=weeklyDayParts(date);
-    const dayEvents=events.filter(event=>event.date===date).slice(0,3);
-    const rows=dayEvents.length?dayEvents.map(weeklyEventMarkup).join(""):`<div class="weekly-event weekly-event-empty"><span class="material-symbols-rounded" aria-hidden="true">more_horiz</span><p>Tidak ada perubahan aktivitas</p></div>`;
-    return `<section class="weekly-day"><div class="weekly-day-marker" aria-hidden="true"></div><time datetime="${date}"><span>${escapeHTML(parts.weekday)}</span><strong>${escapeHTML(parts.dayMonth)}</strong><small>${parts.year}</small></time><div class="weekly-day-events">${rows}</div></section>`;
-  }).join("");
-
-  document.getElementById("weeklyResultSummary").innerHTML=[
-    `<strong>${completedEvents.length} aktivitas</strong> selesai pada periode ini dari ${totalTasks} aktivitas`,
-    `<strong>${completedProjects.size} project</strong> mencatat penyelesaian minggu ini`,
-    `<strong>${reviewEvents.length} aktivitas review</strong> atau validasi diselesaikan`,
-    `Eksekusi tetap on track untuk <strong>${onTrack} dari ${activeProjects.length} project aktif</strong>`
-  ].map(item=>`<li><span class="material-symbols-rounded" aria-hidden="true">check_circle</span><span>${item}</span></li>`).join("");
-
-  document.getElementById("weeklyCarryOver").innerHTML=carryOver.length?carryOver.map(({project,task})=>`<li><span class="material-symbols-rounded" aria-hidden="true">flag</span><span><strong>${escapeHTML(task.name)}</strong><small>${escapeHTML(project.name)}</small></span></li>`).join(""):`<li class="weekly-carry-empty"><span class="material-symbols-rounded" aria-hidden="true">task_alt</span><span>Semua aktivitas sudah selesai.</span></li>`;
-}
-
-function portfolioContribution(items){
-  if(!projects.length)return 0;
-  const projectShares=items.reduce((total,{project,tasks})=>{
-    const projectTaskCount=(project.tasks||[]).length;
-    return total+(projectTaskCount?(tasks||[]).length/projectTaskCount:0);
-  },0);
-  return Math.round(projectShares/projects.length*100);
-}
-
-function setSectionContribution(elementId,items){
-  const element=document.getElementById(elementId);
-  if(element)element.innerHTML=`Total Kontribusi: <strong>${portfolioContribution(items)}%</strong>`;
-}
-
-function renderCurrentWeekProjects(){
-  const subtitle=document.getElementById("currentWeekSubtitle");
-  if(subtitle)subtitle.textContent="Aktivitas berstatus Done dalam 7 hari sebelumnya";
-  const list=document.getElementById("currentWeekList");
-  if(!list)return;
-  const items=completedLastSevenDays();
-  setSectionContribution("currentWeekTotalContribution",items);
-  list.innerHTML=items.length?items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"completed")).join(""): `<div class="empty-state current-week-empty"><p>Belum ada aktivitas Done dengan tanggal penyelesaian dalam 7 hari sebelumnya.</p></div>`;
-}
-
-function targetCardMarkup(project,tasks,index,variant="next"){
-  const taskItems=tasks||[];
-  const dates=taskItems.map(item=>item.dueAt).filter(Boolean).sort();
-  const firstDue=dates[0]||project.end;
-  const lastDue=dates[dates.length-1]||project.end;
-  const totalProjectTasks=(project.tasks||[]).length;
-  const showsContribution=variant==="completed"||variant==="week";
-  const contribution=totalProjectTasks?Math.round(taskItems.length/totalProjectTasks*100):0;
-  const progress=showsContribution?contribution:progressOf(project);
-  const urgency=project.urgency||"Medium";
-  const urgencyClass=URGENCY_CLASS[urgency]||"urgency-medium";
-  const visibleTasks=variant==="next"||variant==="completed"?taskItems:taskItems.slice(0,4);
-  const remainingTasks=variant==="next"||variant==="completed"?[]:taskItems.slice(visibleTasks.length);
-  const timing=firstDue?daysUntil(firstDue):null;
-  const timingLabel=timing===null?"Deadline belum diatur":timing<=0?"Jatuh tempo hari ini":`${timing} hari lagi`;
-  const timingIcon="event_upcoming";
-  const countdownMeta=variant==="completed"?"":`<span class="target-card-countdown"><span class="material-symbols-rounded">${timingIcon}</span>${timingLabel}</span>`;
-  const showExactDates=variant==="next";
-  const deadlineMeta=variant!=="next"
-    ? ""
-    : `<span class="target-card-deadline"><span class="material-symbols-rounded">calendar_month</span>${lastDue?`Sampai ${formatDate(lastDue)}`:"Tanpa deadline"}</span>`;
-  const taskList=visibleTasks.length?visibleTasks.map(item=>`<li><span class="target-task-dot"></span><span>${escapeHTML(item.name)}</span>${showExactDates&&item.dueAt?`<time>${formatDate(item.dueAt)}</time>`:""}</li>`).join(""):"<li><span class=\"target-task-dot\"></span><span>Belum ada aktivitas</span></li>";
-  const completedContributionMarkup=variant==="completed"
-    ? `<div class="target-card-contribution-band" aria-label="Kontribusi ${progress} persen"><span class="target-card-contribution-track"><span style="--target-contribution:${progress}%"></span></span><span class="target-card-contribution-copy">Kontribusi: <strong>${progress}%</strong></span></div>`
-    : "";
-  const progressMarkup=variant==="completed"
-    ? ""
-    : showsContribution
-      ? `<div class="target-contribution">Kontribusi: <strong>${progress}%</strong></div>`
-      : `<div class="target-progress" style="--target-progress:${progress*3.6}deg"><strong>${progress}%</strong></div>`;
-  return `<article class="target-card ${variant==='next'?'target-card-next':''} ${variant==='completed'?'target-card-completed':''}">
-    ${completedContributionMarkup}
-    <div class="target-card-top">
-      <span class="target-card-index">${String(index+1).padStart(2,"0")}</span>
-      <div class="target-card-heading"><h3>${escapeHTML(project.name)}</h3><p><span>${escapeHTML(project.owner||"PIC belum diatur")}</span><b>•</b>${taskItems.length} aktivitas</p></div>
-      ${progressMarkup}
-    </div>
-    <div class="target-card-info"><span class="target-card-urgency ${urgencyClass}"><span class="urgency-badge">${escapeHTML(urgency)}</span></span>${deadlineMeta}${countdownMeta}</div>
-    <div class="target-card-task-area ${remainingTasks.length?"has-more":""}">
-      <ul class="target-card-tasks">${taskList}</ul>
-      ${remainingTasks.length?`<div class="target-card-more">${remainingTasks.map(item=>`<span class="target-card-more-item"><span class="target-task-dot"></span>${escapeHTML(item.name)}</span>`).join("")}</div>`:""}
-    </div>
-  </article>`;
-}
-
-function renderNextWeekTargets(){
-  const today=todayISO();
-  const horizon=addDays(today,7);
-  const subtitle=document.getElementById("nextWeekSubtitle");
-  if(subtitle)subtitle.textContent=`Aktivitas belum selesai dengan deadline sampai ${formatDate(horizon,true)}`;
-  const items=projects.map(project=>({project,tasks:nextWeekTasks(project)})).filter(({tasks})=>tasks.length);
-  setSectionContribution("nextWeekTotalContribution",items);
-  const list=document.getElementById("nextWeekList");
-  if(!list)return;
-  list.innerHTML=items.length?items.map(({project,tasks},i)=>targetCardMarkup(project,tasks,i,"week")).join(""): `<div class="empty-state next-week-empty"><p>Tidak ada aktivitas yang belum selesai sampai ${formatDate(horizon,true)}.</p></div>`;
+  renderWeeklyReportSection({
+    listId:"weeklyCarryOver",
+    periodId:"weeklyTargetPeriod",
+    period:weeklyPeriod(monday,1),
+    dateFor:task=>task.status!=="done"?task.dueAt:"",
+  });
+  const obstacles=weeklyObstacles[resultPeriod.end];
+  const text=document.getElementById("weeklyObstaclesText");
+  document.getElementById("weeklyObstaclesPeriod").textContent=resultPeriod.label;
+  text.textContent=obstacles||"Belum ada kendala yang dicatat.";
+  text.classList.toggle("is-empty",!obstacles);
 }
 
 function renderDistribution(){
@@ -606,6 +528,8 @@ function showToast(message){const toast=document.getElementById("toast");toast.q
 
 function applySharedSnapshot(snapshot){
   projects=normalizeProjects(structuredClone(snapshot.projects||[]));
+  weeklyPolicyCounts=snapshot.weeklyPolicyCounts||{};
+  weeklyObstacles=snapshot.weeklyObstacles||{};
   localStorage.setItem(STORAGE_KEY,JSON.stringify(projects));
   if(snapshot.updatedAt){
     localStorage.setItem(LAST_UPDATE_KEY,snapshot.updatedAt);
@@ -671,8 +595,8 @@ function updateAuthUI(){
   document.getElementById("editorName").textContent=authUser.name;
   document.getElementById("editorAvatar").textContent=authUser.name.split(/\s+/).map(part=>part[0]).slice(0,2).join("").toUpperCase();
 }
-function openLoginModal(returnHash="#project"){
-  pendingProtectedHash=returnHash;
+function openLoginModal(destination="#project"){
+  pendingEditorDestination=destination;
   const form=document.getElementById("loginForm");
   form.reset();
   const error=document.getElementById("loginError");
@@ -681,13 +605,109 @@ function openLoginModal(returnHash="#project"){
   setTimeout(()=>document.getElementById("loginUser").focus(),50);
 }
 function closeLoginModal(){document.getElementById("loginModal").hidden=true;}
-function requireEditor(){
-  if(!authUser){openLoginModal("#project");return false;}
+function requireEditor(destination="#project"){
+  if(!authUser){openLoginModal(destination);return false;}
   if(!dashboardData?.canEdit()){
     showToast("Data online belum siap. Tunggu koneksi pulih sebelum mengedit.");
     return false;
   }
   return true;
+}
+
+function openPolicyCountEditor(){
+  if(!requireEditor(openPolicyCountEditor))return;
+  editingPolicyWeek=reportResultPeriod();
+  const input=document.getElementById("policyCountInput");
+  input.value=weeklyPolicyCounts[editingPolicyWeek.end]??"";
+  document.getElementById("policyCountPeriod").textContent=editingPolicyWeek.label;
+  document.getElementById("policyCountError").hidden=true;
+  document.getElementById("policyCountModal").hidden=false;
+  input.focus();
+}
+
+function closePolicyCountEditor(){
+  const modal=document.getElementById("policyCountModal");
+  if(modal.hidden)return;
+  modal.hidden=true;
+  editingPolicyWeek=null;
+  document.querySelector("[data-edit-policy-count]")?.focus();
+}
+
+async function savePolicyCount(event){
+  event.preventDefault();
+  if(!editingPolicyWeek||!requireEditor(openPolicyCountEditor))return;
+  const input=document.getElementById("policyCountInput");
+  const error=document.getElementById("policyCountError");
+  const submit=document.getElementById("policyCountSubmit");
+  if(submit.disabled)return;
+  const count=input.valueAsNumber;
+  if(!Number.isSafeInteger(count)||count<0){
+    error.textContent="Masukkan bilangan bulat 0 atau lebih.";
+    error.hidden=false;
+    return;
+  }
+  const week=editingPolicyWeek;
+  submit.disabled=true;
+  error.hidden=true;
+  try{
+    const state=await dashboardData.save(undefined,{weeklyPolicyCounts:{...weeklyPolicyCounts,[week.end]:count}});
+    if(state.status!=="saved")throw new Error("Data terbaru sudah dimuat. Periksa kembali sebelum menyimpan.");
+    if(editingPolicyWeek===week)closePolicyCountEditor();
+  }catch(saveError){
+    if(editingPolicyWeek===week){
+      error.textContent=lastSyncStatus==="conflict"?saveError.message:"Jumlah polis belum tersimpan. Coba lagi saat koneksi tersedia.";
+      error.hidden=false;
+    }
+  }finally{
+    submit.disabled=false;
+  }
+}
+
+function openObstaclesEditor(){
+  if(!requireEditor(openObstaclesEditor))return;
+  editingObstaclesWeek=reportResultPeriod();
+  const input=document.getElementById("reportObstaclesInput");
+  input.value=weeklyObstacles[editingObstaclesWeek.end]??"";
+  document.getElementById("reportObstaclesPeriod").textContent=editingObstaclesWeek.label;
+  document.getElementById("reportObstaclesError").hidden=true;
+  document.getElementById("reportObstaclesModal").hidden=false;
+  input.focus();
+}
+
+function closeObstaclesEditor(){
+  const modal=document.getElementById("reportObstaclesModal");
+  if(modal.hidden)return;
+  modal.hidden=true;
+  editingObstaclesWeek=null;
+  document.getElementById("reportObstaclesEditBtn").focus();
+}
+
+async function saveReportObstacles(event){
+  event.preventDefault();
+  if(!editingObstaclesWeek||!requireEditor(openObstaclesEditor))return;
+  const submit=document.getElementById("reportObstaclesSubmit");
+  if(submit.disabled)return;
+  const error=document.getElementById("reportObstaclesError");
+  const note=document.getElementById("reportObstaclesInput").value.trim();
+  const week=editingObstaclesWeek;
+  const updatedObstacles={...weeklyObstacles};
+  if(note)updatedObstacles[week.end]=note;
+  else delete updatedObstacles[week.end];
+
+  submit.disabled=true;
+  error.hidden=true;
+  try{
+    const state=await dashboardData.save(undefined,{weeklyObstacles:updatedObstacles});
+    if(state.status!=="saved")throw new Error("Data terbaru sudah dimuat. Periksa kembali sebelum menyimpan.");
+    if(editingObstaclesWeek===week)closeObstaclesEditor();
+  }catch(saveError){
+    if(editingObstaclesWeek===week){
+      error.textContent=lastSyncStatus==="conflict"?saveError.message:"Kendala belum tersimpan. Coba lagi saat koneksi tersedia.";
+      error.hidden=false;
+    }
+  }finally{
+    submit.disabled=false;
+  }
 }
 async function refreshAuth(){
   try{
@@ -805,17 +825,25 @@ document.querySelectorAll("[data-view]").forEach(button=>button.addEventListener
 document.querySelectorAll("[data-close-login]").forEach(button=>button.addEventListener("click",closeLoginModal));
 document.querySelectorAll("[data-close-modal]").forEach(button=>button.addEventListener("click",closeModal));
 document.querySelectorAll("[data-close-task]").forEach(button=>button.addEventListener("click",closeTaskModal));
+document.querySelectorAll("[data-close-policy-count]").forEach(button=>button.addEventListener("click",closePolicyCountEditor));
+document.getElementById("policyCountForm").addEventListener("submit",savePolicyCount);
+document.querySelectorAll("[data-close-obstacles]").forEach(button=>button.addEventListener("click",closeObstaclesEditor));
+document.getElementById("reportObstaclesEditBtn").addEventListener("click",openObstaclesEditor);
+document.getElementById("reportObstaclesForm").addEventListener("submit",saveReportObstacles);
 document.getElementById("closeDrawer").addEventListener("click",closeDrawer);
 document.getElementById("projectModal").addEventListener("click",event=>{if(event.target.id==="projectModal")closeModal()});
 document.getElementById("taskModal").addEventListener("click",event=>{if(event.target.id==="taskModal")closeTaskModal()});
 document.getElementById("detailDrawer").addEventListener("click",event=>{if(event.target.id==="detailDrawer")closeDrawer()});
 document.getElementById("loginModal").addEventListener("click",event=>{if(event.target.id==="loginModal")closeLoginModal()});
+document.getElementById("policyCountModal").addEventListener("click",event=>{if(event.target.id==="policyCountModal")closePolicyCountEditor()});
+document.getElementById("reportObstaclesModal").addEventListener("click",event=>{if(event.target.id==="reportObstaclesModal")closeObstaclesEditor()});
 window.addEventListener("hashchange",syncView);
-document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeLoginModal();closeTaskModal();closeModal();closeDrawer();}});
+document.addEventListener("keydown",event=>{if((event.metaKey||event.ctrlKey)&&event.key.toLowerCase()==="k"){event.preventDefault();document.getElementById("searchInput").focus()}if(event.key==="Escape"){closeLoginModal();closeTaskModal();closeModal();closePolicyCountEditor();closeObstaclesEditor();closeDrawer();}});
 document.getElementById("searchInput").addEventListener("input",event=>{searchQuery=event.target.value.trim().toLowerCase();render()});
 document.querySelectorAll(".filter-chip,.filter-nav").forEach(button=>button.addEventListener("click",()=>{currentFilter=button.dataset.filter;document.querySelectorAll(".filter-chip").forEach(chip=>chip.classList.toggle("active",chip.dataset.filter===currentFilter));render();if(button.classList.contains("filter-nav"))document.querySelector(".sidebar")?.classList.remove("open");}));
 
 document.getElementById("boardColumns").addEventListener("click",event=>{
+  if(event.target.closest("[data-edit-policy-count]")){openPolicyCountEditor();return;}
   const card=event.target.closest("[data-board-project]");
   if(card)openDrawer(card.dataset.boardProject);
 });
@@ -865,8 +893,9 @@ document.getElementById("loginForm").addEventListener("submit",async event=>{
     const errorMessage=typeof data.error==="string"?data.error:data.error?.message;
     if(!response.ok||!data.authenticated)throw new Error(errorMessage||"Login belum dapat diproses. Silakan coba lagi.");
     authUser=data.user; authChecked=true; closeLoginModal(); updateAuthUI();
-    const destination=pendingProtectedHash||"#project"; pendingProtectedHash="#project";
-    if(location.hash===destination)syncView();else location.hash=destination;
+    const destination=pendingEditorDestination; pendingEditorDestination="#project";
+    if(typeof destination==="function")destination();
+    else if(location.hash===destination)syncView();else location.hash=destination;
     showToast(`Login berhasil. Selamat datang, ${authUser.name}.`);
   }catch(loginError){
     error.textContent=loginError.message||"User atau password tidak sesuai."; error.hidden=false;
@@ -876,7 +905,7 @@ document.getElementById("loginForm").addEventListener("submit",async event=>{
 
 document.getElementById("logoutBtn").addEventListener("click",async()=>{
   try{await fetch(AUTH_ENDPOINT,{method:"DELETE",credentials:"same-origin",headers:{Accept:"application/json"}});}catch{}
-  authUser=null; closeTaskModal(); closeModal(); closeDrawer(); history.replaceState(null,"","#dashboard-app"); syncView(); showToast("Anda sudah keluar dari mode editor.");
+  authUser=null; closeTaskModal(); closeModal(); closePolicyCountEditor(); closeObstaclesEditor(); closeDrawer(); history.replaceState(null,"","#dashboard-app"); syncView(); showToast("Anda sudah keluar dari mode editor.");
 });
 
 document.getElementById("projectForm").addEventListener("submit",event=>{
