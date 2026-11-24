@@ -1,5 +1,5 @@
 import { createAuthService, json, sameOrigin } from "./_auth.mjs";
-import { MAX_SNAPSHOT_BYTES, SnapshotValidationError, validateSnapshot } from "./_snapshot.mjs";
+import { MAX_SNAPSHOT_BYTES, SnapshotValidationError, validateSnapshot, validateWeeklyObstacles, validateWeeklyPolicyCounts } from "./_snapshot.mjs";
 import {
   RevisionConflictError,
   SupabaseConfigurationError,
@@ -38,14 +38,19 @@ export function createDataHandlers({ env = process.env, fetchImpl = fetch, now =
       if (declaredLength > MAX_SNAPSHOT_BYTES + 10000) return json({ error: "Data terlalu besar." }, 413);
 
       const body = await request.json();
-      const projects = validateSnapshot(body?.projects);
+      const hasPolicyCounts = Object.hasOwn(body ?? {}, "weeklyPolicyCounts");
+      const hasObstacles = Object.hasOwn(body ?? {}, "weeklyObstacles");
+      const hasWeeklyData = hasPolicyCounts || hasObstacles;
+      const projects = !hasWeeklyData || Object.hasOwn(body, "projects") ? validateSnapshot(body?.projects) : undefined;
+      const weeklyPolicyCounts = hasPolicyCounts ? validateWeeklyPolicyCounts(body.weeklyPolicyCounts) : undefined;
+      const weeklyObstacles = hasObstacles ? validateWeeklyObstacles(body.weeklyObstacles) : undefined;
       const baseRevision = body?.baseRevision;
       if (!Number.isInteger(baseRevision) || baseRevision < 1) {
         return json({ error: "Revisi data tidak valid." }, 400);
       }
 
       const dataStore = store();
-      const updated = await dataStore.update({ projects, baseRevision, updatedBy: user.name });
+      const updated = await dataStore.update({ projects, weeklyPolicyCounts, weeklyObstacles, baseRevision, updatedBy: user.name });
       return json(publicPayload(updated, dataStore.realtimeConfig()));
     } catch (error) {
       if (error instanceof RevisionConflictError) {
@@ -53,7 +58,7 @@ export function createDataHandlers({ env = process.env, fetchImpl = fetch, now =
         return json(publicPayload(error.current, dataStore.realtimeConfig()), 409);
       }
       if (error instanceof SnapshotValidationError || (error instanceof SupabaseRequestError && error.status === 400)) {
-        return json({ error: "Data project tidak valid." }, 400);
+        return json({ error: "Data dashboard tidak valid." }, 400);
       }
       if (error instanceof SupabaseConfigurationError || /AUTH_SESSION_SECRET/.test(error?.message || "")) {
         return json({ error: "Data bersama belum dikonfigurasi." }, 503);

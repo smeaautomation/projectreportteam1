@@ -11,6 +11,8 @@
   function publicSnapshot(payload) {
     return {
       projects: clone(payload.projects || []),
+      weeklyPolicyCounts: clone(payload.weeklyPolicyCounts || {}),
+      weeklyObstacles: clone(payload.weeklyObstacles || {}),
       revision: Number(payload.revision || 0),
       updatedAt: payload.updatedAt || "",
       updatedBy: payload.updatedBy || "",
@@ -30,12 +32,14 @@
     let realtimeSubscription = null;
     let refreshPromise = null;
     let drainPromise = null;
-    let pendingProjects = null;
+    let pendingSnapshot = null;
     let ready = false;
     let stopped = false;
     let state = {
       status: "loading",
       projects: clone(deployed.projects || []),
+      weeklyPolicyCounts: {},
+      weeklyObstacles: {},
       revision: 0,
       updatedAt: deployed.updatedAt || "",
       updatedBy: "",
@@ -164,17 +168,17 @@
       return refreshPromise;
     }
 
-    async function writeSnapshot(projects) {
+    async function writeSnapshot(snapshot) {
       const baseRevision = confirmed?.revision || 0;
-      setState("saving", { projects: clone(projects), error: "" });
+      setState("saving", { projects: clone(snapshot.projects ?? state.projects), error: "" });
       const { body, response } = await responseJson(await fetchImpl(endpoint, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         credentials: "same-origin",
-        body: JSON.stringify({ projects, baseRevision }),
+        body: JSON.stringify({ ...snapshot, baseRevision }),
       }));
       if (response.status === 409) {
-        pendingProjects = null;
+        pendingSnapshot = null;
         confirmed = publicSnapshot(body);
         cacheConfirmed();
         ready = false;
@@ -187,15 +191,15 @@
     async function drainWrites() {
       try {
         let result = getState();
-        while (pendingProjects) {
-          const next = pendingProjects;
-          pendingProjects = null;
+        while (pendingSnapshot) {
+          const next = pendingSnapshot;
+          pendingSnapshot = null;
           result = await writeSnapshot(next);
           if (result.status === "conflict") break;
         }
         return result;
       } catch (error) {
-        pendingProjects = null;
+        pendingSnapshot = null;
         ready = false;
         const rollback = confirmed || publicSnapshot({ projects: deployed.projects || [], updatedAt: deployed.updatedAt || "" });
         setState("offline", { ...rollback, error: error?.message || "Perubahan gagal disimpan." });
@@ -203,9 +207,9 @@
       }
     }
 
-    function save(projects) {
+    function save(projects, { weeklyPolicyCounts, weeklyObstacles } = {}) {
       if (!ready || !confirmed) return Promise.reject(new Error("Shared data is not ready for editing"));
-      pendingProjects = clone(projects);
+      pendingSnapshot = { ...pendingSnapshot, ...clone({ projects, weeklyPolicyCounts, weeklyObstacles }) };
       if (!drainPromise) {
         drainPromise = drainWrites().finally(() => {
           drainPromise = null;

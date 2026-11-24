@@ -1,8 +1,8 @@
-import { validateSnapshot } from "./_snapshot.mjs";
+import { validateSnapshot, validateWeeklyObstacles, validateWeeklyPolicyCounts } from "./_snapshot.mjs";
 
 const ROW_ID = "team1";
 const TABLE = "dashboard_state";
-const SELECT = "id,projects,revision,updated_at,updated_by";
+const SELECT = "id,projects,weekly_policy_counts,weekly_obstacles,revision,updated_at,updated_by";
 
 export class SupabaseConfigurationError extends Error {
   constructor(message) {
@@ -56,6 +56,8 @@ function mapRow(row) {
   }
   return {
     projects: validateSnapshot(row.projects),
+    weeklyPolicyCounts: validateWeeklyPolicyCounts(row.weekly_policy_counts ?? {}),
+    weeklyObstacles: validateWeeklyObstacles(row.weekly_obstacles ?? {}),
     revision: Number(row.revision),
     updatedAt: row.updated_at,
     updatedBy: row.updated_by,
@@ -84,17 +86,18 @@ export function createSupabaseStore({ env = process.env, fetchImpl = fetch, now 
     return mapRow(rows[0]);
   }
 
-  async function update({ projects, baseRevision, updatedBy }) {
+  async function update({ projects, weeklyPolicyCounts, weeklyObstacles, baseRevision, updatedBy }) {
     if (!Number.isInteger(baseRevision) || baseRevision < 1) {
       throw new SupabaseRequestError("Base revision is invalid", 400);
     }
-    const normalized = validateSnapshot(projects);
     const body = {
-      projects: normalized,
       revision: baseRevision + 1,
       updated_at: now(),
       updated_by: updatedBy,
     };
+    if (projects !== undefined) body.projects = validateSnapshot(projects);
+    if (weeklyPolicyCounts !== undefined) body.weekly_policy_counts = validateWeeklyPolicyCounts(weeklyPolicyCounts);
+    if (weeklyObstacles !== undefined) body.weekly_obstacles = validateWeeklyObstacles(weeklyObstacles);
     const response = await fetchImpl(rowUrl(config.url, { revision: `eq.${baseRevision}` }), {
       method: "PATCH",
       headers: { ...headers, Prefer: "return=representation" },
