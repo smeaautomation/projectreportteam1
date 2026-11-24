@@ -88,3 +88,26 @@ export function validateSnapshot(projects) {
   projects.forEach((project, index) => validateProject(project, projectIds, index));
   return JSON.parse(serialized);
 }
+
+function validateReportWeek(week) {
+  validateDate(week, "Reporting week");
+  if (new Date(`${week}T00:00:00Z`).getUTCDay() !== 1) fail("Reporting week must use a Monday date");
+}
+
+export function validateWeeklyPolicyCounts(counts) {
+  if (!isObject(counts)) fail("Weekly policy counts must be an object");
+  for (const [week, count] of Object.entries(counts)) {
+    validateReportWeek(week);
+    if (!Number.isSafeInteger(count) || count < 0) fail("Policy count must be a non-negative integer");
+  }
+  return counts;
+}
+
+export function validateWeeklyObstacles(notes) {
+  if (!isObject(notes)) fail("Weekly obstacles must be an object");
+  for (const [week, note] of Object.entries(notes)) {
+    validateReportWeek(week);
+    validateString(note, "Obstacle note", { max: 2000 });
+  }
+  return notes;
+}
