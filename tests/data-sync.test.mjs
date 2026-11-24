@@ -140,6 +140,36 @@ test("serializes writes and coalesces rapid edits to the newest pending snapshot
   assert.equal(controller.getState().updatedAt, payload(3).updatedAt);
 });
 
+test("keeps queued policy counts and weekly obstacles when a project edit arrives", async () => {
+  const Team1DataSync = await loadSync();
+  const firstWrite = deferred();
+  const counts = { "2026-11-23": 0 };
+  const obstacles = { "2026-11-23": "Menunggu konfirmasi" };
+  const fetchImpl = queuedFetch([
+    Response.json(payload(1)),
+    () => firstWrite.promise,
+    Response.json(payload(3, "Latest Project", { weeklyPolicyCounts: counts, weeklyObstacles: obstacles })),
+  ]);
+  const controller = Team1DataSync.create({ fetchImpl, storage: memoryStorage() });
+  await controller.start();
+
+  const original = controller.save(project("First Project"));
+  const policy = controller.save(undefined, { weeklyPolicyCounts: counts });
+  const report = controller.save(undefined, { weeklyObstacles: obstacles });
+  const latest = controller.save(project("Latest Project"));
+  firstWrite.resolve(Response.json(payload(2, "First Project")));
+  await Promise.all([original, policy, report, latest]);
+
+  assert.deepEqual(JSON.parse(fetchImpl.calls[2].options.body), {
+    projects: project("Latest Project"),
+    weeklyPolicyCounts: counts,
+    weeklyObstacles: obstacles,
+    baseRevision: 2,
+  });
+  assert.equal(controller.getState().weeklyPolicyCounts["2026-11-23"], 0);
+  assert.equal(controller.getState().weeklyObstacles["2026-11-23"], obstacles["2026-11-23"]);
+});
+
 test("refreshes from the server when Realtime announces a newer row", async () => {
   const Team1DataSync = await loadSync();
   let onChange;
